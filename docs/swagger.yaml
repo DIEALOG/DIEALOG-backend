@@ -1,0 +1,15 @@
+basePath: /api
+host: localhost:8080
+info:
+  contact: {}
+  description: Fiber Backend API
+  title: Fiber Backend API
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  BearerAuth:
+    description: Enter your JWT token with the `Bearer ` prefix.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
