@@ -10,38 +10,40 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/task"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
-// Task is the model entity for the Task schema.
-type Task struct {
+// Legacy is the model entity for the Legacy schema.
+type Legacy struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the TaskQuery when eager-loading is set.
-	Edges        TaskEdges `json:"edges"`
-	task_owner   *uuid.UUID
-	selectValues sql.SelectValues
+	// The values are being populated by the LegacyQuery when eager-loading is set.
+	Edges         LegacyEdges `json:"edges"`
+	user_legacies *uuid.UUID
+	selectValues  sql.SelectValues
 }
 
-// TaskEdges holds the relations/edges for other nodes in the graph.
-type TaskEdges struct {
+// LegacyEdges holds the relations/edges for other nodes in the graph.
+type LegacyEdges struct {
 	// Owner holds the value of the owner edge.
 	Owner *User `json:"owner,omitempty"`
+	// Accounts holds the value of the accounts edge.
+	Accounts []*Account `json:"accounts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) OwnerOrErr() (*User, error) {
+func (e LegacyEdges) OwnerOrErr() (*User, error) {
 	if e.Owner != nil {
 		return e.Owner, nil
 	} else if e.loadedTypes[0] {
@@ -50,18 +52,27 @@ func (e TaskEdges) OwnerOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner"}
 }
 
+// AccountsOrErr returns the Accounts value or an error if the edge
+// was not loaded in eager-loading.
+func (e LegacyEdges) AccountsOrErr() ([]*Account, error) {
+	if e.loadedTypes[1] {
+		return e.Accounts, nil
+	}
+	return nil, &NotLoadedError{edge: "accounts"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Task) scanValues(columns []string) ([]any, error) {
+func (*Legacy) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldTitle:
+		case legacy.FieldName:
 			values[i] = new(sql.NullString)
-		case task.FieldCreatedAt:
+		case legacy.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case task.FieldID:
+		case legacy.FieldID:
 			values[i] = new(uuid.UUID)
-		case task.ForeignKeys[0]: // task_owner
+		case legacy.ForeignKeys[0]: // user_legacies
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -71,37 +82,37 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Task fields.
-func (_m *Task) assignValues(columns []string, values []any) error {
+// to the Legacy fields.
+func (_m *Legacy) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldID:
+		case legacy.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case task.FieldTitle:
+		case legacy.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_m.Title = value.String
+				_m.Name = value.String
 			}
-		case task.FieldCreatedAt:
+		case legacy.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case task.ForeignKeys[0]:
+		case legacy.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field task_owner", values[i])
+				return fmt.Errorf("unexpected type %T for field user_legacies", values[i])
 			} else if value.Valid {
-				_m.task_owner = new(uuid.UUID)
-				*_m.task_owner = *value.S.(*uuid.UUID)
+				_m.user_legacies = new(uuid.UUID)
+				*_m.user_legacies = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -110,42 +121,47 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Task.
+// Value returns the ent.Value that was dynamically selected and assigned to the Legacy.
 // This includes values selected through modifiers, order, etc.
-func (_m *Task) Value(name string) (ent.Value, error) {
+func (_m *Legacy) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryOwner queries the "owner" edge of the Task entity.
-func (_m *Task) QueryOwner() *UserQuery {
-	return NewTaskClient(_m.config).QueryOwner(_m)
+// QueryOwner queries the "owner" edge of the Legacy entity.
+func (_m *Legacy) QueryOwner() *UserQuery {
+	return NewLegacyClient(_m.config).QueryOwner(_m)
 }
 
-// Update returns a builder for updating this Task.
-// Note that you need to call Task.Unwrap() before calling this method if this Task
+// QueryAccounts queries the "accounts" edge of the Legacy entity.
+func (_m *Legacy) QueryAccounts() *AccountQuery {
+	return NewLegacyClient(_m.config).QueryAccounts(_m)
+}
+
+// Update returns a builder for updating this Legacy.
+// Note that you need to call Legacy.Unwrap() before calling this method if this Legacy
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *Task) Update() *TaskUpdateOne {
-	return NewTaskClient(_m.config).UpdateOne(_m)
+func (_m *Legacy) Update() *LegacyUpdateOne {
+	return NewLegacyClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the Task entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Legacy entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *Task) Unwrap() *Task {
+func (_m *Legacy) Unwrap() *Legacy {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Task is not a transactional entity")
+		panic("ent: Legacy is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *Task) String() string {
+func (_m *Legacy) String() string {
 	var builder strings.Builder
-	builder.WriteString("Task(")
+	builder.WriteString("Legacy(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("title=")
-	builder.WriteString(_m.Title)
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
@@ -153,5 +169,5 @@ func (_m *Task) String() string {
 	return builder.String()
 }
 
-// Tasks is a parsable slice of Task.
-type Tasks []*Task
+// Legacies is a parsable slice of Legacy.
+type Legacies []*Legacy

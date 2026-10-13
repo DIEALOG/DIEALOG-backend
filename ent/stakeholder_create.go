@@ -11,31 +11,59 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/task"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
-// TaskCreate is the builder for creating a Task entity.
-type TaskCreate struct {
+// StakeholderCreate is the builder for creating a Stakeholder entity.
+type StakeholderCreate struct {
 	config
-	mutation *TaskMutation
+	mutation *StakeholderMutation
 	hooks    []Hook
 }
 
-// SetTitle sets the "title" field.
-func (_c *TaskCreate) SetTitle(v string) *TaskCreate {
-	_c.mutation.SetTitle(v)
+// SetName sets the "name" field.
+func (_c *StakeholderCreate) SetName(v string) *StakeholderCreate {
+	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetPhone sets the "phone" field.
+func (_c *StakeholderCreate) SetPhone(v string) *StakeholderCreate {
+	_c.mutation.SetPhone(v)
+	return _c
+}
+
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (_c *StakeholderCreate) SetNillablePhone(v *string) *StakeholderCreate {
+	if v != nil {
+		_c.SetPhone(*v)
+	}
+	return _c
+}
+
+// SetEmail sets the "email" field.
+func (_c *StakeholderCreate) SetEmail(v string) *StakeholderCreate {
+	_c.mutation.SetEmail(v)
+	return _c
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_c *StakeholderCreate) SetNillableEmail(v *string) *StakeholderCreate {
+	if v != nil {
+		_c.SetEmail(*v)
+	}
 	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_c *TaskCreate) SetCreatedAt(v time.Time) *TaskCreate {
+func (_c *StakeholderCreate) SetCreatedAt(v time.Time) *StakeholderCreate {
 	_c.mutation.SetCreatedAt(v)
 	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableCreatedAt(v *time.Time) *TaskCreate {
+func (_c *StakeholderCreate) SetNillableCreatedAt(v *time.Time) *StakeholderCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
@@ -43,13 +71,13 @@ func (_c *TaskCreate) SetNillableCreatedAt(v *time.Time) *TaskCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *TaskCreate) SetID(v uuid.UUID) *TaskCreate {
+func (_c *StakeholderCreate) SetID(v uuid.UUID) *StakeholderCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableID(v *uuid.UUID) *TaskCreate {
+func (_c *StakeholderCreate) SetNillableID(v *uuid.UUID) *StakeholderCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -57,29 +85,29 @@ func (_c *TaskCreate) SetNillableID(v *uuid.UUID) *TaskCreate {
 }
 
 // SetOwnerID sets the "owner" edge to the User entity by ID.
-func (_c *TaskCreate) SetOwnerID(id uuid.UUID) *TaskCreate {
+func (_c *StakeholderCreate) SetOwnerID(id uuid.UUID) *StakeholderCreate {
 	_c.mutation.SetOwnerID(id)
 	return _c
 }
 
 // SetOwner sets the "owner" edge to the User entity.
-func (_c *TaskCreate) SetOwner(v *User) *TaskCreate {
+func (_c *StakeholderCreate) SetOwner(v *User) *StakeholderCreate {
 	return _c.SetOwnerID(v.ID)
 }
 
-// Mutation returns the TaskMutation object of the builder.
-func (_c *TaskCreate) Mutation() *TaskMutation {
+// Mutation returns the StakeholderMutation object of the builder.
+func (_c *StakeholderCreate) Mutation() *StakeholderMutation {
 	return _c.mutation
 }
 
-// Save creates the Task in the database.
-func (_c *TaskCreate) Save(ctx context.Context) (*Task, error) {
+// Save creates the Stakeholder in the database.
+func (_c *StakeholderCreate) Save(ctx context.Context) (*Stakeholder, error) {
 	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *TaskCreate) SaveX(ctx context.Context) *Task {
+func (_c *StakeholderCreate) SaveX(ctx context.Context) *Stakeholder {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -88,50 +116,50 @@ func (_c *TaskCreate) SaveX(ctx context.Context) *Task {
 }
 
 // Exec executes the query.
-func (_c *TaskCreate) Exec(ctx context.Context) error {
+func (_c *StakeholderCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *TaskCreate) ExecX(ctx context.Context) {
+func (_c *StakeholderCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *TaskCreate) defaults() {
+func (_c *StakeholderCreate) defaults() {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := task.DefaultCreatedAt()
+		v := stakeholder.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
-		v := task.DefaultID()
+		v := stakeholder.DefaultID()
 		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *TaskCreate) check() error {
-	if _, ok := _c.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Task.title"`)}
+func (_c *StakeholderCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Stakeholder.name"`)}
 	}
-	if v, ok := _c.mutation.Title(); ok {
-		if err := task.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Task.title": %w`, err)}
+	if v, ok := _c.mutation.Name(); ok {
+		if err := stakeholder.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Stakeholder.name": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Task.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Stakeholder.created_at"`)}
 	}
 	if len(_c.mutation.OwnerIDs()) == 0 {
-		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "Task.owner"`)}
+		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "Stakeholder.owner"`)}
 	}
 	return nil
 }
 
-func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
+func (_c *StakeholderCreate) sqlSave(ctx context.Context) (*Stakeholder, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -154,29 +182,37 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 	return _node, nil
 }
 
-func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
+func (_c *StakeholderCreate) createSpec() (*Stakeholder, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Task{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
+		_node = &Stakeholder{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(stakeholder.Table, sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Title(); ok {
-		_spec.SetField(task.FieldTitle, field.TypeString, value)
-		_node.Title = value
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(stakeholder.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := _c.mutation.Phone(); ok {
+		_spec.SetField(stakeholder.FieldPhone, field.TypeString, value)
+		_node.Phone = &value
+	}
+	if value, ok := _c.mutation.Email(); ok {
+		_spec.SetField(stakeholder.FieldEmail, field.TypeString, value)
+		_node.Email = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(stakeholder.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if nodes := _c.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   task.OwnerTable,
-			Columns: []string{task.OwnerColumn},
+			Inverse: true,
+			Table:   stakeholder.OwnerTable,
+			Columns: []string{stakeholder.OwnerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -185,33 +221,33 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.task_owner = &nodes[0]
+		_node.user_stakeholders = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// TaskCreateBulk is the builder for creating many Task entities in bulk.
-type TaskCreateBulk struct {
+// StakeholderCreateBulk is the builder for creating many Stakeholder entities in bulk.
+type StakeholderCreateBulk struct {
 	config
 	err      error
-	builders []*TaskCreate
+	builders []*StakeholderCreate
 }
 
-// Save creates the Task entities in the database.
-func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
+// Save creates the Stakeholder entities in the database.
+func (_c *StakeholderCreateBulk) Save(ctx context.Context) ([]*Stakeholder, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Task, len(_c.builders))
+	nodes := make([]*Stakeholder, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*TaskMutation)
+				mutation, ok := m.(*StakeholderMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -254,7 +290,7 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *TaskCreateBulk) SaveX(ctx context.Context) []*Task {
+func (_c *StakeholderCreateBulk) SaveX(ctx context.Context) []*Stakeholder {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -263,13 +299,13 @@ func (_c *TaskCreateBulk) SaveX(ctx context.Context) []*Task {
 }
 
 // Exec executes the query.
-func (_c *TaskCreateBulk) Exec(ctx context.Context) error {
+func (_c *StakeholderCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *TaskCreateBulk) ExecX(ctx context.Context) {
+func (_c *StakeholderCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

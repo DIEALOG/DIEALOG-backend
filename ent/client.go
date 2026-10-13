@@ -16,7 +16,9 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/task"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -25,8 +27,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Task is the client for interacting with the Task builders.
-	Task *TaskClient
+	// Account is the client for interacting with the Account builders.
+	Account *AccountClient
+	// Legacy is the client for interacting with the Legacy builders.
+	Legacy *LegacyClient
+	// Stakeholder is the client for interacting with the Stakeholder builders.
+	Stakeholder *StakeholderClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -40,7 +46,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Task = NewTaskClient(c.config)
+	c.Account = NewAccountClient(c.config)
+	c.Legacy = NewLegacyClient(c.config)
+	c.Stakeholder = NewStakeholderClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -132,10 +140,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Task:   NewTaskClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Account:     NewAccountClient(cfg),
+		Legacy:      NewLegacyClient(cfg),
+		Stakeholder: NewStakeholderClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -153,17 +163,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Task:   NewTaskClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Account:     NewAccountClient(cfg),
+		Legacy:      NewLegacyClient(cfg),
+		Stakeholder: NewStakeholderClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Task.
+//		Account.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -185,22 +197,30 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Task.Use(hooks...)
+	c.Account.Use(hooks...)
+	c.Legacy.Use(hooks...)
+	c.Stakeholder.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Task.Intercept(interceptors...)
+	c.Account.Intercept(interceptors...)
+	c.Legacy.Intercept(interceptors...)
+	c.Stakeholder.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *TaskMutation:
-		return c.Task.mutate(ctx, m)
+	case *AccountMutation:
+		return c.Account.mutate(ctx, m)
+	case *LegacyMutation:
+		return c.Legacy.mutate(ctx, m)
+	case *StakeholderMutation:
+		return c.Stakeholder.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -208,107 +228,107 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// TaskClient is a client for the Task schema.
-type TaskClient struct {
+// AccountClient is a client for the Account schema.
+type AccountClient struct {
 	config
 }
 
-// NewTaskClient returns a client for the Task from the given config.
-func NewTaskClient(c config) *TaskClient {
-	return &TaskClient{config: c}
+// NewAccountClient returns a client for the Account from the given config.
+func NewAccountClient(c config) *AccountClient {
+	return &AccountClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `task.Hooks(f(g(h())))`.
-func (c *TaskClient) Use(hooks ...Hook) {
-	c.hooks.Task = append(c.hooks.Task, hooks...)
+// A call to `Use(f, g, h)` equals to `account.Hooks(f(g(h())))`.
+func (c *AccountClient) Use(hooks ...Hook) {
+	c.hooks.Account = append(c.hooks.Account, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `task.Intercept(f(g(h())))`.
-func (c *TaskClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Task = append(c.inters.Task, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `account.Intercept(f(g(h())))`.
+func (c *AccountClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Account = append(c.inters.Account, interceptors...)
 }
 
-// Create returns a builder for creating a Task entity.
-func (c *TaskClient) Create() *TaskCreate {
-	mutation := newTaskMutation(c.config, OpCreate)
-	return &TaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Account entity.
+func (c *AccountClient) Create() *AccountCreate {
+	mutation := newAccountMutation(c.config, OpCreate)
+	return &AccountCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Task entities.
-func (c *TaskClient) CreateBulk(builders ...*TaskCreate) *TaskCreateBulk {
-	return &TaskCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Account entities.
+func (c *AccountClient) CreateBulk(builders ...*AccountCreate) *AccountCreateBulk {
+	return &AccountCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *TaskClient) MapCreateBulk(slice any, setFunc func(*TaskCreate, int)) *TaskCreateBulk {
+func (c *AccountClient) MapCreateBulk(slice any, setFunc func(*AccountCreate, int)) *AccountCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &TaskCreateBulk{err: fmt.Errorf("calling to TaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &AccountCreateBulk{err: fmt.Errorf("calling to AccountClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*TaskCreate, rv.Len())
+	builders := make([]*AccountCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &TaskCreateBulk{config: c.config, builders: builders}
+	return &AccountCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Task.
-func (c *TaskClient) Update() *TaskUpdate {
-	mutation := newTaskMutation(c.config, OpUpdate)
-	return &TaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Account.
+func (c *AccountClient) Update() *AccountUpdate {
+	mutation := newAccountMutation(c.config, OpUpdate)
+	return &AccountUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *TaskClient) UpdateOne(_m *Task) *TaskUpdateOne {
-	mutation := newTaskMutation(c.config, OpUpdateOne, withTask(_m))
-	return &TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AccountClient) UpdateOne(_m *Account) *AccountUpdateOne {
+	mutation := newAccountMutation(c.config, OpUpdateOne, withAccount(_m))
+	return &AccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TaskClient) UpdateOneID(id uuid.UUID) *TaskUpdateOne {
-	mutation := newTaskMutation(c.config, OpUpdateOne, withTaskID(id))
-	return &TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AccountClient) UpdateOneID(id uuid.UUID) *AccountUpdateOne {
+	mutation := newAccountMutation(c.config, OpUpdateOne, withAccountID(id))
+	return &AccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Task.
-func (c *TaskClient) Delete() *TaskDelete {
-	mutation := newTaskMutation(c.config, OpDelete)
-	return &TaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Account.
+func (c *AccountClient) Delete() *AccountDelete {
+	mutation := newAccountMutation(c.config, OpDelete)
+	return &AccountDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *TaskClient) DeleteOne(_m *Task) *TaskDeleteOne {
+func (c *AccountClient) DeleteOne(_m *Account) *AccountDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TaskClient) DeleteOneID(id uuid.UUID) *TaskDeleteOne {
-	builder := c.Delete().Where(task.ID(id))
+func (c *AccountClient) DeleteOneID(id uuid.UUID) *AccountDeleteOne {
+	builder := c.Delete().Where(account.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &TaskDeleteOne{builder}
+	return &AccountDeleteOne{builder}
 }
 
-// Query returns a query builder for Task.
-func (c *TaskClient) Query() *TaskQuery {
-	return &TaskQuery{
+// Query returns a query builder for Account.
+func (c *AccountClient) Query() *AccountQuery {
+	return &AccountQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeTask},
+		ctx:    &QueryContext{Type: TypeAccount},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Task entity by its id.
-func (c *TaskClient) Get(ctx context.Context, id uuid.UUID) (*Task, error) {
-	return c.Query().Where(task.ID(id)).Only(ctx)
+// Get returns a Account entity by its id.
+func (c *AccountClient) Get(ctx context.Context, id uuid.UUID) (*Account, error) {
+	return c.Query().Where(account.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TaskClient) GetX(ctx context.Context, id uuid.UUID) *Task {
+func (c *AccountClient) GetX(ctx context.Context, id uuid.UUID) *Account {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -316,15 +336,15 @@ func (c *TaskClient) GetX(ctx context.Context, id uuid.UUID) *Task {
 	return obj
 }
 
-// QueryOwner queries the owner edge of a Task.
-func (c *TaskClient) QueryOwner(_m *Task) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
+// QueryLegacy queries the legacy edge of a Account.
+func (c *AccountClient) QueryLegacy(_m *Account) *LegacyQuery {
+	query := (&LegacyClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(task.Table, task.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, task.OwnerTable, task.OwnerColumn),
+			sqlgraph.From(account.Table, account.FieldID, id),
+			sqlgraph.To(legacy.Table, legacy.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, account.LegacyTable, account.LegacyColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -333,27 +353,341 @@ func (c *TaskClient) QueryOwner(_m *Task) *UserQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *TaskClient) Hooks() []Hook {
-	return c.hooks.Task
+func (c *AccountClient) Hooks() []Hook {
+	return c.hooks.Account
 }
 
 // Interceptors returns the client interceptors.
-func (c *TaskClient) Interceptors() []Interceptor {
-	return c.inters.Task
+func (c *AccountClient) Interceptors() []Interceptor {
+	return c.inters.Account
 }
 
-func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error) {
+func (c *AccountClient) mutate(ctx context.Context, m *AccountMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&TaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AccountCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&TaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AccountUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&TaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&AccountDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Task mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Account mutation op: %q", m.Op())
+	}
+}
+
+// LegacyClient is a client for the Legacy schema.
+type LegacyClient struct {
+	config
+}
+
+// NewLegacyClient returns a client for the Legacy from the given config.
+func NewLegacyClient(c config) *LegacyClient {
+	return &LegacyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `legacy.Hooks(f(g(h())))`.
+func (c *LegacyClient) Use(hooks ...Hook) {
+	c.hooks.Legacy = append(c.hooks.Legacy, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `legacy.Intercept(f(g(h())))`.
+func (c *LegacyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Legacy = append(c.inters.Legacy, interceptors...)
+}
+
+// Create returns a builder for creating a Legacy entity.
+func (c *LegacyClient) Create() *LegacyCreate {
+	mutation := newLegacyMutation(c.config, OpCreate)
+	return &LegacyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Legacy entities.
+func (c *LegacyClient) CreateBulk(builders ...*LegacyCreate) *LegacyCreateBulk {
+	return &LegacyCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LegacyClient) MapCreateBulk(slice any, setFunc func(*LegacyCreate, int)) *LegacyCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LegacyCreateBulk{err: fmt.Errorf("calling to LegacyClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LegacyCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LegacyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Legacy.
+func (c *LegacyClient) Update() *LegacyUpdate {
+	mutation := newLegacyMutation(c.config, OpUpdate)
+	return &LegacyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LegacyClient) UpdateOne(_m *Legacy) *LegacyUpdateOne {
+	mutation := newLegacyMutation(c.config, OpUpdateOne, withLegacy(_m))
+	return &LegacyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LegacyClient) UpdateOneID(id uuid.UUID) *LegacyUpdateOne {
+	mutation := newLegacyMutation(c.config, OpUpdateOne, withLegacyID(id))
+	return &LegacyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Legacy.
+func (c *LegacyClient) Delete() *LegacyDelete {
+	mutation := newLegacyMutation(c.config, OpDelete)
+	return &LegacyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LegacyClient) DeleteOne(_m *Legacy) *LegacyDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LegacyClient) DeleteOneID(id uuid.UUID) *LegacyDeleteOne {
+	builder := c.Delete().Where(legacy.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LegacyDeleteOne{builder}
+}
+
+// Query returns a query builder for Legacy.
+func (c *LegacyClient) Query() *LegacyQuery {
+	return &LegacyQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLegacy},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Legacy entity by its id.
+func (c *LegacyClient) Get(ctx context.Context, id uuid.UUID) (*Legacy, error) {
+	return c.Query().Where(legacy.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LegacyClient) GetX(ctx context.Context, id uuid.UUID) *Legacy {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a Legacy.
+func (c *LegacyClient) QueryOwner(_m *Legacy) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(legacy.Table, legacy.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, legacy.OwnerTable, legacy.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAccounts queries the accounts edge of a Legacy.
+func (c *LegacyClient) QueryAccounts(_m *Legacy) *AccountQuery {
+	query := (&AccountClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(legacy.Table, legacy.FieldID, id),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, legacy.AccountsTable, legacy.AccountsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LegacyClient) Hooks() []Hook {
+	return c.hooks.Legacy
+}
+
+// Interceptors returns the client interceptors.
+func (c *LegacyClient) Interceptors() []Interceptor {
+	return c.inters.Legacy
+}
+
+func (c *LegacyClient) mutate(ctx context.Context, m *LegacyMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LegacyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LegacyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LegacyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LegacyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Legacy mutation op: %q", m.Op())
+	}
+}
+
+// StakeholderClient is a client for the Stakeholder schema.
+type StakeholderClient struct {
+	config
+}
+
+// NewStakeholderClient returns a client for the Stakeholder from the given config.
+func NewStakeholderClient(c config) *StakeholderClient {
+	return &StakeholderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `stakeholder.Hooks(f(g(h())))`.
+func (c *StakeholderClient) Use(hooks ...Hook) {
+	c.hooks.Stakeholder = append(c.hooks.Stakeholder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `stakeholder.Intercept(f(g(h())))`.
+func (c *StakeholderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Stakeholder = append(c.inters.Stakeholder, interceptors...)
+}
+
+// Create returns a builder for creating a Stakeholder entity.
+func (c *StakeholderClient) Create() *StakeholderCreate {
+	mutation := newStakeholderMutation(c.config, OpCreate)
+	return &StakeholderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Stakeholder entities.
+func (c *StakeholderClient) CreateBulk(builders ...*StakeholderCreate) *StakeholderCreateBulk {
+	return &StakeholderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StakeholderClient) MapCreateBulk(slice any, setFunc func(*StakeholderCreate, int)) *StakeholderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StakeholderCreateBulk{err: fmt.Errorf("calling to StakeholderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StakeholderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StakeholderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Stakeholder.
+func (c *StakeholderClient) Update() *StakeholderUpdate {
+	mutation := newStakeholderMutation(c.config, OpUpdate)
+	return &StakeholderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StakeholderClient) UpdateOne(_m *Stakeholder) *StakeholderUpdateOne {
+	mutation := newStakeholderMutation(c.config, OpUpdateOne, withStakeholder(_m))
+	return &StakeholderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StakeholderClient) UpdateOneID(id uuid.UUID) *StakeholderUpdateOne {
+	mutation := newStakeholderMutation(c.config, OpUpdateOne, withStakeholderID(id))
+	return &StakeholderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Stakeholder.
+func (c *StakeholderClient) Delete() *StakeholderDelete {
+	mutation := newStakeholderMutation(c.config, OpDelete)
+	return &StakeholderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StakeholderClient) DeleteOne(_m *Stakeholder) *StakeholderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StakeholderClient) DeleteOneID(id uuid.UUID) *StakeholderDeleteOne {
+	builder := c.Delete().Where(stakeholder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StakeholderDeleteOne{builder}
+}
+
+// Query returns a query builder for Stakeholder.
+func (c *StakeholderClient) Query() *StakeholderQuery {
+	return &StakeholderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStakeholder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Stakeholder entity by its id.
+func (c *StakeholderClient) Get(ctx context.Context, id uuid.UUID) (*Stakeholder, error) {
+	return c.Query().Where(stakeholder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StakeholderClient) GetX(ctx context.Context, id uuid.UUID) *Stakeholder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a Stakeholder.
+func (c *StakeholderClient) QueryOwner(_m *Stakeholder) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, stakeholder.OwnerTable, stakeholder.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StakeholderClient) Hooks() []Hook {
+	return c.hooks.Stakeholder
+}
+
+// Interceptors returns the client interceptors.
+func (c *StakeholderClient) Interceptors() []Interceptor {
+	return c.inters.Stakeholder
+}
+
+func (c *StakeholderClient) mutate(ctx context.Context, m *StakeholderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StakeholderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StakeholderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StakeholderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StakeholderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Stakeholder mutation op: %q", m.Op())
 	}
 }
 
@@ -465,6 +799,38 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	return obj
 }
 
+// QueryStakeholders queries the stakeholders edge of a User.
+func (c *UserClient) QueryStakeholders(_m *User) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.StakeholdersTable, user.StakeholdersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLegacies queries the legacies edge of a User.
+func (c *UserClient) QueryLegacies(_m *User) *LegacyQuery {
+	query := (&LegacyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(legacy.Table, legacy.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LegaciesTable, user.LegaciesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -493,9 +859,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Task, User []ent.Hook
+		Account, Legacy, Stakeholder, User []ent.Hook
 	}
 	inters struct {
-		Task, User []ent.Interceptor
+		Account, Legacy, Stakeholder, User []ent.Interceptor
 	}
 )

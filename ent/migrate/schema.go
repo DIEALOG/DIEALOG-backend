@@ -8,22 +8,69 @@ import (
 )
 
 var (
-	// TasksColumns holds the columns for the "tasks" table.
-	TasksColumns = []*schema.Column{
+	// AccountsColumns holds the columns for the "accounts" table.
+	AccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "title", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"Google", "Facebook", "Twitter", "Apple", "Discord", "Microsoft", "KakaoTalk", "GitHub", "Other"}},
+		{Name: "account_type_other", Type: field.TypeString, Nullable: true},
+		{Name: "account_id", Type: field.TypeString},
+		{Name: "account_password", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "task_owner", Type: field.TypeUUID},
+		{Name: "legacy_accounts", Type: field.TypeUUID},
 	}
-	// TasksTable holds the schema information for the "tasks" table.
-	TasksTable = &schema.Table{
-		Name:       "tasks",
-		Columns:    TasksColumns,
-		PrimaryKey: []*schema.Column{TasksColumns[0]},
+	// AccountsTable holds the schema information for the "accounts" table.
+	AccountsTable = &schema.Table{
+		Name:       "accounts",
+		Columns:    AccountsColumns,
+		PrimaryKey: []*schema.Column{AccountsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "tasks_users_owner",
-				Columns:    []*schema.Column{TasksColumns[3]},
+				Symbol:     "accounts_legacies_accounts",
+				Columns:    []*schema.Column{AccountsColumns[6]},
+				RefColumns: []*schema.Column{LegaciesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// LegaciesColumns holds the columns for the "legacies" table.
+	LegaciesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_legacies", Type: field.TypeUUID},
+	}
+	// LegaciesTable holds the schema information for the "legacies" table.
+	LegaciesTable = &schema.Table{
+		Name:       "legacies",
+		Columns:    LegaciesColumns,
+		PrimaryKey: []*schema.Column{LegaciesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "legacies_users_legacies",
+				Columns:    []*schema.Column{LegaciesColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// StakeholdersColumns holds the columns for the "stakeholders" table.
+	StakeholdersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "phone", Type: field.TypeString, Nullable: true},
+		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_stakeholders", Type: field.TypeUUID},
+	}
+	// StakeholdersTable holds the schema information for the "stakeholders" table.
+	StakeholdersTable = &schema.Table{
+		Name:       "stakeholders",
+		Columns:    StakeholdersColumns,
+		PrimaryKey: []*schema.Column{StakeholdersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stakeholders_users_stakeholders",
+				Columns:    []*schema.Column{StakeholdersColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -35,6 +82,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
+		{Name: "testament", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -45,11 +93,15 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		TasksTable,
+		AccountsTable,
+		LegaciesTable,
+		StakeholdersTable,
 		UsersTable,
 	}
 )
 
 func init() {
-	TasksTable.ForeignKeys[0].RefTable = UsersTable
+	AccountsTable.ForeignKeys[0].RefTable = LegaciesTable
+	LegaciesTable.ForeignKeys[0].RefTable = UsersTable
+	StakeholdersTable.ForeignKeys[0].RefTable = UsersTable
 }

@@ -46,6 +46,24 @@ func (_m *ProfileUseCase) GetProfileByID(c context.Context, userID *uuid.UUID) (
 	return r0, r1
 }
 
+// UpdateTestament provides a mock function with given fields: c, userID, testament
+func (_m *ProfileUseCase) UpdateTestament(c context.Context, userID *uuid.UUID, testament string) error {
+	ret := _m.Called(c, userID, testament)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateTestament")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) error); ok {
+		r0 = rf(c, userID, testament)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewProfileUseCase creates a new instance of ProfileUseCase. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewProfileUseCase(t interface {

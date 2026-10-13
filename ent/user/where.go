@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
 )
@@ -68,6 +69,11 @@ func Email(v string) predicate.User {
 // Password applies equality check predicate on the "password" field. It's identical to PasswordEQ.
 func Password(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPassword, v))
+}
+
+// Testament applies equality check predicate on the "testament" field. It's identical to TestamentEQ.
+func Testament(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTestament, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -270,6 +276,71 @@ func PasswordContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldPassword, v))
 }
 
+// TestamentEQ applies the EQ predicate on the "testament" field.
+func TestamentEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTestament, v))
+}
+
+// TestamentNEQ applies the NEQ predicate on the "testament" field.
+func TestamentNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldTestament, v))
+}
+
+// TestamentIn applies the In predicate on the "testament" field.
+func TestamentIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldTestament, vs...))
+}
+
+// TestamentNotIn applies the NotIn predicate on the "testament" field.
+func TestamentNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldTestament, vs...))
+}
+
+// TestamentGT applies the GT predicate on the "testament" field.
+func TestamentGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldTestament, v))
+}
+
+// TestamentGTE applies the GTE predicate on the "testament" field.
+func TestamentGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldTestament, v))
+}
+
+// TestamentLT applies the LT predicate on the "testament" field.
+func TestamentLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldTestament, v))
+}
+
+// TestamentLTE applies the LTE predicate on the "testament" field.
+func TestamentLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldTestament, v))
+}
+
+// TestamentContains applies the Contains predicate on the "testament" field.
+func TestamentContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldTestament, v))
+}
+
+// TestamentHasPrefix applies the HasPrefix predicate on the "testament" field.
+func TestamentHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldTestament, v))
+}
+
+// TestamentHasSuffix applies the HasSuffix predicate on the "testament" field.
+func TestamentHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldTestament, v))
+}
+
+// TestamentEqualFold applies the EqualFold predicate on the "testament" field.
+func TestamentEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldTestament, v))
+}
+
+// TestamentContainsFold applies the ContainsFold predicate on the "testament" field.
+func TestamentContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldTestament, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -308,6 +379,52 @@ func CreatedAtLT(v time.Time) predicate.User {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasStakeholders applies the HasEdge predicate on the "stakeholders" edge.
+func HasStakeholders() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StakeholdersTable, StakeholdersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStakeholdersWith applies the HasEdge predicate on the "stakeholders" edge with a given conditions (other predicates).
+func HasStakeholdersWith(preds ...predicate.Stakeholder) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newStakeholdersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLegacies applies the HasEdge predicate on the "legacies" edge.
+func HasLegacies() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LegaciesTable, LegaciesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLegaciesWith applies the HasEdge predicate on the "legacies" edge with a given conditions (other predicates).
+func HasLegaciesWith(preds ...predicate.Legacy) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newLegaciesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

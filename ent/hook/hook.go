@@ -9,16 +9,40 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent"
 )
 
-// The TaskFunc type is an adapter to allow the use of ordinary
-// function as Task mutator.
-type TaskFunc func(context.Context, *ent.TaskMutation) (ent.Value, error)
+// The AccountFunc type is an adapter to allow the use of ordinary
+// function as Account mutator.
+type AccountFunc func(context.Context, *ent.AccountMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f TaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.TaskMutation); ok {
+func (f AccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AccountMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountMutation", m)
+}
+
+// The LegacyFunc type is an adapter to allow the use of ordinary
+// function as Legacy mutator.
+type LegacyFunc func(context.Context, *ent.LegacyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LegacyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LegacyMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LegacyMutation", m)
+}
+
+// The StakeholderFunc type is an adapter to allow the use of ordinary
+// function as Stakeholder mutator.
+type StakeholderFunc func(context.Context, *ent.StakeholderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StakeholderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StakeholderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StakeholderMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

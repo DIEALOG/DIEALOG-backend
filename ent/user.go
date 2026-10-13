@@ -24,9 +24,43 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
+	// Testament holds the value of the "testament" field.
+	Testament string `json:"testament,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt    time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Stakeholders holds the value of the stakeholders edge.
+	Stakeholders []*Stakeholder `json:"stakeholders,omitempty"`
+	// Legacies holds the value of the legacies edge.
+	Legacies []*Legacy `json:"legacies,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// StakeholdersOrErr returns the Stakeholders value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) StakeholdersOrErr() ([]*Stakeholder, error) {
+	if e.loadedTypes[0] {
+		return e.Stakeholders, nil
+	}
+	return nil, &NotLoadedError{edge: "stakeholders"}
+}
+
+// LegaciesOrErr returns the Legacies value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LegaciesOrErr() ([]*Legacy, error) {
+	if e.loadedTypes[1] {
+		return e.Legacies, nil
+	}
+	return nil, &NotLoadedError{edge: "legacies"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,7 +68,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldName, user.FieldEmail, user.FieldPassword:
+		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldTestament:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -79,6 +113,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Password = value.String
 			}
+		case user.FieldTestament:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field testament", values[i])
+			} else if value.Valid {
+				_m.Testament = value.String
+			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -96,6 +136,16 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryStakeholders queries the "stakeholders" edge of the User entity.
+func (_m *User) QueryStakeholders() *StakeholderQuery {
+	return NewUserClient(_m.config).QueryStakeholders(_m)
+}
+
+// QueryLegacies queries the "legacies" edge of the User entity.
+func (_m *User) QueryLegacies() *LegacyQuery {
+	return NewUserClient(_m.config).QueryLegacies(_m)
 }
 
 // Update returns a builder for updating this User.
@@ -129,6 +179,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("password=")
 	builder.WriteString(_m.Password)
+	builder.WriteString(", ")
+	builder.WriteString("testament=")
+	builder.WriteString(_m.Testament)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

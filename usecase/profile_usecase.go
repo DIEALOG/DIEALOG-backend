@@ -32,5 +32,25 @@ func (pu *profileUseCase) GetProfileByID(c context.Context, userID *domain.ID) (
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	return &domain.Profile{Name: user.Name, Email: user.Email}, nil
+	return &domain.Profile{
+		Name:         user.Name,
+		Email:        user.Email,
+		Testament:    user.Testament,
+		Stakeholders: user.Stakeholders,
+	}, nil
+}
+
+func (pu *profileUseCase) UpdateTestament(c context.Context, userID *domain.ID, testament string) error {
+	ctx, cancel := context.WithTimeout(c, pu.contextTimeout)
+	defer cancel()
+
+	err := pu.userRepository.UpdateTestament(ctx, userID, testament)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return domain.NewNotFoundError(err)
+		}
+		return domain.NewInternalServerError(err)
+	}
+
+	return nil
 }

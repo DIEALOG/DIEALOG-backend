@@ -12,8 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// Task is the client for interacting with the Task builders.
-	Task *TaskClient
+	// Account is the client for interacting with the Account builders.
+	Account *AccountClient
+	// Legacy is the client for interacting with the Legacy builders.
+	Legacy *LegacyClient
+	// Stakeholder is the client for interacting with the Stakeholder builders.
+	Stakeholder *StakeholderClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -147,7 +151,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.Task = NewTaskClient(tx.config)
+	tx.Account = NewAccountClient(tx.config)
+	tx.Legacy = NewLegacyClient(tx.config)
+	tx.Stakeholder = NewStakeholderClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -158,7 +164,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Task.QueryXXX(), the query will be executed
+// applies a query, for example: Account.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -20,10 +21,30 @@ const (
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldTestament holds the string denoting the testament field in the database.
+	FieldTestament = "testament"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
+	EdgeStakeholders = "stakeholders"
+	// EdgeLegacies holds the string denoting the legacies edge name in mutations.
+	EdgeLegacies = "legacies"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// StakeholdersTable is the table that holds the stakeholders relation/edge.
+	StakeholdersTable = "stakeholders"
+	// StakeholdersInverseTable is the table name for the Stakeholder entity.
+	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
+	StakeholdersInverseTable = "stakeholders"
+	// StakeholdersColumn is the table column denoting the stakeholders relation/edge.
+	StakeholdersColumn = "user_stakeholders"
+	// LegaciesTable is the table that holds the legacies relation/edge.
+	LegaciesTable = "legacies"
+	// LegaciesInverseTable is the table name for the Legacy entity.
+	// It exists in this package in order to avoid circular dependency with the "legacy" package.
+	LegaciesInverseTable = "legacies"
+	// LegaciesColumn is the table column denoting the legacies relation/edge.
+	LegaciesColumn = "user_legacies"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -32,6 +53,7 @@ var Columns = []string{
 	FieldName,
 	FieldEmail,
 	FieldPassword,
+	FieldTestament,
 	FieldCreatedAt,
 }
 
@@ -52,6 +74,8 @@ var (
 	EmailValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
+	// DefaultTestament holds the default value on creation for the "testament" field.
+	DefaultTestament string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -81,7 +105,54 @@ func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
+// ByTestament orders the results by the testament field.
+func ByTestament(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTestament, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByStakeholdersCount orders the results by stakeholders count.
+func ByStakeholdersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStakeholdersStep(), opts...)
+	}
+}
+
+// ByStakeholders orders the results by stakeholders terms.
+func ByStakeholders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStakeholdersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLegaciesCount orders the results by legacies count.
+func ByLegaciesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLegaciesStep(), opts...)
+	}
+}
+
+// ByLegacies orders the results by legacies terms.
+func ByLegacies(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLegaciesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newStakeholdersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StakeholdersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StakeholdersTable, StakeholdersColumn),
+	)
+}
+func newLegaciesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LegaciesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LegaciesTable, LegaciesColumn),
+	)
 }

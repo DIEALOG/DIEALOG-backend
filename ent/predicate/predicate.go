@@ -6,8 +6,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Task is the predicate function for task builders.
-type Task func(*sql.Selector)
+// Account is the predicate function for account builders.
+type Account func(*sql.Selector)
+
+// Legacy is the predicate function for legacy builders.
+type Legacy func(*sql.Selector)
+
+// Stakeholder is the predicate function for stakeholder builders.
+type Stakeholder func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

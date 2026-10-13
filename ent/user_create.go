@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -36,6 +38,20 @@ func (_c *UserCreate) SetEmail(v string) *UserCreate {
 // SetPassword sets the "password" field.
 func (_c *UserCreate) SetPassword(v string) *UserCreate {
 	_c.mutation.SetPassword(v)
+	return _c
+}
+
+// SetTestament sets the "testament" field.
+func (_c *UserCreate) SetTestament(v string) *UserCreate {
+	_c.mutation.SetTestament(v)
+	return _c
+}
+
+// SetNillableTestament sets the "testament" field if the given value is not nil.
+func (_c *UserCreate) SetNillableTestament(v *string) *UserCreate {
+	if v != nil {
+		_c.SetTestament(*v)
+	}
 	return _c
 }
 
@@ -65,6 +81,36 @@ func (_c *UserCreate) SetNillableID(v *uuid.UUID) *UserCreate {
 		_c.SetID(*v)
 	}
 	return _c
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_c *UserCreate) AddStakeholderIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddStakeholderIDs(ids...)
+	return _c
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_c *UserCreate) AddStakeholders(v ...*Stakeholder) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStakeholderIDs(ids...)
+}
+
+// AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
+func (_c *UserCreate) AddLegacyIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddLegacyIDs(ids...)
+	return _c
+}
+
+// AddLegacies adds the "legacies" edges to the Legacy entity.
+func (_c *UserCreate) AddLegacies(v ...*Legacy) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLegacyIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -102,6 +148,10 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
+	if _, ok := _c.mutation.Testament(); !ok {
+		v := user.DefaultTestament
+		_c.mutation.SetTestament(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -137,6 +187,9 @@ func (_c *UserCreate) check() error {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Testament(); !ok {
+		return &ValidationError{Name: "testament", err: errors.New(`ent: missing required field "User.testament"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -188,9 +241,45 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 		_node.Password = value
 	}
+	if value, ok := _c.mutation.Testament(); ok {
+		_spec.SetField(user.FieldTestament, field.TypeString, value)
+		_node.Testament = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := _c.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LegaciesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

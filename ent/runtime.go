@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/schema"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/task"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -15,20 +17,52 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	taskFields := schema.Task{}.Fields()
-	_ = taskFields
-	// taskDescTitle is the schema descriptor for title field.
-	taskDescTitle := taskFields[1].Descriptor()
-	// task.TitleValidator is a validator for the "title" field. It is called by the builders before save.
-	task.TitleValidator = taskDescTitle.Validators[0].(func(string) error)
-	// taskDescCreatedAt is the schema descriptor for created_at field.
-	taskDescCreatedAt := taskFields[2].Descriptor()
-	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
-	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
-	// taskDescID is the schema descriptor for id field.
-	taskDescID := taskFields[0].Descriptor()
-	// task.DefaultID holds the default value on creation for the id field.
-	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
+	accountFields := schema.Account{}.Fields()
+	_ = accountFields
+	// accountDescAccountID is the schema descriptor for account_id field.
+	accountDescAccountID := accountFields[3].Descriptor()
+	// account.AccountIDValidator is a validator for the "account_id" field. It is called by the builders before save.
+	account.AccountIDValidator = accountDescAccountID.Validators[0].(func(string) error)
+	// accountDescAccountPassword is the schema descriptor for account_password field.
+	accountDescAccountPassword := accountFields[4].Descriptor()
+	// account.AccountPasswordValidator is a validator for the "account_password" field. It is called by the builders before save.
+	account.AccountPasswordValidator = accountDescAccountPassword.Validators[0].(func(string) error)
+	// accountDescCreatedAt is the schema descriptor for created_at field.
+	accountDescCreatedAt := accountFields[5].Descriptor()
+	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
+	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
+	// accountDescID is the schema descriptor for id field.
+	accountDescID := accountFields[0].Descriptor()
+	// account.DefaultID holds the default value on creation for the id field.
+	account.DefaultID = accountDescID.Default.(func() uuid.UUID)
+	legacyFields := schema.Legacy{}.Fields()
+	_ = legacyFields
+	// legacyDescName is the schema descriptor for name field.
+	legacyDescName := legacyFields[1].Descriptor()
+	// legacy.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	legacy.NameValidator = legacyDescName.Validators[0].(func(string) error)
+	// legacyDescCreatedAt is the schema descriptor for created_at field.
+	legacyDescCreatedAt := legacyFields[2].Descriptor()
+	// legacy.DefaultCreatedAt holds the default value on creation for the created_at field.
+	legacy.DefaultCreatedAt = legacyDescCreatedAt.Default.(func() time.Time)
+	// legacyDescID is the schema descriptor for id field.
+	legacyDescID := legacyFields[0].Descriptor()
+	// legacy.DefaultID holds the default value on creation for the id field.
+	legacy.DefaultID = legacyDescID.Default.(func() uuid.UUID)
+	stakeholderFields := schema.Stakeholder{}.Fields()
+	_ = stakeholderFields
+	// stakeholderDescName is the schema descriptor for name field.
+	stakeholderDescName := stakeholderFields[1].Descriptor()
+	// stakeholder.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	stakeholder.NameValidator = stakeholderDescName.Validators[0].(func(string) error)
+	// stakeholderDescCreatedAt is the schema descriptor for created_at field.
+	stakeholderDescCreatedAt := stakeholderFields[4].Descriptor()
+	// stakeholder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	stakeholder.DefaultCreatedAt = stakeholderDescCreatedAt.Default.(func() time.Time)
+	// stakeholderDescID is the schema descriptor for id field.
+	stakeholderDescID := stakeholderFields[0].Descriptor()
+	// stakeholder.DefaultID holds the default value on creation for the id field.
+	stakeholder.DefaultID = stakeholderDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.
@@ -43,8 +77,12 @@ func init() {
 	userDescPassword := userFields[3].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescTestament is the schema descriptor for testament field.
+	userDescTestament := userFields[4].Descriptor()
+	// user.DefaultTestament holds the default value on creation for the testament field.
+	user.DefaultTestament = userDescTestament.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[4].Descriptor()
+	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescID is the schema descriptor for id field.

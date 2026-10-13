@@ -10,7 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -69,9 +72,95 @@ func (_u *UserUpdate) SetNillablePassword(v *string) *UserUpdate {
 	return _u
 }
 
+// SetTestament sets the "testament" field.
+func (_u *UserUpdate) SetTestament(v string) *UserUpdate {
+	_u.mutation.SetTestament(v)
+	return _u
+}
+
+// SetNillableTestament sets the "testament" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableTestament(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetTestament(*v)
+	}
+	return _u
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_u *UserUpdate) AddStakeholderIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddStakeholderIDs(ids...)
+	return _u
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_u *UserUpdate) AddStakeholders(v ...*Stakeholder) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderIDs(ids...)
+}
+
+// AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
+func (_u *UserUpdate) AddLegacyIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddLegacyIDs(ids...)
+	return _u
+}
+
+// AddLegacies adds the "legacies" edges to the Legacy entity.
+func (_u *UserUpdate) AddLegacies(v ...*Legacy) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLegacyIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
+func (_u *UserUpdate) ClearStakeholders() *UserUpdate {
+	_u.mutation.ClearStakeholders()
+	return _u
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to Stakeholder entities by IDs.
+func (_u *UserUpdate) RemoveStakeholderIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveStakeholderIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholders removes "stakeholders" edges to Stakeholder entities.
+func (_u *UserUpdate) RemoveStakeholders(v ...*Stakeholder) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearLegacies clears all "legacies" edges to the Legacy entity.
+func (_u *UserUpdate) ClearLegacies() *UserUpdate {
+	_u.mutation.ClearLegacies()
+	return _u
+}
+
+// RemoveLegacyIDs removes the "legacies" edge to Legacy entities by IDs.
+func (_u *UserUpdate) RemoveLegacyIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveLegacyIDs(ids...)
+	return _u
+}
+
+// RemoveLegacies removes "legacies" edges to Legacy entities.
+func (_u *UserUpdate) RemoveLegacies(v ...*Legacy) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLegacyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -142,6 +231,99 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Testament(); ok {
+		_spec.SetField(user.FieldTestament, field.TypeString, value)
+	}
+	if _u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholdersIDs(); len(nodes) > 0 && !_u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LegaciesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLegaciesIDs(); len(nodes) > 0 && !_u.mutation.LegaciesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LegaciesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -204,9 +386,95 @@ func (_u *UserUpdateOne) SetNillablePassword(v *string) *UserUpdateOne {
 	return _u
 }
 
+// SetTestament sets the "testament" field.
+func (_u *UserUpdateOne) SetTestament(v string) *UserUpdateOne {
+	_u.mutation.SetTestament(v)
+	return _u
+}
+
+// SetNillableTestament sets the "testament" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableTestament(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetTestament(*v)
+	}
+	return _u
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_u *UserUpdateOne) AddStakeholderIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddStakeholderIDs(ids...)
+	return _u
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_u *UserUpdateOne) AddStakeholders(v ...*Stakeholder) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderIDs(ids...)
+}
+
+// AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
+func (_u *UserUpdateOne) AddLegacyIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddLegacyIDs(ids...)
+	return _u
+}
+
+// AddLegacies adds the "legacies" edges to the Legacy entity.
+func (_u *UserUpdateOne) AddLegacies(v ...*Legacy) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLegacyIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
+func (_u *UserUpdateOne) ClearStakeholders() *UserUpdateOne {
+	_u.mutation.ClearStakeholders()
+	return _u
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to Stakeholder entities by IDs.
+func (_u *UserUpdateOne) RemoveStakeholderIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveStakeholderIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholders removes "stakeholders" edges to Stakeholder entities.
+func (_u *UserUpdateOne) RemoveStakeholders(v ...*Stakeholder) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearLegacies clears all "legacies" edges to the Legacy entity.
+func (_u *UserUpdateOne) ClearLegacies() *UserUpdateOne {
+	_u.mutation.ClearLegacies()
+	return _u
+}
+
+// RemoveLegacyIDs removes the "legacies" edge to Legacy entities by IDs.
+func (_u *UserUpdateOne) RemoveLegacyIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveLegacyIDs(ids...)
+	return _u
+}
+
+// RemoveLegacies removes "legacies" edges to Legacy entities.
+func (_u *UserUpdateOne) RemoveLegacies(v ...*Legacy) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLegacyIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -306,6 +574,99 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Testament(); ok {
+		_spec.SetField(user.FieldTestament, field.TypeString, value)
+	}
+	if _u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholdersIDs(); len(nodes) > 0 && !_u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholdersTable,
+			Columns: []string{user.StakeholdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LegaciesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLegaciesIDs(); len(nodes) > 0 && !_u.mutation.LegaciesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LegaciesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LegaciesTable,
+			Columns: []string{user.LegaciesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: _u.config}
 	_spec.Assign = _node.assignValues

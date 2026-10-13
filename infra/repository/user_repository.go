@@ -18,21 +18,26 @@ func NewUserRepository(client *ent.Client) domain.UserRepository {
 	}
 }
 
-func (r *userRepository) Create(c context.Context, user *domain.User) (*domain.User, error) {
-	u, err := r.client.User.Create().
-		SetName(user.Name).
-		SetEmail(user.Email).
-		SetPassword(user.Password).
-		Save(c)
+func (r *userRepository) Create(c context.Context, u *domain.User) (*domain.User, error) {
+	create := r.client.User.Create().
+		SetName(u.Name).
+		SetEmail(u.Email).
+		SetPassword(u.Password)
+
+	if u.Testament != "" {
+		create.SetTestament(u.Testament)
+	}
+
+	saved, err := create.Save(c)
 	if err != nil {
 		return nil, err
 	}
 
-	return toDomainUser(u), nil
+	return toDomainUser(saved), nil
 }
 
 func (r *userRepository) FindAll(c context.Context) ([]*domain.User, error) {
-	u, err := r.client.User.Query().All(c)
+	u, err := r.client.User.Query().WithStakeholders().All(c)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +53,7 @@ func (r *userRepository) FindAll(c context.Context) ([]*domain.User, error) {
 func (r *userRepository) FindByEmail(c context.Context, email string) (*domain.User, error) {
 	u, err := r.client.User.Query().Where(
 		user.EmailEQ(email),
-	).Only(c)
+	).WithStakeholders().Only(c)
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +62,18 @@ func (r *userRepository) FindByEmail(c context.Context, email string) (*domain.U
 }
 
 func (r *userRepository) FindByID(c context.Context, id *domain.ID) (*domain.User, error) {
-	u, err := r.client.User.Get(c, *id)
+	u, err := r.client.User.Query().Where(
+		user.IDEQ(*id),
+	).WithStakeholders().Only(c)
 	if err != nil {
 		return nil, err
 	}
 
 	return toDomainUser(u), err
+}
+
+func (r *userRepository) UpdateTestament(c context.Context, id *domain.ID, testament string) error {
+	return r.client.User.UpdateOneID(*id).
+		SetTestament(testament).
+		Exec(c)
 }

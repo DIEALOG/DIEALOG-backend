@@ -136,6 +136,24 @@ func (_m *UserRepository) FindByID(c context.Context, id *uuid.UUID) (*domain.Us
 	return r0, r1
 }
 
+// UpdateTestament provides a mock function with given fields: c, id, testament
+func (_m *UserRepository) UpdateTestament(c context.Context, id *uuid.UUID, testament string) error {
+	ret := _m.Called(c, id, testament)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateTestament")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) error); ok {
+		r0 = rf(c, id, testament)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewUserRepository creates a new instance of UserRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewUserRepository(t interface {
