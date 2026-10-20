@@ -71,6 +71,16 @@ func Email(v string) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldEQ(FieldEmail, v))
 }
 
+// Relationship applies equality check predicate on the "relationship" field. It's identical to RelationshipEQ.
+func Relationship(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldRelationship, v))
+}
+
+// Message applies equality check predicate on the "message" field. It's identical to MessageEQ.
+func Message(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldMessage, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldEQ(FieldCreatedAt, v))
@@ -291,6 +301,146 @@ func EmailContainsFold(v string) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldContainsFold(FieldEmail, v))
 }
 
+// RelationshipEQ applies the EQ predicate on the "relationship" field.
+func RelationshipEQ(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldRelationship, v))
+}
+
+// RelationshipNEQ applies the NEQ predicate on the "relationship" field.
+func RelationshipNEQ(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNEQ(FieldRelationship, v))
+}
+
+// RelationshipIn applies the In predicate on the "relationship" field.
+func RelationshipIn(vs ...string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldIn(FieldRelationship, vs...))
+}
+
+// RelationshipNotIn applies the NotIn predicate on the "relationship" field.
+func RelationshipNotIn(vs ...string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNotIn(FieldRelationship, vs...))
+}
+
+// RelationshipGT applies the GT predicate on the "relationship" field.
+func RelationshipGT(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGT(FieldRelationship, v))
+}
+
+// RelationshipGTE applies the GTE predicate on the "relationship" field.
+func RelationshipGTE(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGTE(FieldRelationship, v))
+}
+
+// RelationshipLT applies the LT predicate on the "relationship" field.
+func RelationshipLT(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLT(FieldRelationship, v))
+}
+
+// RelationshipLTE applies the LTE predicate on the "relationship" field.
+func RelationshipLTE(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLTE(FieldRelationship, v))
+}
+
+// RelationshipContains applies the Contains predicate on the "relationship" field.
+func RelationshipContains(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldContains(FieldRelationship, v))
+}
+
+// RelationshipHasPrefix applies the HasPrefix predicate on the "relationship" field.
+func RelationshipHasPrefix(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldHasPrefix(FieldRelationship, v))
+}
+
+// RelationshipHasSuffix applies the HasSuffix predicate on the "relationship" field.
+func RelationshipHasSuffix(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldHasSuffix(FieldRelationship, v))
+}
+
+// RelationshipEqualFold applies the EqualFold predicate on the "relationship" field.
+func RelationshipEqualFold(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEqualFold(FieldRelationship, v))
+}
+
+// RelationshipContainsFold applies the ContainsFold predicate on the "relationship" field.
+func RelationshipContainsFold(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldContainsFold(FieldRelationship, v))
+}
+
+// MessageEQ applies the EQ predicate on the "message" field.
+func MessageEQ(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldMessage, v))
+}
+
+// MessageNEQ applies the NEQ predicate on the "message" field.
+func MessageNEQ(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNEQ(FieldMessage, v))
+}
+
+// MessageIn applies the In predicate on the "message" field.
+func MessageIn(vs ...string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldIn(FieldMessage, vs...))
+}
+
+// MessageNotIn applies the NotIn predicate on the "message" field.
+func MessageNotIn(vs ...string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNotIn(FieldMessage, vs...))
+}
+
+// MessageGT applies the GT predicate on the "message" field.
+func MessageGT(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGT(FieldMessage, v))
+}
+
+// MessageGTE applies the GTE predicate on the "message" field.
+func MessageGTE(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGTE(FieldMessage, v))
+}
+
+// MessageLT applies the LT predicate on the "message" field.
+func MessageLT(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLT(FieldMessage, v))
+}
+
+// MessageLTE applies the LTE predicate on the "message" field.
+func MessageLTE(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLTE(FieldMessage, v))
+}
+
+// MessageContains applies the Contains predicate on the "message" field.
+func MessageContains(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldContains(FieldMessage, v))
+}
+
+// MessageHasPrefix applies the HasPrefix predicate on the "message" field.
+func MessageHasPrefix(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldHasPrefix(FieldMessage, v))
+}
+
+// MessageHasSuffix applies the HasSuffix predicate on the "message" field.
+func MessageHasSuffix(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldHasSuffix(FieldMessage, v))
+}
+
+// MessageIsNil applies the IsNil predicate on the "message" field.
+func MessageIsNil() predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldIsNull(FieldMessage))
+}
+
+// MessageNotNil applies the NotNil predicate on the "message" field.
+func MessageNotNil() predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNotNull(FieldMessage))
+}
+
+// MessageEqualFold applies the EqualFold predicate on the "message" field.
+func MessageEqualFold(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEqualFold(FieldMessage, v))
+}
+
+// MessageContainsFold applies the ContainsFold predicate on the "message" field.
+func MessageContainsFold(v string) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldContainsFold(FieldMessage, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldEQ(FieldCreatedAt, v))
@@ -346,6 +496,52 @@ func HasOwner() predicate.Stakeholder {
 func HasOwnerWith(preds ...predicate.User) predicate.Stakeholder {
 	return predicate.Stakeholder(func(s *sql.Selector) {
 		step := newOwnerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGroups applies the HasEdge predicate on the "groups" edge.
+func HasGroups() predicate.Stakeholder {
+	return predicate.Stakeholder(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, GroupsTable, GroupsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGroupsWith applies the HasEdge predicate on the "groups" edge with a given conditions (other predicates).
+func HasGroupsWith(preds ...predicate.StakeholderGroup) predicate.Stakeholder {
+	return predicate.Stakeholder(func(s *sql.Selector) {
+		step := newGroupsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAccounts applies the HasEdge predicate on the "accounts" edge.
+func HasAccounts() predicate.Stakeholder {
+	return predicate.Stakeholder(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AccountsTable, AccountsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAccountsWith applies the HasEdge predicate on the "accounts" edge with a given conditions (other predicates).
+func HasAccountsWith(preds ...predicate.Account) predicate.Stakeholder {
+	return predicate.Stakeholder(func(s *sql.Selector) {
+		step := newAccountsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

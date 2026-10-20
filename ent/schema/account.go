@@ -28,15 +28,34 @@ func (Account) Fields() []ent.Field {
 				"Microsoft",
 				"KakaoTalk",
 				"GitHub",
+				"Telegram",
+				"Instagram",
 				"Other",
 			),
-		field.String("account_type_other").
+		field.String("type_name").
+			Optional().
+			Nillable(),
+		field.Enum("action").
+			Values(
+				"delete",
+				"remain",
+				"permission-move",
+				"backup-and-delete",
+				"other",
+			).
+			Default("remain"),
+		field.String("action_message").
+			Optional().
+			Nillable(),
+		field.String("data_location").
 			Optional().
 			Nillable(),
 		field.String("account_id").
-			NotEmpty(),
+			Optional().
+			Nillable(),
 		field.String("account_password").
-			NotEmpty(),
+			Optional().
+			Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
@@ -49,5 +68,6 @@ func (Account) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Immutable(),
+		edge.To("stakeholders", Stakeholder.Type),
 	}
 }

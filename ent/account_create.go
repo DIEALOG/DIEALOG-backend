@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 )
 
 // AccountCreate is the builder for creating a Account entity.
@@ -28,16 +29,58 @@ func (_c *AccountCreate) SetType(v account.Type) *AccountCreate {
 	return _c
 }
 
-// SetAccountTypeOther sets the "account_type_other" field.
-func (_c *AccountCreate) SetAccountTypeOther(v string) *AccountCreate {
-	_c.mutation.SetAccountTypeOther(v)
+// SetTypeName sets the "type_name" field.
+func (_c *AccountCreate) SetTypeName(v string) *AccountCreate {
+	_c.mutation.SetTypeName(v)
 	return _c
 }
 
-// SetNillableAccountTypeOther sets the "account_type_other" field if the given value is not nil.
-func (_c *AccountCreate) SetNillableAccountTypeOther(v *string) *AccountCreate {
+// SetNillableTypeName sets the "type_name" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableTypeName(v *string) *AccountCreate {
 	if v != nil {
-		_c.SetAccountTypeOther(*v)
+		_c.SetTypeName(*v)
+	}
+	return _c
+}
+
+// SetAction sets the "action" field.
+func (_c *AccountCreate) SetAction(v account.Action) *AccountCreate {
+	_c.mutation.SetAction(v)
+	return _c
+}
+
+// SetNillableAction sets the "action" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableAction(v *account.Action) *AccountCreate {
+	if v != nil {
+		_c.SetAction(*v)
+	}
+	return _c
+}
+
+// SetActionMessage sets the "action_message" field.
+func (_c *AccountCreate) SetActionMessage(v string) *AccountCreate {
+	_c.mutation.SetActionMessage(v)
+	return _c
+}
+
+// SetNillableActionMessage sets the "action_message" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableActionMessage(v *string) *AccountCreate {
+	if v != nil {
+		_c.SetActionMessage(*v)
+	}
+	return _c
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_c *AccountCreate) SetDataLocation(v string) *AccountCreate {
+	_c.mutation.SetDataLocation(v)
+	return _c
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableDataLocation(v *string) *AccountCreate {
+	if v != nil {
+		_c.SetDataLocation(*v)
 	}
 	return _c
 }
@@ -48,9 +91,25 @@ func (_c *AccountCreate) SetAccountID(v string) *AccountCreate {
 	return _c
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableAccountID(v *string) *AccountCreate {
+	if v != nil {
+		_c.SetAccountID(*v)
+	}
+	return _c
+}
+
 // SetAccountPassword sets the "account_password" field.
 func (_c *AccountCreate) SetAccountPassword(v string) *AccountCreate {
 	_c.mutation.SetAccountPassword(v)
+	return _c
+}
+
+// SetNillableAccountPassword sets the "account_password" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableAccountPassword(v *string) *AccountCreate {
+	if v != nil {
+		_c.SetAccountPassword(*v)
+	}
 	return _c
 }
 
@@ -93,6 +152,21 @@ func (_c *AccountCreate) SetLegacy(v *Legacy) *AccountCreate {
 	return _c.SetLegacyID(v.ID)
 }
 
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_c *AccountCreate) AddStakeholderIDs(ids ...uuid.UUID) *AccountCreate {
+	_c.mutation.AddStakeholderIDs(ids...)
+	return _c
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_c *AccountCreate) AddStakeholders(v ...*Stakeholder) *AccountCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStakeholderIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (_c *AccountCreate) Mutation() *AccountMutation {
 	return _c.mutation
@@ -128,6 +202,10 @@ func (_c *AccountCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AccountCreate) defaults() {
+	if _, ok := _c.mutation.Action(); !ok {
+		v := account.DefaultAction
+		_c.mutation.SetAction(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := account.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -148,20 +226,12 @@ func (_c *AccountCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.AccountID(); !ok {
-		return &ValidationError{Name: "account_id", err: errors.New(`ent: missing required field "Account.account_id"`)}
+	if _, ok := _c.mutation.Action(); !ok {
+		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "Account.action"`)}
 	}
-	if v, ok := _c.mutation.AccountID(); ok {
-		if err := account.AccountIDValidator(v); err != nil {
-			return &ValidationError{Name: "account_id", err: fmt.Errorf(`ent: validator failed for field "Account.account_id": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.AccountPassword(); !ok {
-		return &ValidationError{Name: "account_password", err: errors.New(`ent: missing required field "Account.account_password"`)}
-	}
-	if v, ok := _c.mutation.AccountPassword(); ok {
-		if err := account.AccountPasswordValidator(v); err != nil {
-			return &ValidationError{Name: "account_password", err: fmt.Errorf(`ent: validator failed for field "Account.account_password": %w`, err)}
+	if v, ok := _c.mutation.Action(); ok {
+		if err := account.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Account.action": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -209,17 +279,29 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		_spec.SetField(account.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := _c.mutation.AccountTypeOther(); ok {
-		_spec.SetField(account.FieldAccountTypeOther, field.TypeString, value)
-		_node.AccountTypeOther = &value
+	if value, ok := _c.mutation.TypeName(); ok {
+		_spec.SetField(account.FieldTypeName, field.TypeString, value)
+		_node.TypeName = &value
+	}
+	if value, ok := _c.mutation.Action(); ok {
+		_spec.SetField(account.FieldAction, field.TypeEnum, value)
+		_node.Action = value
+	}
+	if value, ok := _c.mutation.ActionMessage(); ok {
+		_spec.SetField(account.FieldActionMessage, field.TypeString, value)
+		_node.ActionMessage = &value
+	}
+	if value, ok := _c.mutation.DataLocation(); ok {
+		_spec.SetField(account.FieldDataLocation, field.TypeString, value)
+		_node.DataLocation = &value
 	}
 	if value, ok := _c.mutation.AccountID(); ok {
 		_spec.SetField(account.FieldAccountID, field.TypeString, value)
-		_node.AccountID = value
+		_node.AccountID = &value
 	}
 	if value, ok := _c.mutation.AccountPassword(); ok {
 		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
-		_node.AccountPassword = value
+		_node.AccountPassword = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(account.FieldCreatedAt, field.TypeTime, value)
@@ -240,6 +322,22 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.legacy_accounts = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

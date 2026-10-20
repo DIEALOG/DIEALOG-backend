@@ -26,6 +26,11 @@ func (Stakeholder) Fields() []ent.Field {
 		field.String("email").
 			Optional().
 			Nillable(),
+		field.String("relationship").
+			Default(""),
+		field.String("message").
+			Optional().
+			Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
@@ -38,5 +43,9 @@ func (Stakeholder) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Immutable(),
+		edge.From("groups", StakeholderGroup.Type).
+			Ref("stakeholders"),
+		edge.From("accounts", Account.Type).
+			Ref("stakeholders"),
 	}
 }

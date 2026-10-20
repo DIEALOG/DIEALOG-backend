@@ -44,7 +44,9 @@ func (r *legacyRepository) FindAllByUserID(c context.Context, userID *domain.ID,
 	}
 
 	entities, err := query.
-		WithAccounts().
+		WithAccounts(func(q *ent.AccountQuery) {
+			q.WithStakeholders()
+		}).
 		Limit(limit).
 		Offset(offset).
 		Order(ent.Desc(legacy.FieldCreatedAt)).
@@ -69,7 +71,9 @@ func (r *legacyRepository) FindByID(c context.Context, id *domain.ID, userID *do
 			legacy.IDEQ(*id),
 			legacy.HasOwnerWith(user.IDEQ(*userID)),
 		).
-		WithAccounts().
+		WithAccounts(func(q *ent.AccountQuery) {
+			q.WithStakeholders()
+		}).
 		Only(c)
 	if err != nil {
 		return nil, err
@@ -138,13 +142,27 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	}
 
 	builder := r.client.Account.Create().
-		SetType(toEntAccountType(acc.Type)).
-		SetAccountID(acc.AccountID).
-		SetAccountPassword(acc.AccountPassword).
+		SetType(toEntAccountType(acc.Type.Type)).
+		SetAction(toEntAccountAction(acc.Action.Action)).
 		SetLegacyID(*legacyID)
 
-	if acc.AccountTypeOther != nil {
-		builder.SetAccountTypeOther(*acc.AccountTypeOther)
+	if acc.Type.Name != nil {
+		builder.SetTypeName(*acc.Type.Name)
+	}
+	if acc.Action.Message != nil {
+		builder.SetActionMessage(*acc.Action.Message)
+	}
+	if acc.DataLocation != nil {
+		builder.SetDataLocation(*acc.DataLocation)
+	}
+	if acc.AccountID != nil {
+		builder.SetAccountID(*acc.AccountID)
+	}
+	if acc.AccountPassword != nil {
+		builder.SetAccountPassword(*acc.AccountPassword)
+	}
+	if len(acc.StakeholderIDs) > 0 {
+		builder.AddStakeholderIDs(acc.StakeholderIDs...)
 	}
 
 	entity, err := builder.Save(c)
@@ -152,7 +170,17 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 		return nil, err
 	}
 
-	result := toDomainAccount(entity)
+	loaded, err := r.client.Account.Query().
+		Where(account.IDEQ(entity.ID)).
+		WithStakeholders().
+		Only(c)
+	if err != nil {
+		result := toDomainAccount(entity)
+		result.LegacyID = *legacyID
+		return result, nil
+	}
+
+	result := toDomainAccount(loaded)
 	result.LegacyID = *legacyID
 	return result, nil
 }

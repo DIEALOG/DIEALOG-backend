@@ -82,12 +82,14 @@ func main() {
 	userRepository := repository.NewUserRepository(client)
 	legacyRepository := repository.NewLegacyRepository(client)
 	stakeholderRepository := repository.NewStakeholderRepository(client)
+	stakeholderGroupRepository := repository.NewStakeholderGroupRepository(client)
 
 	// usecase
 	profileUsecase := usecase.NewProfileUseCase(userRepository, timeout)
 	authUseCase := usecase.NewAuthUseCase(userRepository, timeout)
 	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, timeout)
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
+	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
@@ -95,7 +97,7 @@ func main() {
 	route.NewRefreshTokenRouter(api.Group("/refresh"), authUseCase)
 	route.NewSignupRouter(api.Group("/signup"), authUseCase)
 	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase)
-	route.NewStakeholderRouter(api.Group("/stakeholder"), stakeholderUseCase)
+	route.NewStakeholderRouter(api.Group("/stakeholder"), stakeholderUseCase, stakeholderGroupUseCase)
 
 	app.All("*", func(c fiber.Ctx) error {
 		notFoundErr := fmt.Errorf(

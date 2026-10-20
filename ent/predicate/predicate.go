@@ -15,5 +15,8 @@ type Legacy func(*sql.Selector)
 // Stakeholder is the predicate function for stakeholder builders.
 type Stakeholder func(*sql.Selector)
 
+// StakeholderGroup is the predicate function for stakeholdergroup builders.
+type StakeholderGroup func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

@@ -37,6 +37,8 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("stakeholders", Stakeholder.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("stakeholder_groups", StakeholderGroup.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("legacies", Legacy.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}

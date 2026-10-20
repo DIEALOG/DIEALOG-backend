@@ -404,6 +404,29 @@ func HasStakeholdersWith(preds ...predicate.Stakeholder) predicate.User {
 	})
 }
 
+// HasStakeholderGroups applies the HasEdge predicate on the "stakeholder_groups" edge.
+func HasStakeholderGroups() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StakeholderGroupsTable, StakeholderGroupsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStakeholderGroupsWith applies the HasEdge predicate on the "stakeholder_groups" edge with a given conditions (other predicates).
+func HasStakeholderGroupsWith(preds ...predicate.StakeholderGroup) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newStakeholderGroupsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasLegacies applies the HasEdge predicate on the "legacies" edge.
 func HasLegacies() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

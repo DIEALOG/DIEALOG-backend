@@ -38,11 +38,13 @@ type User struct {
 type UserEdges struct {
 	// Stakeholders holds the value of the stakeholders edge.
 	Stakeholders []*Stakeholder `json:"stakeholders,omitempty"`
+	// StakeholderGroups holds the value of the stakeholder_groups edge.
+	StakeholderGroups []*StakeholderGroup `json:"stakeholder_groups,omitempty"`
 	// Legacies holds the value of the legacies edge.
 	Legacies []*Legacy `json:"legacies,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // StakeholdersOrErr returns the Stakeholders value or an error if the edge
@@ -54,10 +56,19 @@ func (e UserEdges) StakeholdersOrErr() ([]*Stakeholder, error) {
 	return nil, &NotLoadedError{edge: "stakeholders"}
 }
 
+// StakeholderGroupsOrErr returns the StakeholderGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) StakeholderGroupsOrErr() ([]*StakeholderGroup, error) {
+	if e.loadedTypes[1] {
+		return e.StakeholderGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "stakeholder_groups"}
+}
+
 // LegaciesOrErr returns the Legacies value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) LegaciesOrErr() ([]*Legacy, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Legacies, nil
 	}
 	return nil, &NotLoadedError{edge: "legacies"}
@@ -141,6 +152,11 @@ func (_m *User) Value(name string) (ent.Value, error) {
 // QueryStakeholders queries the "stakeholders" edge of the User entity.
 func (_m *User) QueryStakeholders() *StakeholderQuery {
 	return NewUserClient(_m.config).QueryStakeholders(_m)
+}
+
+// QueryStakeholderGroups queries the "stakeholder_groups" edge of the User entity.
+func (_m *User) QueryStakeholderGroups() *StakeholderGroupQuery {
+	return NewUserClient(_m.config).QueryStakeholderGroups(_m)
 }
 
 // QueryLegacies queries the "legacies" edge of the User entity.

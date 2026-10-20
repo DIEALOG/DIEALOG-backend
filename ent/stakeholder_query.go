@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,20 +13,24 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
 // StakeholderQuery is the builder for querying Stakeholder entities.
 type StakeholderQuery struct {
 	config
-	ctx        *QueryContext
-	order      []stakeholder.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Stakeholder
-	withOwner  *UserQuery
-	withFKs    bool
+	ctx          *QueryContext
+	order        []stakeholder.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.Stakeholder
+	withOwner    *UserQuery
+	withGroups   *StakeholderGroupQuery
+	withAccounts *AccountQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +82,50 @@ func (_q *StakeholderQuery) QueryOwner() *UserQuery {
 			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, stakeholder.OwnerTable, stakeholder.OwnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGroups chains the current query on the "groups" edge.
+func (_q *StakeholderQuery) QueryGroups() *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.GroupsTable, stakeholder.GroupsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAccounts chains the current query on the "accounts" edge.
+func (_q *StakeholderQuery) QueryAccounts() *AccountQuery {
+	query := (&AccountClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.AccountsTable, stakeholder.AccountsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -271,12 +320,14 @@ func (_q *StakeholderQuery) Clone() *StakeholderQuery {
 		return nil
 	}
 	return &StakeholderQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]stakeholder.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Stakeholder{}, _q.predicates...),
-		withOwner:  _q.withOwner.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]stakeholder.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.Stakeholder{}, _q.predicates...),
+		withOwner:    _q.withOwner.Clone(),
+		withGroups:   _q.withGroups.Clone(),
+		withAccounts: _q.withAccounts.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -291,6 +342,28 @@ func (_q *StakeholderQuery) WithOwner(opts ...func(*UserQuery)) *StakeholderQuer
 		opt(query)
 	}
 	_q.withOwner = query
+	return _q
+}
+
+// WithGroups tells the query-builder to eager-load the nodes that are connected to
+// the "groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderQuery) WithGroups(opts ...func(*StakeholderGroupQuery)) *StakeholderQuery {
+	query := (&StakeholderGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGroups = query
+	return _q
+}
+
+// WithAccounts tells the query-builder to eager-load the nodes that are connected to
+// the "accounts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderQuery) WithAccounts(opts ...func(*AccountQuery)) *StakeholderQuery {
+	query := (&AccountClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAccounts = query
 	return _q
 }
 
@@ -373,8 +446,10 @@ func (_q *StakeholderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*Stakeholder{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			_q.withOwner != nil,
+			_q.withGroups != nil,
+			_q.withAccounts != nil,
 		}
 	)
 	if _q.withOwner != nil {
@@ -404,6 +479,20 @@ func (_q *StakeholderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if query := _q.withOwner; query != nil {
 		if err := _q.loadOwner(ctx, query, nodes, nil,
 			func(n *Stakeholder, e *User) { n.Edges.Owner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGroups; query != nil {
+		if err := _q.loadGroups(ctx, query, nodes,
+			func(n *Stakeholder) { n.Edges.Groups = []*StakeholderGroup{} },
+			func(n *Stakeholder, e *StakeholderGroup) { n.Edges.Groups = append(n.Edges.Groups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAccounts; query != nil {
+		if err := _q.loadAccounts(ctx, query, nodes,
+			func(n *Stakeholder) { n.Edges.Accounts = []*Account{} },
+			func(n *Stakeholder, e *Account) { n.Edges.Accounts = append(n.Edges.Accounts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -438,6 +527,128 @@ func (_q *StakeholderQuery) loadOwner(ctx context.Context, query *UserQuery, nod
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderQuery) loadGroups(ctx context.Context, query *StakeholderGroupQuery, nodes []*Stakeholder, init func(*Stakeholder), assign func(*Stakeholder, *StakeholderGroup)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Stakeholder)
+	nids := make(map[uuid.UUID]map[*Stakeholder]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholder.GroupsTable)
+		s.Join(joinT).On(s.C(stakeholdergroup.FieldID), joinT.C(stakeholder.GroupsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholder.GroupsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholder.GroupsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Stakeholder]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*StakeholderGroup](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "groups" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderQuery) loadAccounts(ctx context.Context, query *AccountQuery, nodes []*Stakeholder, init func(*Stakeholder), assign func(*Stakeholder, *Account)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Stakeholder)
+	nids := make(map[uuid.UUID]map[*Stakeholder]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholder.AccountsTable)
+		s.Join(joinT).On(s.C(account.FieldID), joinT.C(stakeholder.AccountsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholder.AccountsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholder.AccountsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Stakeholder]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Account](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "accounts" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

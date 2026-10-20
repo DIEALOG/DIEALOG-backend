@@ -14,6 +14,7 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -101,6 +102,21 @@ func (_u *UserUpdate) AddStakeholders(v ...*Stakeholder) *UserUpdate {
 	return _u.AddStakeholderIDs(ids...)
 }
 
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (_u *UserUpdate) AddStakeholderGroupIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddStakeholderGroupIDs(ids...)
+	return _u
+}
+
+// AddStakeholderGroups adds the "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_u *UserUpdate) AddStakeholderGroups(v ...*StakeholderGroup) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderGroupIDs(ids...)
+}
+
 // AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
 func (_u *UserUpdate) AddLegacyIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddLegacyIDs(ids...)
@@ -140,6 +156,27 @@ func (_u *UserUpdate) RemoveStakeholders(v ...*Stakeholder) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearStakeholderGroups clears all "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_u *UserUpdate) ClearStakeholderGroups() *UserUpdate {
+	_u.mutation.ClearStakeholderGroups()
+	return _u
+}
+
+// RemoveStakeholderGroupIDs removes the "stakeholder_groups" edge to StakeholderGroup entities by IDs.
+func (_u *UserUpdate) RemoveStakeholderGroupIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveStakeholderGroupIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholderGroups removes "stakeholder_groups" edges to StakeholderGroup entities.
+func (_u *UserUpdate) RemoveStakeholderGroups(v ...*StakeholderGroup) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderGroupIDs(ids...)
 }
 
 // ClearLegacies clears all "legacies" edges to the Legacy entity.
@@ -272,6 +309,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StakeholderGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholderGroupsIDs(); len(nodes) > 0 && !_u.mutation.StakeholderGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholderGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -415,6 +497,21 @@ func (_u *UserUpdateOne) AddStakeholders(v ...*Stakeholder) *UserUpdateOne {
 	return _u.AddStakeholderIDs(ids...)
 }
 
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (_u *UserUpdateOne) AddStakeholderGroupIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddStakeholderGroupIDs(ids...)
+	return _u
+}
+
+// AddStakeholderGroups adds the "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_u *UserUpdateOne) AddStakeholderGroups(v ...*StakeholderGroup) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderGroupIDs(ids...)
+}
+
 // AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
 func (_u *UserUpdateOne) AddLegacyIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddLegacyIDs(ids...)
@@ -454,6 +551,27 @@ func (_u *UserUpdateOne) RemoveStakeholders(v ...*Stakeholder) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearStakeholderGroups clears all "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_u *UserUpdateOne) ClearStakeholderGroups() *UserUpdateOne {
+	_u.mutation.ClearStakeholderGroups()
+	return _u
+}
+
+// RemoveStakeholderGroupIDs removes the "stakeholder_groups" edge to StakeholderGroup entities by IDs.
+func (_u *UserUpdateOne) RemoveStakeholderGroupIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveStakeholderGroupIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholderGroups removes "stakeholder_groups" edges to StakeholderGroup entities.
+func (_u *UserUpdateOne) RemoveStakeholderGroups(v ...*StakeholderGroup) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderGroupIDs(ids...)
 }
 
 // ClearLegacies clears all "legacies" edges to the Legacy entity.
@@ -616,6 +734,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StakeholderGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholderGroupsIDs(); len(nodes) > 0 && !_u.mutation.StakeholderGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholderGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

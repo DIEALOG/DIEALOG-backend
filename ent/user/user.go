@@ -27,6 +27,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
 	EdgeStakeholders = "stakeholders"
+	// EdgeStakeholderGroups holds the string denoting the stakeholder_groups edge name in mutations.
+	EdgeStakeholderGroups = "stakeholder_groups"
 	// EdgeLegacies holds the string denoting the legacies edge name in mutations.
 	EdgeLegacies = "legacies"
 	// Table holds the table name of the user in the database.
@@ -38,6 +40,13 @@ const (
 	StakeholdersInverseTable = "stakeholders"
 	// StakeholdersColumn is the table column denoting the stakeholders relation/edge.
 	StakeholdersColumn = "user_stakeholders"
+	// StakeholderGroupsTable is the table that holds the stakeholder_groups relation/edge.
+	StakeholderGroupsTable = "stakeholder_groups"
+	// StakeholderGroupsInverseTable is the table name for the StakeholderGroup entity.
+	// It exists in this package in order to avoid circular dependency with the "stakeholdergroup" package.
+	StakeholderGroupsInverseTable = "stakeholder_groups"
+	// StakeholderGroupsColumn is the table column denoting the stakeholder_groups relation/edge.
+	StakeholderGroupsColumn = "user_stakeholder_groups"
 	// LegaciesTable is the table that holds the legacies relation/edge.
 	LegaciesTable = "legacies"
 	// LegaciesInverseTable is the table name for the Legacy entity.
@@ -129,6 +138,20 @@ func ByStakeholders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByStakeholderGroupsCount orders the results by stakeholder_groups count.
+func ByStakeholderGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStakeholderGroupsStep(), opts...)
+	}
+}
+
+// ByStakeholderGroups orders the results by stakeholder_groups terms.
+func ByStakeholderGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStakeholderGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByLegaciesCount orders the results by legacies count.
 func ByLegaciesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -147,6 +170,13 @@ func newStakeholdersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StakeholdersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, StakeholdersTable, StakeholdersColumn),
+	)
+}
+func newStakeholderGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StakeholderGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StakeholderGroupsTable, StakeholderGroupsColumn),
 	)
 }
 func newLegaciesStep() *sqlgraph.Step {

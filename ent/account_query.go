@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -15,17 +16,19 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 )
 
 // AccountQuery is the builder for querying Account entities.
 type AccountQuery struct {
 	config
-	ctx        *QueryContext
-	order      []account.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Account
-	withLegacy *LegacyQuery
-	withFKs    bool
+	ctx              *QueryContext
+	order            []account.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Account
+	withLegacy       *LegacyQuery
+	withStakeholders *StakeholderQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +80,28 @@ func (_q *AccountQuery) QueryLegacy() *LegacyQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(legacy.Table, legacy.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, account.LegacyTable, account.LegacyColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStakeholders chains the current query on the "stakeholders" edge.
+func (_q *AccountQuery) QueryStakeholders() *StakeholderQuery {
+	query := (&StakeholderClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, account.StakeholdersTable, account.StakeholdersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -271,12 +296,13 @@ func (_q *AccountQuery) Clone() *AccountQuery {
 		return nil
 	}
 	return &AccountQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]account.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Account{}, _q.predicates...),
-		withLegacy: _q.withLegacy.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]account.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.Account{}, _q.predicates...),
+		withLegacy:       _q.withLegacy.Clone(),
+		withStakeholders: _q.withStakeholders.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -291,6 +317,17 @@ func (_q *AccountQuery) WithLegacy(opts ...func(*LegacyQuery)) *AccountQuery {
 		opt(query)
 	}
 	_q.withLegacy = query
+	return _q
+}
+
+// WithStakeholders tells the query-builder to eager-load the nodes that are connected to
+// the "stakeholders" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AccountQuery) WithStakeholders(opts ...func(*StakeholderQuery)) *AccountQuery {
+	query := (&StakeholderClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStakeholders = query
 	return _q
 }
 
@@ -373,8 +410,9 @@ func (_q *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		nodes       = []*Account{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withLegacy != nil,
+			_q.withStakeholders != nil,
 		}
 	)
 	if _q.withLegacy != nil {
@@ -404,6 +442,13 @@ func (_q *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 	if query := _q.withLegacy; query != nil {
 		if err := _q.loadLegacy(ctx, query, nodes, nil,
 			func(n *Account, e *Legacy) { n.Edges.Legacy = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withStakeholders; query != nil {
+		if err := _q.loadStakeholders(ctx, query, nodes,
+			func(n *Account) { n.Edges.Stakeholders = []*Stakeholder{} },
+			func(n *Account, e *Stakeholder) { n.Edges.Stakeholders = append(n.Edges.Stakeholders, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -438,6 +483,67 @@ func (_q *AccountQuery) loadLegacy(ctx context.Context, query *LegacyQuery, node
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *AccountQuery) loadStakeholders(ctx context.Context, query *StakeholderQuery, nodes []*Account, init func(*Account), assign func(*Account, *Stakeholder)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Account)
+	nids := make(map[uuid.UUID]map[*Account]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(account.StakeholdersTable)
+		s.Join(joinT).On(s.C(stakeholder.FieldID), joinT.C(account.StakeholdersPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(account.StakeholdersPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(account.StakeholdersPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Account]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Stakeholder](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "stakeholders" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

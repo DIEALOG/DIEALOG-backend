@@ -25,6 +25,10 @@ type Stakeholder struct {
 	Phone *string `json:"phone,omitempty"`
 	// Email holds the value of the "email" field.
 	Email *string `json:"email,omitempty"`
+	// Relationship holds the value of the "relationship" field.
+	Relationship string `json:"relationship,omitempty"`
+	// Message holds the value of the "message" field.
+	Message *string `json:"message,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -38,9 +42,13 @@ type Stakeholder struct {
 type StakeholderEdges struct {
 	// Owner holds the value of the owner edge.
 	Owner *User `json:"owner,omitempty"`
+	// Groups holds the value of the groups edge.
+	Groups []*StakeholderGroup `json:"groups,omitempty"`
+	// Accounts holds the value of the accounts edge.
+	Accounts []*Account `json:"accounts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -54,12 +62,30 @@ func (e StakeholderEdges) OwnerOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner"}
 }
 
+// GroupsOrErr returns the Groups value or an error if the edge
+// was not loaded in eager-loading.
+func (e StakeholderEdges) GroupsOrErr() ([]*StakeholderGroup, error) {
+	if e.loadedTypes[1] {
+		return e.Groups, nil
+	}
+	return nil, &NotLoadedError{edge: "groups"}
+}
+
+// AccountsOrErr returns the Accounts value or an error if the edge
+// was not loaded in eager-loading.
+func (e StakeholderEdges) AccountsOrErr() ([]*Account, error) {
+	if e.loadedTypes[2] {
+		return e.Accounts, nil
+	}
+	return nil, &NotLoadedError{edge: "accounts"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Stakeholder) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case stakeholder.FieldName, stakeholder.FieldPhone, stakeholder.FieldEmail:
+		case stakeholder.FieldName, stakeholder.FieldPhone, stakeholder.FieldEmail, stakeholder.FieldRelationship, stakeholder.FieldMessage:
 			values[i] = new(sql.NullString)
 		case stakeholder.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -108,6 +134,19 @@ func (_m *Stakeholder) assignValues(columns []string, values []any) error {
 				_m.Email = new(string)
 				*_m.Email = value.String
 			}
+		case stakeholder.FieldRelationship:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field relationship", values[i])
+			} else if value.Valid {
+				_m.Relationship = value.String
+			}
+		case stakeholder.FieldMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field message", values[i])
+			} else if value.Valid {
+				_m.Message = new(string)
+				*_m.Message = value.String
+			}
 		case stakeholder.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -137,6 +176,16 @@ func (_m *Stakeholder) Value(name string) (ent.Value, error) {
 // QueryOwner queries the "owner" edge of the Stakeholder entity.
 func (_m *Stakeholder) QueryOwner() *UserQuery {
 	return NewStakeholderClient(_m.config).QueryOwner(_m)
+}
+
+// QueryGroups queries the "groups" edge of the Stakeholder entity.
+func (_m *Stakeholder) QueryGroups() *StakeholderGroupQuery {
+	return NewStakeholderClient(_m.config).QueryGroups(_m)
+}
+
+// QueryAccounts queries the "accounts" edge of the Stakeholder entity.
+func (_m *Stakeholder) QueryAccounts() *AccountQuery {
+	return NewStakeholderClient(_m.config).QueryAccounts(_m)
 }
 
 // Update returns a builder for updating this Stakeholder.
@@ -172,6 +221,14 @@ func (_m *Stakeholder) String() string {
 	builder.WriteString(", ")
 	if v := _m.Email; v != nil {
 		builder.WriteString("email=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("relationship=")
+	builder.WriteString(_m.Relationship)
+	builder.WriteString(", ")
+	if v := _m.Message; v != nil {
+		builder.WriteString("message=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

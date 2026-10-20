@@ -45,6 +45,18 @@ func (f StakeholderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StakeholderMutation", m)
 }
 
+// The StakeholderGroupFunc type is an adapter to allow the use of ordinary
+// function as StakeholderGroup mutator.
+type StakeholderGroupFunc func(context.Context, *ent.StakeholderGroupMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StakeholderGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StakeholderGroupMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StakeholderGroupMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

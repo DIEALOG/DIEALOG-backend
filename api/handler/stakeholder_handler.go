@@ -42,6 +42,52 @@ func FetchStakeholders(service domain.StakeholderUseCase) fiber.Handler {
 	}
 }
 
+func GetStakeholder(service domain.StakeholderUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		ctx := c.RequestCtx()
+		userID := c.Locals("id").(*domain.ID)
+
+		idStr := c.Params("id")
+		id, err := domain.StringToID(idStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid id format"})
+		}
+
+		item, err := service.GetByID(ctx, &id, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		return c.Status(http.StatusOK).JSON(item)
+	}
+}
+
+func UpdateStakeholder(service domain.StakeholderUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		ctx := c.RequestCtx()
+		userID := c.Locals("id").(*domain.ID)
+
+		idStr := c.Params("id")
+		id, err := domain.StringToID(idStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid id format"})
+		}
+
+		var stakeholder domain.Stakeholder
+		err = c.Bind().Body(&stakeholder)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
+		}
+
+		updated, err := service.Update(ctx, &id, &stakeholder, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		return c.Status(http.StatusOK).JSON(updated)
+	}
+}
+
 func DeleteStakeholder(service domain.StakeholderUseCase) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		ctx := c.RequestCtx()

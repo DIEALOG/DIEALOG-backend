@@ -16,6 +16,7 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -28,29 +29,36 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAccount     = "Account"
-	TypeLegacy      = "Legacy"
-	TypeStakeholder = "Stakeholder"
-	TypeUser        = "User"
+	TypeAccount          = "Account"
+	TypeLegacy           = "Legacy"
+	TypeStakeholder      = "Stakeholder"
+	TypeStakeholderGroup = "StakeholderGroup"
+	TypeUser             = "User"
 )
 
 // AccountMutation represents an operation that mutates the Account nodes in the graph.
 type AccountMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	_type              *account.Type
-	account_type_other *string
-	account_id         *string
-	account_password   *string
-	created_at         *time.Time
-	clearedFields      map[string]struct{}
-	legacy             *uuid.UUID
-	clearedlegacy      bool
-	done               bool
-	oldValue           func(context.Context) (*Account, error)
-	predicates         []predicate.Account
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	_type               *account.Type
+	type_name           *string
+	action              *account.Action
+	action_message      *string
+	data_location       *string
+	account_id          *string
+	account_password    *string
+	created_at          *time.Time
+	clearedFields       map[string]struct{}
+	legacy              *uuid.UUID
+	clearedlegacy       bool
+	stakeholders        map[uuid.UUID]struct{}
+	removedstakeholders map[uuid.UUID]struct{}
+	clearedstakeholders bool
+	done                bool
+	oldValue            func(context.Context) (*Account, error)
+	predicates          []predicate.Account
 }
 
 var _ ent.Mutation = (*AccountMutation)(nil)
@@ -193,53 +201,187 @@ func (m *AccountMutation) ResetType() {
 	m._type = nil
 }
 
-// SetAccountTypeOther sets the "account_type_other" field.
-func (m *AccountMutation) SetAccountTypeOther(s string) {
-	m.account_type_other = &s
+// SetTypeName sets the "type_name" field.
+func (m *AccountMutation) SetTypeName(s string) {
+	m.type_name = &s
 }
 
-// AccountTypeOther returns the value of the "account_type_other" field in the mutation.
-func (m *AccountMutation) AccountTypeOther() (r string, exists bool) {
-	v := m.account_type_other
+// TypeName returns the value of the "type_name" field in the mutation.
+func (m *AccountMutation) TypeName() (r string, exists bool) {
+	v := m.type_name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAccountTypeOther returns the old "account_type_other" field's value of the Account entity.
+// OldTypeName returns the old "type_name" field's value of the Account entity.
 // If the Account object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldAccountTypeOther(ctx context.Context) (v *string, err error) {
+func (m *AccountMutation) OldTypeName(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAccountTypeOther is only allowed on UpdateOne operations")
+		return v, errors.New("OldTypeName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAccountTypeOther requires an ID field in the mutation")
+		return v, errors.New("OldTypeName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAccountTypeOther: %w", err)
+		return v, fmt.Errorf("querying old value for OldTypeName: %w", err)
 	}
-	return oldValue.AccountTypeOther, nil
+	return oldValue.TypeName, nil
 }
 
-// ClearAccountTypeOther clears the value of the "account_type_other" field.
-func (m *AccountMutation) ClearAccountTypeOther() {
-	m.account_type_other = nil
-	m.clearedFields[account.FieldAccountTypeOther] = struct{}{}
+// ClearTypeName clears the value of the "type_name" field.
+func (m *AccountMutation) ClearTypeName() {
+	m.type_name = nil
+	m.clearedFields[account.FieldTypeName] = struct{}{}
 }
 
-// AccountTypeOtherCleared returns if the "account_type_other" field was cleared in this mutation.
-func (m *AccountMutation) AccountTypeOtherCleared() bool {
-	_, ok := m.clearedFields[account.FieldAccountTypeOther]
+// TypeNameCleared returns if the "type_name" field was cleared in this mutation.
+func (m *AccountMutation) TypeNameCleared() bool {
+	_, ok := m.clearedFields[account.FieldTypeName]
 	return ok
 }
 
-// ResetAccountTypeOther resets all changes to the "account_type_other" field.
-func (m *AccountMutation) ResetAccountTypeOther() {
-	m.account_type_other = nil
-	delete(m.clearedFields, account.FieldAccountTypeOther)
+// ResetTypeName resets all changes to the "type_name" field.
+func (m *AccountMutation) ResetTypeName() {
+	m.type_name = nil
+	delete(m.clearedFields, account.FieldTypeName)
+}
+
+// SetAction sets the "action" field.
+func (m *AccountMutation) SetAction(a account.Action) {
+	m.action = &a
+}
+
+// Action returns the value of the "action" field in the mutation.
+func (m *AccountMutation) Action() (r account.Action, exists bool) {
+	v := m.action
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAction returns the old "action" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldAction(ctx context.Context) (v account.Action, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
+	}
+	return oldValue.Action, nil
+}
+
+// ResetAction resets all changes to the "action" field.
+func (m *AccountMutation) ResetAction() {
+	m.action = nil
+}
+
+// SetActionMessage sets the "action_message" field.
+func (m *AccountMutation) SetActionMessage(s string) {
+	m.action_message = &s
+}
+
+// ActionMessage returns the value of the "action_message" field in the mutation.
+func (m *AccountMutation) ActionMessage() (r string, exists bool) {
+	v := m.action_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActionMessage returns the old "action_message" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldActionMessage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActionMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActionMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActionMessage: %w", err)
+	}
+	return oldValue.ActionMessage, nil
+}
+
+// ClearActionMessage clears the value of the "action_message" field.
+func (m *AccountMutation) ClearActionMessage() {
+	m.action_message = nil
+	m.clearedFields[account.FieldActionMessage] = struct{}{}
+}
+
+// ActionMessageCleared returns if the "action_message" field was cleared in this mutation.
+func (m *AccountMutation) ActionMessageCleared() bool {
+	_, ok := m.clearedFields[account.FieldActionMessage]
+	return ok
+}
+
+// ResetActionMessage resets all changes to the "action_message" field.
+func (m *AccountMutation) ResetActionMessage() {
+	m.action_message = nil
+	delete(m.clearedFields, account.FieldActionMessage)
+}
+
+// SetDataLocation sets the "data_location" field.
+func (m *AccountMutation) SetDataLocation(s string) {
+	m.data_location = &s
+}
+
+// DataLocation returns the value of the "data_location" field in the mutation.
+func (m *AccountMutation) DataLocation() (r string, exists bool) {
+	v := m.data_location
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDataLocation returns the old "data_location" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldDataLocation(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDataLocation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDataLocation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDataLocation: %w", err)
+	}
+	return oldValue.DataLocation, nil
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (m *AccountMutation) ClearDataLocation() {
+	m.data_location = nil
+	m.clearedFields[account.FieldDataLocation] = struct{}{}
+}
+
+// DataLocationCleared returns if the "data_location" field was cleared in this mutation.
+func (m *AccountMutation) DataLocationCleared() bool {
+	_, ok := m.clearedFields[account.FieldDataLocation]
+	return ok
+}
+
+// ResetDataLocation resets all changes to the "data_location" field.
+func (m *AccountMutation) ResetDataLocation() {
+	m.data_location = nil
+	delete(m.clearedFields, account.FieldDataLocation)
 }
 
 // SetAccountID sets the "account_id" field.
@@ -259,7 +401,7 @@ func (m *AccountMutation) AccountID() (r string, exists bool) {
 // OldAccountID returns the old "account_id" field's value of the Account entity.
 // If the Account object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldAccountID(ctx context.Context) (v string, err error) {
+func (m *AccountMutation) OldAccountID(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAccountID is only allowed on UpdateOne operations")
 	}
@@ -273,9 +415,22 @@ func (m *AccountMutation) OldAccountID(ctx context.Context) (v string, err error
 	return oldValue.AccountID, nil
 }
 
+// ClearAccountID clears the value of the "account_id" field.
+func (m *AccountMutation) ClearAccountID() {
+	m.account_id = nil
+	m.clearedFields[account.FieldAccountID] = struct{}{}
+}
+
+// AccountIDCleared returns if the "account_id" field was cleared in this mutation.
+func (m *AccountMutation) AccountIDCleared() bool {
+	_, ok := m.clearedFields[account.FieldAccountID]
+	return ok
+}
+
 // ResetAccountID resets all changes to the "account_id" field.
 func (m *AccountMutation) ResetAccountID() {
 	m.account_id = nil
+	delete(m.clearedFields, account.FieldAccountID)
 }
 
 // SetAccountPassword sets the "account_password" field.
@@ -295,7 +450,7 @@ func (m *AccountMutation) AccountPassword() (r string, exists bool) {
 // OldAccountPassword returns the old "account_password" field's value of the Account entity.
 // If the Account object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldAccountPassword(ctx context.Context) (v string, err error) {
+func (m *AccountMutation) OldAccountPassword(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAccountPassword is only allowed on UpdateOne operations")
 	}
@@ -309,9 +464,22 @@ func (m *AccountMutation) OldAccountPassword(ctx context.Context) (v string, err
 	return oldValue.AccountPassword, nil
 }
 
+// ClearAccountPassword clears the value of the "account_password" field.
+func (m *AccountMutation) ClearAccountPassword() {
+	m.account_password = nil
+	m.clearedFields[account.FieldAccountPassword] = struct{}{}
+}
+
+// AccountPasswordCleared returns if the "account_password" field was cleared in this mutation.
+func (m *AccountMutation) AccountPasswordCleared() bool {
+	_, ok := m.clearedFields[account.FieldAccountPassword]
+	return ok
+}
+
 // ResetAccountPassword resets all changes to the "account_password" field.
 func (m *AccountMutation) ResetAccountPassword() {
 	m.account_password = nil
+	delete(m.clearedFields, account.FieldAccountPassword)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -389,6 +557,60 @@ func (m *AccountMutation) ResetLegacy() {
 	m.clearedlegacy = false
 }
 
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by ids.
+func (m *AccountMutation) AddStakeholderIDs(ids ...uuid.UUID) {
+	if m.stakeholders == nil {
+		m.stakeholders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.stakeholders[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStakeholders clears the "stakeholders" edge to the Stakeholder entity.
+func (m *AccountMutation) ClearStakeholders() {
+	m.clearedstakeholders = true
+}
+
+// StakeholdersCleared reports if the "stakeholders" edge to the Stakeholder entity was cleared.
+func (m *AccountMutation) StakeholdersCleared() bool {
+	return m.clearedstakeholders
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to the Stakeholder entity by IDs.
+func (m *AccountMutation) RemoveStakeholderIDs(ids ...uuid.UUID) {
+	if m.removedstakeholders == nil {
+		m.removedstakeholders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.stakeholders, ids[i])
+		m.removedstakeholders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStakeholders returns the removed IDs of the "stakeholders" edge to the Stakeholder entity.
+func (m *AccountMutation) RemovedStakeholdersIDs() (ids []uuid.UUID) {
+	for id := range m.removedstakeholders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StakeholdersIDs returns the "stakeholders" edge IDs in the mutation.
+func (m *AccountMutation) StakeholdersIDs() (ids []uuid.UUID) {
+	for id := range m.stakeholders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStakeholders resets all changes to the "stakeholders" edge.
+func (m *AccountMutation) ResetStakeholders() {
+	m.stakeholders = nil
+	m.clearedstakeholders = false
+	m.removedstakeholders = nil
+}
+
 // Where appends a list predicates to the AccountMutation builder.
 func (m *AccountMutation) Where(ps ...predicate.Account) {
 	m.predicates = append(m.predicates, ps...)
@@ -423,12 +645,21 @@ func (m *AccountMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 8)
 	if m._type != nil {
 		fields = append(fields, account.FieldType)
 	}
-	if m.account_type_other != nil {
-		fields = append(fields, account.FieldAccountTypeOther)
+	if m.type_name != nil {
+		fields = append(fields, account.FieldTypeName)
+	}
+	if m.action != nil {
+		fields = append(fields, account.FieldAction)
+	}
+	if m.action_message != nil {
+		fields = append(fields, account.FieldActionMessage)
+	}
+	if m.data_location != nil {
+		fields = append(fields, account.FieldDataLocation)
 	}
 	if m.account_id != nil {
 		fields = append(fields, account.FieldAccountID)
@@ -449,8 +680,14 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case account.FieldType:
 		return m.GetType()
-	case account.FieldAccountTypeOther:
-		return m.AccountTypeOther()
+	case account.FieldTypeName:
+		return m.TypeName()
+	case account.FieldAction:
+		return m.Action()
+	case account.FieldActionMessage:
+		return m.ActionMessage()
+	case account.FieldDataLocation:
+		return m.DataLocation()
 	case account.FieldAccountID:
 		return m.AccountID()
 	case account.FieldAccountPassword:
@@ -468,8 +705,14 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case account.FieldType:
 		return m.OldType(ctx)
-	case account.FieldAccountTypeOther:
-		return m.OldAccountTypeOther(ctx)
+	case account.FieldTypeName:
+		return m.OldTypeName(ctx)
+	case account.FieldAction:
+		return m.OldAction(ctx)
+	case account.FieldActionMessage:
+		return m.OldActionMessage(ctx)
+	case account.FieldDataLocation:
+		return m.OldDataLocation(ctx)
 	case account.FieldAccountID:
 		return m.OldAccountID(ctx)
 	case account.FieldAccountPassword:
@@ -492,12 +735,33 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetType(v)
 		return nil
-	case account.FieldAccountTypeOther:
+	case account.FieldTypeName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAccountTypeOther(v)
+		m.SetTypeName(v)
+		return nil
+	case account.FieldAction:
+		v, ok := value.(account.Action)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAction(v)
+		return nil
+	case account.FieldActionMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActionMessage(v)
+		return nil
+	case account.FieldDataLocation:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDataLocation(v)
 		return nil
 	case account.FieldAccountID:
 		v, ok := value.(string)
@@ -550,8 +814,20 @@ func (m *AccountMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AccountMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(account.FieldAccountTypeOther) {
-		fields = append(fields, account.FieldAccountTypeOther)
+	if m.FieldCleared(account.FieldTypeName) {
+		fields = append(fields, account.FieldTypeName)
+	}
+	if m.FieldCleared(account.FieldActionMessage) {
+		fields = append(fields, account.FieldActionMessage)
+	}
+	if m.FieldCleared(account.FieldDataLocation) {
+		fields = append(fields, account.FieldDataLocation)
+	}
+	if m.FieldCleared(account.FieldAccountID) {
+		fields = append(fields, account.FieldAccountID)
+	}
+	if m.FieldCleared(account.FieldAccountPassword) {
+		fields = append(fields, account.FieldAccountPassword)
 	}
 	return fields
 }
@@ -567,8 +843,20 @@ func (m *AccountMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AccountMutation) ClearField(name string) error {
 	switch name {
-	case account.FieldAccountTypeOther:
-		m.ClearAccountTypeOther()
+	case account.FieldTypeName:
+		m.ClearTypeName()
+		return nil
+	case account.FieldActionMessage:
+		m.ClearActionMessage()
+		return nil
+	case account.FieldDataLocation:
+		m.ClearDataLocation()
+		return nil
+	case account.FieldAccountID:
+		m.ClearAccountID()
+		return nil
+	case account.FieldAccountPassword:
+		m.ClearAccountPassword()
 		return nil
 	}
 	return fmt.Errorf("unknown Account nullable field %s", name)
@@ -581,8 +869,17 @@ func (m *AccountMutation) ResetField(name string) error {
 	case account.FieldType:
 		m.ResetType()
 		return nil
-	case account.FieldAccountTypeOther:
-		m.ResetAccountTypeOther()
+	case account.FieldTypeName:
+		m.ResetTypeName()
+		return nil
+	case account.FieldAction:
+		m.ResetAction()
+		return nil
+	case account.FieldActionMessage:
+		m.ResetActionMessage()
+		return nil
+	case account.FieldDataLocation:
+		m.ResetDataLocation()
 		return nil
 	case account.FieldAccountID:
 		m.ResetAccountID()
@@ -599,9 +896,12 @@ func (m *AccountMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AccountMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.legacy != nil {
 		edges = append(edges, account.EdgeLegacy)
+	}
+	if m.stakeholders != nil {
+		edges = append(edges, account.EdgeStakeholders)
 	}
 	return edges
 }
@@ -614,27 +914,47 @@ func (m *AccountMutation) AddedIDs(name string) []ent.Value {
 		if id := m.legacy; id != nil {
 			return []ent.Value{*id}
 		}
+	case account.EdgeStakeholders:
+		ids := make([]ent.Value, 0, len(m.stakeholders))
+		for id := range m.stakeholders {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AccountMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedstakeholders != nil {
+		edges = append(edges, account.EdgeStakeholders)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *AccountMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case account.EdgeStakeholders:
+		ids := make([]ent.Value, 0, len(m.removedstakeholders))
+		for id := range m.removedstakeholders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AccountMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedlegacy {
 		edges = append(edges, account.EdgeLegacy)
+	}
+	if m.clearedstakeholders {
+		edges = append(edges, account.EdgeStakeholders)
 	}
 	return edges
 }
@@ -645,6 +965,8 @@ func (m *AccountMutation) EdgeCleared(name string) bool {
 	switch name {
 	case account.EdgeLegacy:
 		return m.clearedlegacy
+	case account.EdgeStakeholders:
+		return m.clearedstakeholders
 	}
 	return false
 }
@@ -666,6 +988,9 @@ func (m *AccountMutation) ResetEdge(name string) error {
 	switch name {
 	case account.EdgeLegacy:
 		m.ResetLegacy()
+		return nil
+	case account.EdgeStakeholders:
+		m.ResetStakeholders()
 		return nil
 	}
 	return fmt.Errorf("unknown Account edge %s", name)
@@ -1212,19 +1537,27 @@ func (m *LegacyMutation) ResetEdge(name string) error {
 // StakeholderMutation represents an operation that mutates the Stakeholder nodes in the graph.
 type StakeholderMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	name          *string
-	phone         *string
-	email         *string
-	created_at    *time.Time
-	clearedFields map[string]struct{}
-	owner         *uuid.UUID
-	clearedowner  bool
-	done          bool
-	oldValue      func(context.Context) (*Stakeholder, error)
-	predicates    []predicate.Stakeholder
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	name            *string
+	phone           *string
+	email           *string
+	relationship    *string
+	message         *string
+	created_at      *time.Time
+	clearedFields   map[string]struct{}
+	owner           *uuid.UUID
+	clearedowner    bool
+	groups          map[uuid.UUID]struct{}
+	removedgroups   map[uuid.UUID]struct{}
+	clearedgroups   bool
+	accounts        map[uuid.UUID]struct{}
+	removedaccounts map[uuid.UUID]struct{}
+	clearedaccounts bool
+	done            bool
+	oldValue        func(context.Context) (*Stakeholder, error)
+	predicates      []predicate.Stakeholder
 }
 
 var _ ent.Mutation = (*StakeholderMutation)(nil)
@@ -1465,6 +1798,91 @@ func (m *StakeholderMutation) ResetEmail() {
 	delete(m.clearedFields, stakeholder.FieldEmail)
 }
 
+// SetRelationship sets the "relationship" field.
+func (m *StakeholderMutation) SetRelationship(s string) {
+	m.relationship = &s
+}
+
+// Relationship returns the value of the "relationship" field in the mutation.
+func (m *StakeholderMutation) Relationship() (r string, exists bool) {
+	v := m.relationship
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRelationship returns the old "relationship" field's value of the Stakeholder entity.
+// If the Stakeholder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StakeholderMutation) OldRelationship(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRelationship is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRelationship requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRelationship: %w", err)
+	}
+	return oldValue.Relationship, nil
+}
+
+// ResetRelationship resets all changes to the "relationship" field.
+func (m *StakeholderMutation) ResetRelationship() {
+	m.relationship = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *StakeholderMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *StakeholderMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the Stakeholder entity.
+// If the Stakeholder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StakeholderMutation) OldMessage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ClearMessage clears the value of the "message" field.
+func (m *StakeholderMutation) ClearMessage() {
+	m.message = nil
+	m.clearedFields[stakeholder.FieldMessage] = struct{}{}
+}
+
+// MessageCleared returns if the "message" field was cleared in this mutation.
+func (m *StakeholderMutation) MessageCleared() bool {
+	_, ok := m.clearedFields[stakeholder.FieldMessage]
+	return ok
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *StakeholderMutation) ResetMessage() {
+	m.message = nil
+	delete(m.clearedFields, stakeholder.FieldMessage)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *StakeholderMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -1540,6 +1958,114 @@ func (m *StakeholderMutation) ResetOwner() {
 	m.clearedowner = false
 }
 
+// AddGroupIDs adds the "groups" edge to the StakeholderGroup entity by ids.
+func (m *StakeholderMutation) AddGroupIDs(ids ...uuid.UUID) {
+	if m.groups == nil {
+		m.groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.groups[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGroups clears the "groups" edge to the StakeholderGroup entity.
+func (m *StakeholderMutation) ClearGroups() {
+	m.clearedgroups = true
+}
+
+// GroupsCleared reports if the "groups" edge to the StakeholderGroup entity was cleared.
+func (m *StakeholderMutation) GroupsCleared() bool {
+	return m.clearedgroups
+}
+
+// RemoveGroupIDs removes the "groups" edge to the StakeholderGroup entity by IDs.
+func (m *StakeholderMutation) RemoveGroupIDs(ids ...uuid.UUID) {
+	if m.removedgroups == nil {
+		m.removedgroups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.groups, ids[i])
+		m.removedgroups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGroups returns the removed IDs of the "groups" edge to the StakeholderGroup entity.
+func (m *StakeholderMutation) RemovedGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.removedgroups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GroupsIDs returns the "groups" edge IDs in the mutation.
+func (m *StakeholderMutation) GroupsIDs() (ids []uuid.UUID) {
+	for id := range m.groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGroups resets all changes to the "groups" edge.
+func (m *StakeholderMutation) ResetGroups() {
+	m.groups = nil
+	m.clearedgroups = false
+	m.removedgroups = nil
+}
+
+// AddAccountIDs adds the "accounts" edge to the Account entity by ids.
+func (m *StakeholderMutation) AddAccountIDs(ids ...uuid.UUID) {
+	if m.accounts == nil {
+		m.accounts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.accounts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAccounts clears the "accounts" edge to the Account entity.
+func (m *StakeholderMutation) ClearAccounts() {
+	m.clearedaccounts = true
+}
+
+// AccountsCleared reports if the "accounts" edge to the Account entity was cleared.
+func (m *StakeholderMutation) AccountsCleared() bool {
+	return m.clearedaccounts
+}
+
+// RemoveAccountIDs removes the "accounts" edge to the Account entity by IDs.
+func (m *StakeholderMutation) RemoveAccountIDs(ids ...uuid.UUID) {
+	if m.removedaccounts == nil {
+		m.removedaccounts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.accounts, ids[i])
+		m.removedaccounts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAccounts returns the removed IDs of the "accounts" edge to the Account entity.
+func (m *StakeholderMutation) RemovedAccountsIDs() (ids []uuid.UUID) {
+	for id := range m.removedaccounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AccountsIDs returns the "accounts" edge IDs in the mutation.
+func (m *StakeholderMutation) AccountsIDs() (ids []uuid.UUID) {
+	for id := range m.accounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAccounts resets all changes to the "accounts" edge.
+func (m *StakeholderMutation) ResetAccounts() {
+	m.accounts = nil
+	m.clearedaccounts = false
+	m.removedaccounts = nil
+}
+
 // Where appends a list predicates to the StakeholderMutation builder.
 func (m *StakeholderMutation) Where(ps ...predicate.Stakeholder) {
 	m.predicates = append(m.predicates, ps...)
@@ -1574,7 +2100,7 @@ func (m *StakeholderMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StakeholderMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, stakeholder.FieldName)
 	}
@@ -1583,6 +2109,12 @@ func (m *StakeholderMutation) Fields() []string {
 	}
 	if m.email != nil {
 		fields = append(fields, stakeholder.FieldEmail)
+	}
+	if m.relationship != nil {
+		fields = append(fields, stakeholder.FieldRelationship)
+	}
+	if m.message != nil {
+		fields = append(fields, stakeholder.FieldMessage)
 	}
 	if m.created_at != nil {
 		fields = append(fields, stakeholder.FieldCreatedAt)
@@ -1601,6 +2133,10 @@ func (m *StakeholderMutation) Field(name string) (ent.Value, bool) {
 		return m.Phone()
 	case stakeholder.FieldEmail:
 		return m.Email()
+	case stakeholder.FieldRelationship:
+		return m.Relationship()
+	case stakeholder.FieldMessage:
+		return m.Message()
 	case stakeholder.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -1618,6 +2154,10 @@ func (m *StakeholderMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldPhone(ctx)
 	case stakeholder.FieldEmail:
 		return m.OldEmail(ctx)
+	case stakeholder.FieldRelationship:
+		return m.OldRelationship(ctx)
+	case stakeholder.FieldMessage:
+		return m.OldMessage(ctx)
 	case stakeholder.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -1649,6 +2189,20 @@ func (m *StakeholderMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmail(v)
+		return nil
+	case stakeholder.FieldRelationship:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRelationship(v)
+		return nil
+	case stakeholder.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
 		return nil
 	case stakeholder.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1693,6 +2247,9 @@ func (m *StakeholderMutation) ClearedFields() []string {
 	if m.FieldCleared(stakeholder.FieldEmail) {
 		fields = append(fields, stakeholder.FieldEmail)
 	}
+	if m.FieldCleared(stakeholder.FieldMessage) {
+		fields = append(fields, stakeholder.FieldMessage)
+	}
 	return fields
 }
 
@@ -1713,6 +2270,9 @@ func (m *StakeholderMutation) ClearField(name string) error {
 	case stakeholder.FieldEmail:
 		m.ClearEmail()
 		return nil
+	case stakeholder.FieldMessage:
+		m.ClearMessage()
+		return nil
 	}
 	return fmt.Errorf("unknown Stakeholder nullable field %s", name)
 }
@@ -1730,6 +2290,12 @@ func (m *StakeholderMutation) ResetField(name string) error {
 	case stakeholder.FieldEmail:
 		m.ResetEmail()
 		return nil
+	case stakeholder.FieldRelationship:
+		m.ResetRelationship()
+		return nil
+	case stakeholder.FieldMessage:
+		m.ResetMessage()
+		return nil
 	case stakeholder.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -1739,9 +2305,15 @@ func (m *StakeholderMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StakeholderMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.owner != nil {
 		edges = append(edges, stakeholder.EdgeOwner)
+	}
+	if m.groups != nil {
+		edges = append(edges, stakeholder.EdgeGroups)
+	}
+	if m.accounts != nil {
+		edges = append(edges, stakeholder.EdgeAccounts)
 	}
 	return edges
 }
@@ -1754,27 +2326,65 @@ func (m *StakeholderMutation) AddedIDs(name string) []ent.Value {
 		if id := m.owner; id != nil {
 			return []ent.Value{*id}
 		}
+	case stakeholder.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.groups))
+		for id := range m.groups {
+			ids = append(ids, id)
+		}
+		return ids
+	case stakeholder.EdgeAccounts:
+		ids := make([]ent.Value, 0, len(m.accounts))
+		for id := range m.accounts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StakeholderMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.removedgroups != nil {
+		edges = append(edges, stakeholder.EdgeGroups)
+	}
+	if m.removedaccounts != nil {
+		edges = append(edges, stakeholder.EdgeAccounts)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *StakeholderMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case stakeholder.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.removedgroups))
+		for id := range m.removedgroups {
+			ids = append(ids, id)
+		}
+		return ids
+	case stakeholder.EdgeAccounts:
+		ids := make([]ent.Value, 0, len(m.removedaccounts))
+		for id := range m.removedaccounts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StakeholderMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.clearedowner {
 		edges = append(edges, stakeholder.EdgeOwner)
+	}
+	if m.clearedgroups {
+		edges = append(edges, stakeholder.EdgeGroups)
+	}
+	if m.clearedaccounts {
+		edges = append(edges, stakeholder.EdgeAccounts)
 	}
 	return edges
 }
@@ -1785,6 +2395,10 @@ func (m *StakeholderMutation) EdgeCleared(name string) bool {
 	switch name {
 	case stakeholder.EdgeOwner:
 		return m.clearedowner
+	case stakeholder.EdgeGroups:
+		return m.clearedgroups
+	case stakeholder.EdgeAccounts:
+		return m.clearedaccounts
 	}
 	return false
 }
@@ -1807,31 +2421,578 @@ func (m *StakeholderMutation) ResetEdge(name string) error {
 	case stakeholder.EdgeOwner:
 		m.ResetOwner()
 		return nil
+	case stakeholder.EdgeGroups:
+		m.ResetGroups()
+		return nil
+	case stakeholder.EdgeAccounts:
+		m.ResetAccounts()
+		return nil
 	}
 	return fmt.Errorf("unknown Stakeholder edge %s", name)
 }
 
-// UserMutation represents an operation that mutates the User nodes in the graph.
-type UserMutation struct {
+// StakeholderGroupMutation represents an operation that mutates the StakeholderGroup nodes in the graph.
+type StakeholderGroupMutation struct {
 	config
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
 	name                *string
-	email               *string
-	password            *string
-	testament           *string
 	created_at          *time.Time
 	clearedFields       map[string]struct{}
+	owner               *uuid.UUID
+	clearedowner        bool
 	stakeholders        map[uuid.UUID]struct{}
 	removedstakeholders map[uuid.UUID]struct{}
 	clearedstakeholders bool
-	legacies            map[uuid.UUID]struct{}
-	removedlegacies     map[uuid.UUID]struct{}
-	clearedlegacies     bool
 	done                bool
-	oldValue            func(context.Context) (*User, error)
-	predicates          []predicate.User
+	oldValue            func(context.Context) (*StakeholderGroup, error)
+	predicates          []predicate.StakeholderGroup
+}
+
+var _ ent.Mutation = (*StakeholderGroupMutation)(nil)
+
+// stakeholdergroupOption allows management of the mutation configuration using functional options.
+type stakeholdergroupOption func(*StakeholderGroupMutation)
+
+// newStakeholderGroupMutation creates new mutation for the StakeholderGroup entity.
+func newStakeholderGroupMutation(c config, op Op, opts ...stakeholdergroupOption) *StakeholderGroupMutation {
+	m := &StakeholderGroupMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStakeholderGroup,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStakeholderGroupID sets the ID field of the mutation.
+func withStakeholderGroupID(id uuid.UUID) stakeholdergroupOption {
+	return func(m *StakeholderGroupMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *StakeholderGroup
+		)
+		m.oldValue = func(ctx context.Context) (*StakeholderGroup, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().StakeholderGroup.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStakeholderGroup sets the old StakeholderGroup of the mutation.
+func withStakeholderGroup(node *StakeholderGroup) stakeholdergroupOption {
+	return func(m *StakeholderGroupMutation) {
+		m.oldValue = func(context.Context) (*StakeholderGroup, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StakeholderGroupMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StakeholderGroupMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of StakeholderGroup entities.
+func (m *StakeholderGroupMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StakeholderGroupMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StakeholderGroupMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().StakeholderGroup.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *StakeholderGroupMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *StakeholderGroupMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the StakeholderGroup entity.
+// If the StakeholderGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StakeholderGroupMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *StakeholderGroupMutation) ResetName() {
+	m.name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *StakeholderGroupMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *StakeholderGroupMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the StakeholderGroup entity.
+// If the StakeholderGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StakeholderGroupMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *StakeholderGroupMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by id.
+func (m *StakeholderGroupMutation) SetOwnerID(id uuid.UUID) {
+	m.owner = &id
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *StakeholderGroupMutation) ClearOwner() {
+	m.clearedowner = true
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *StakeholderGroupMutation) OwnerCleared() bool {
+	return m.clearedowner
+}
+
+// OwnerID returns the "owner" edge ID in the mutation.
+func (m *StakeholderGroupMutation) OwnerID() (id uuid.UUID, exists bool) {
+	if m.owner != nil {
+		return *m.owner, true
+	}
+	return
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *StakeholderGroupMutation) OwnerIDs() (ids []uuid.UUID) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *StakeholderGroupMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by ids.
+func (m *StakeholderGroupMutation) AddStakeholderIDs(ids ...uuid.UUID) {
+	if m.stakeholders == nil {
+		m.stakeholders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.stakeholders[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStakeholders clears the "stakeholders" edge to the Stakeholder entity.
+func (m *StakeholderGroupMutation) ClearStakeholders() {
+	m.clearedstakeholders = true
+}
+
+// StakeholdersCleared reports if the "stakeholders" edge to the Stakeholder entity was cleared.
+func (m *StakeholderGroupMutation) StakeholdersCleared() bool {
+	return m.clearedstakeholders
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to the Stakeholder entity by IDs.
+func (m *StakeholderGroupMutation) RemoveStakeholderIDs(ids ...uuid.UUID) {
+	if m.removedstakeholders == nil {
+		m.removedstakeholders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.stakeholders, ids[i])
+		m.removedstakeholders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStakeholders returns the removed IDs of the "stakeholders" edge to the Stakeholder entity.
+func (m *StakeholderGroupMutation) RemovedStakeholdersIDs() (ids []uuid.UUID) {
+	for id := range m.removedstakeholders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StakeholdersIDs returns the "stakeholders" edge IDs in the mutation.
+func (m *StakeholderGroupMutation) StakeholdersIDs() (ids []uuid.UUID) {
+	for id := range m.stakeholders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStakeholders resets all changes to the "stakeholders" edge.
+func (m *StakeholderGroupMutation) ResetStakeholders() {
+	m.stakeholders = nil
+	m.clearedstakeholders = false
+	m.removedstakeholders = nil
+}
+
+// Where appends a list predicates to the StakeholderGroupMutation builder.
+func (m *StakeholderGroupMutation) Where(ps ...predicate.StakeholderGroup) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StakeholderGroupMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StakeholderGroupMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.StakeholderGroup, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StakeholderGroupMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StakeholderGroupMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (StakeholderGroup).
+func (m *StakeholderGroupMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StakeholderGroupMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.name != nil {
+		fields = append(fields, stakeholdergroup.FieldName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, stakeholdergroup.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StakeholderGroupMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case stakeholdergroup.FieldName:
+		return m.Name()
+	case stakeholdergroup.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StakeholderGroupMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case stakeholdergroup.FieldName:
+		return m.OldName(ctx)
+	case stakeholdergroup.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown StakeholderGroup field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StakeholderGroupMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case stakeholdergroup.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case stakeholdergroup.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown StakeholderGroup field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StakeholderGroupMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StakeholderGroupMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StakeholderGroupMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown StakeholderGroup numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StakeholderGroupMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StakeholderGroupMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StakeholderGroupMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown StakeholderGroup nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StakeholderGroupMutation) ResetField(name string) error {
+	switch name {
+	case stakeholdergroup.FieldName:
+		m.ResetName()
+		return nil
+	case stakeholdergroup.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown StakeholderGroup field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StakeholderGroupMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.owner != nil {
+		edges = append(edges, stakeholdergroup.EdgeOwner)
+	}
+	if m.stakeholders != nil {
+		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StakeholderGroupMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case stakeholdergroup.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	case stakeholdergroup.EdgeStakeholders:
+		ids := make([]ent.Value, 0, len(m.stakeholders))
+		for id := range m.stakeholders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StakeholderGroupMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedstakeholders != nil {
+		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StakeholderGroupMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case stakeholdergroup.EdgeStakeholders:
+		ids := make([]ent.Value, 0, len(m.removedstakeholders))
+		for id := range m.removedstakeholders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StakeholderGroupMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedowner {
+		edges = append(edges, stakeholdergroup.EdgeOwner)
+	}
+	if m.clearedstakeholders {
+		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StakeholderGroupMutation) EdgeCleared(name string) bool {
+	switch name {
+	case stakeholdergroup.EdgeOwner:
+		return m.clearedowner
+	case stakeholdergroup.EdgeStakeholders:
+		return m.clearedstakeholders
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StakeholderGroupMutation) ClearEdge(name string) error {
+	switch name {
+	case stakeholdergroup.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown StakeholderGroup unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StakeholderGroupMutation) ResetEdge(name string) error {
+	switch name {
+	case stakeholdergroup.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	case stakeholdergroup.EdgeStakeholders:
+		m.ResetStakeholders()
+		return nil
+	}
+	return fmt.Errorf("unknown StakeholderGroup edge %s", name)
+}
+
+// UserMutation represents an operation that mutates the User nodes in the graph.
+type UserMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	name                      *string
+	email                     *string
+	password                  *string
+	testament                 *string
+	created_at                *time.Time
+	clearedFields             map[string]struct{}
+	stakeholders              map[uuid.UUID]struct{}
+	removedstakeholders       map[uuid.UUID]struct{}
+	clearedstakeholders       bool
+	stakeholder_groups        map[uuid.UUID]struct{}
+	removedstakeholder_groups map[uuid.UUID]struct{}
+	clearedstakeholder_groups bool
+	legacies                  map[uuid.UUID]struct{}
+	removedlegacies           map[uuid.UUID]struct{}
+	clearedlegacies           bool
+	done                      bool
+	oldValue                  func(context.Context) (*User, error)
+	predicates                []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -2172,6 +3333,60 @@ func (m *UserMutation) ResetStakeholders() {
 	m.removedstakeholders = nil
 }
 
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by ids.
+func (m *UserMutation) AddStakeholderGroupIDs(ids ...uuid.UUID) {
+	if m.stakeholder_groups == nil {
+		m.stakeholder_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.stakeholder_groups[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStakeholderGroups clears the "stakeholder_groups" edge to the StakeholderGroup entity.
+func (m *UserMutation) ClearStakeholderGroups() {
+	m.clearedstakeholder_groups = true
+}
+
+// StakeholderGroupsCleared reports if the "stakeholder_groups" edge to the StakeholderGroup entity was cleared.
+func (m *UserMutation) StakeholderGroupsCleared() bool {
+	return m.clearedstakeholder_groups
+}
+
+// RemoveStakeholderGroupIDs removes the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (m *UserMutation) RemoveStakeholderGroupIDs(ids ...uuid.UUID) {
+	if m.removedstakeholder_groups == nil {
+		m.removedstakeholder_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.stakeholder_groups, ids[i])
+		m.removedstakeholder_groups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStakeholderGroups returns the removed IDs of the "stakeholder_groups" edge to the StakeholderGroup entity.
+func (m *UserMutation) RemovedStakeholderGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.removedstakeholder_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StakeholderGroupsIDs returns the "stakeholder_groups" edge IDs in the mutation.
+func (m *UserMutation) StakeholderGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.stakeholder_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStakeholderGroups resets all changes to the "stakeholder_groups" edge.
+func (m *UserMutation) ResetStakeholderGroups() {
+	m.stakeholder_groups = nil
+	m.clearedstakeholder_groups = false
+	m.removedstakeholder_groups = nil
+}
+
 // AddLegacyIDs adds the "legacies" edge to the Legacy entity by ids.
 func (m *UserMutation) AddLegacyIDs(ids ...uuid.UUID) {
 	if m.legacies == nil {
@@ -2427,9 +3642,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.stakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
+	}
+	if m.stakeholder_groups != nil {
+		edges = append(edges, user.EdgeStakeholderGroups)
 	}
 	if m.legacies != nil {
 		edges = append(edges, user.EdgeLegacies)
@@ -2447,6 +3665,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeStakeholderGroups:
+		ids := make([]ent.Value, 0, len(m.stakeholder_groups))
+		for id := range m.stakeholder_groups {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeLegacies:
 		ids := make([]ent.Value, 0, len(m.legacies))
 		for id := range m.legacies {
@@ -2459,9 +3683,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
+	}
+	if m.removedstakeholder_groups != nil {
+		edges = append(edges, user.EdgeStakeholderGroups)
 	}
 	if m.removedlegacies != nil {
 		edges = append(edges, user.EdgeLegacies)
@@ -2479,6 +3706,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeStakeholderGroups:
+		ids := make([]ent.Value, 0, len(m.removedstakeholder_groups))
+		for id := range m.removedstakeholder_groups {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeLegacies:
 		ids := make([]ent.Value, 0, len(m.removedlegacies))
 		for id := range m.removedlegacies {
@@ -2491,9 +3724,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedstakeholders {
 		edges = append(edges, user.EdgeStakeholders)
+	}
+	if m.clearedstakeholder_groups {
+		edges = append(edges, user.EdgeStakeholderGroups)
 	}
 	if m.clearedlegacies {
 		edges = append(edges, user.EdgeLegacies)
@@ -2507,6 +3743,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeStakeholders:
 		return m.clearedstakeholders
+	case user.EdgeStakeholderGroups:
+		return m.clearedstakeholder_groups
 	case user.EdgeLegacies:
 		return m.clearedlegacies
 	}
@@ -2527,6 +3765,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeStakeholders:
 		m.ResetStakeholders()
+		return nil
+	case user.EdgeStakeholderGroups:
+		m.ResetStakeholderGroups()
 		return nil
 	case user.EdgeLegacies:
 		m.ResetLegacies()

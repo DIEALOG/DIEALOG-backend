@@ -21,12 +21,18 @@ type Account struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
 	Type account.Type `json:"type,omitempty"`
-	// AccountTypeOther holds the value of the "account_type_other" field.
-	AccountTypeOther *string `json:"account_type_other,omitempty"`
+	// TypeName holds the value of the "type_name" field.
+	TypeName *string `json:"type_name,omitempty"`
+	// Action holds the value of the "action" field.
+	Action account.Action `json:"action,omitempty"`
+	// ActionMessage holds the value of the "action_message" field.
+	ActionMessage *string `json:"action_message,omitempty"`
+	// DataLocation holds the value of the "data_location" field.
+	DataLocation *string `json:"data_location,omitempty"`
 	// AccountID holds the value of the "account_id" field.
-	AccountID string `json:"account_id,omitempty"`
+	AccountID *string `json:"account_id,omitempty"`
 	// AccountPassword holds the value of the "account_password" field.
-	AccountPassword string `json:"account_password,omitempty"`
+	AccountPassword *string `json:"account_password,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -40,9 +46,11 @@ type Account struct {
 type AccountEdges struct {
 	// Legacy holds the value of the legacy edge.
 	Legacy *Legacy `json:"legacy,omitempty"`
+	// Stakeholders holds the value of the stakeholders edge.
+	Stakeholders []*Stakeholder `json:"stakeholders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // LegacyOrErr returns the Legacy value or an error if the edge
@@ -56,12 +64,21 @@ func (e AccountEdges) LegacyOrErr() (*Legacy, error) {
 	return nil, &NotLoadedError{edge: "legacy"}
 }
 
+// StakeholdersOrErr returns the Stakeholders value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) StakeholdersOrErr() ([]*Stakeholder, error) {
+	if e.loadedTypes[1] {
+		return e.Stakeholders, nil
+	}
+	return nil, &NotLoadedError{edge: "stakeholders"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Account) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case account.FieldType, account.FieldAccountTypeOther, account.FieldAccountID, account.FieldAccountPassword:
+		case account.FieldType, account.FieldTypeName, account.FieldAction, account.FieldActionMessage, account.FieldDataLocation, account.FieldAccountID, account.FieldAccountPassword:
 			values[i] = new(sql.NullString)
 		case account.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -96,24 +113,46 @@ func (_m *Account) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Type = account.Type(value.String)
 			}
-		case account.FieldAccountTypeOther:
+		case account.FieldTypeName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field account_type_other", values[i])
+				return fmt.Errorf("unexpected type %T for field type_name", values[i])
 			} else if value.Valid {
-				_m.AccountTypeOther = new(string)
-				*_m.AccountTypeOther = value.String
+				_m.TypeName = new(string)
+				*_m.TypeName = value.String
+			}
+		case account.FieldAction:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field action", values[i])
+			} else if value.Valid {
+				_m.Action = account.Action(value.String)
+			}
+		case account.FieldActionMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field action_message", values[i])
+			} else if value.Valid {
+				_m.ActionMessage = new(string)
+				*_m.ActionMessage = value.String
+			}
+		case account.FieldDataLocation:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field data_location", values[i])
+			} else if value.Valid {
+				_m.DataLocation = new(string)
+				*_m.DataLocation = value.String
 			}
 		case account.FieldAccountID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
 			} else if value.Valid {
-				_m.AccountID = value.String
+				_m.AccountID = new(string)
+				*_m.AccountID = value.String
 			}
 		case account.FieldAccountPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_password", values[i])
 			} else if value.Valid {
-				_m.AccountPassword = value.String
+				_m.AccountPassword = new(string)
+				*_m.AccountPassword = value.String
 			}
 		case account.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -146,6 +185,11 @@ func (_m *Account) QueryLegacy() *LegacyQuery {
 	return NewAccountClient(_m.config).QueryLegacy(_m)
 }
 
+// QueryStakeholders queries the "stakeholders" edge of the Account entity.
+func (_m *Account) QueryStakeholders() *StakeholderQuery {
+	return NewAccountClient(_m.config).QueryStakeholders(_m)
+}
+
 // Update returns a builder for updating this Account.
 // Note that you need to call Account.Unwrap() before calling this method if this Account
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -172,16 +216,33 @@ func (_m *Account) String() string {
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
-	if v := _m.AccountTypeOther; v != nil {
-		builder.WriteString("account_type_other=")
+	if v := _m.TypeName; v != nil {
+		builder.WriteString("type_name=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("account_id=")
-	builder.WriteString(_m.AccountID)
+	builder.WriteString("action=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Action))
 	builder.WriteString(", ")
-	builder.WriteString("account_password=")
-	builder.WriteString(_m.AccountPassword)
+	if v := _m.ActionMessage; v != nil {
+		builder.WriteString("action_message=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DataLocation; v != nil {
+		builder.WriteString("data_location=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.AccountID; v != nil {
+		builder.WriteString("account_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.AccountPassword; v != nil {
+		builder.WriteString("account_password=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

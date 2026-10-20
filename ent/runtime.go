@@ -10,6 +10,7 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/schema"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -19,16 +20,8 @@ import (
 func init() {
 	accountFields := schema.Account{}.Fields()
 	_ = accountFields
-	// accountDescAccountID is the schema descriptor for account_id field.
-	accountDescAccountID := accountFields[3].Descriptor()
-	// account.AccountIDValidator is a validator for the "account_id" field. It is called by the builders before save.
-	account.AccountIDValidator = accountDescAccountID.Validators[0].(func(string) error)
-	// accountDescAccountPassword is the schema descriptor for account_password field.
-	accountDescAccountPassword := accountFields[4].Descriptor()
-	// account.AccountPasswordValidator is a validator for the "account_password" field. It is called by the builders before save.
-	account.AccountPasswordValidator = accountDescAccountPassword.Validators[0].(func(string) error)
 	// accountDescCreatedAt is the schema descriptor for created_at field.
-	accountDescCreatedAt := accountFields[5].Descriptor()
+	accountDescCreatedAt := accountFields[8].Descriptor()
 	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
 	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
 	// accountDescID is the schema descriptor for id field.
@@ -55,14 +48,32 @@ func init() {
 	stakeholderDescName := stakeholderFields[1].Descriptor()
 	// stakeholder.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	stakeholder.NameValidator = stakeholderDescName.Validators[0].(func(string) error)
+	// stakeholderDescRelationship is the schema descriptor for relationship field.
+	stakeholderDescRelationship := stakeholderFields[4].Descriptor()
+	// stakeholder.DefaultRelationship holds the default value on creation for the relationship field.
+	stakeholder.DefaultRelationship = stakeholderDescRelationship.Default.(string)
 	// stakeholderDescCreatedAt is the schema descriptor for created_at field.
-	stakeholderDescCreatedAt := stakeholderFields[4].Descriptor()
+	stakeholderDescCreatedAt := stakeholderFields[6].Descriptor()
 	// stakeholder.DefaultCreatedAt holds the default value on creation for the created_at field.
 	stakeholder.DefaultCreatedAt = stakeholderDescCreatedAt.Default.(func() time.Time)
 	// stakeholderDescID is the schema descriptor for id field.
 	stakeholderDescID := stakeholderFields[0].Descriptor()
 	// stakeholder.DefaultID holds the default value on creation for the id field.
 	stakeholder.DefaultID = stakeholderDescID.Default.(func() uuid.UUID)
+	stakeholdergroupFields := schema.StakeholderGroup{}.Fields()
+	_ = stakeholdergroupFields
+	// stakeholdergroupDescName is the schema descriptor for name field.
+	stakeholdergroupDescName := stakeholdergroupFields[1].Descriptor()
+	// stakeholdergroup.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	stakeholdergroup.NameValidator = stakeholdergroupDescName.Validators[0].(func(string) error)
+	// stakeholdergroupDescCreatedAt is the schema descriptor for created_at field.
+	stakeholdergroupDescCreatedAt := stakeholdergroupFields[2].Descriptor()
+	// stakeholdergroup.DefaultCreatedAt holds the default value on creation for the created_at field.
+	stakeholdergroup.DefaultCreatedAt = stakeholdergroupDescCreatedAt.Default.(func() time.Time)
+	// stakeholdergroupDescID is the schema descriptor for id field.
+	stakeholdergroupDescID := stakeholdergroupFields[0].Descriptor()
+	// stakeholdergroup.DefaultID holds the default value on creation for the id field.
+	stakeholdergroup.DefaultID = stakeholdergroupDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.

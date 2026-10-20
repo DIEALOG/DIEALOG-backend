@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -56,6 +58,34 @@ func (_c *StakeholderCreate) SetNillableEmail(v *string) *StakeholderCreate {
 	return _c
 }
 
+// SetRelationship sets the "relationship" field.
+func (_c *StakeholderCreate) SetRelationship(v string) *StakeholderCreate {
+	_c.mutation.SetRelationship(v)
+	return _c
+}
+
+// SetNillableRelationship sets the "relationship" field if the given value is not nil.
+func (_c *StakeholderCreate) SetNillableRelationship(v *string) *StakeholderCreate {
+	if v != nil {
+		_c.SetRelationship(*v)
+	}
+	return _c
+}
+
+// SetMessage sets the "message" field.
+func (_c *StakeholderCreate) SetMessage(v string) *StakeholderCreate {
+	_c.mutation.SetMessage(v)
+	return _c
+}
+
+// SetNillableMessage sets the "message" field if the given value is not nil.
+func (_c *StakeholderCreate) SetNillableMessage(v *string) *StakeholderCreate {
+	if v != nil {
+		_c.SetMessage(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *StakeholderCreate) SetCreatedAt(v time.Time) *StakeholderCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -95,6 +125,36 @@ func (_c *StakeholderCreate) SetOwner(v *User) *StakeholderCreate {
 	return _c.SetOwnerID(v.ID)
 }
 
+// AddGroupIDs adds the "groups" edge to the StakeholderGroup entity by IDs.
+func (_c *StakeholderCreate) AddGroupIDs(ids ...uuid.UUID) *StakeholderCreate {
+	_c.mutation.AddGroupIDs(ids...)
+	return _c
+}
+
+// AddGroups adds the "groups" edges to the StakeholderGroup entity.
+func (_c *StakeholderCreate) AddGroups(v ...*StakeholderGroup) *StakeholderCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGroupIDs(ids...)
+}
+
+// AddAccountIDs adds the "accounts" edge to the Account entity by IDs.
+func (_c *StakeholderCreate) AddAccountIDs(ids ...uuid.UUID) *StakeholderCreate {
+	_c.mutation.AddAccountIDs(ids...)
+	return _c
+}
+
+// AddAccounts adds the "accounts" edges to the Account entity.
+func (_c *StakeholderCreate) AddAccounts(v ...*Account) *StakeholderCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAccountIDs(ids...)
+}
+
 // Mutation returns the StakeholderMutation object of the builder.
 func (_c *StakeholderCreate) Mutation() *StakeholderMutation {
 	return _c.mutation
@@ -130,6 +190,10 @@ func (_c *StakeholderCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *StakeholderCreate) defaults() {
+	if _, ok := _c.mutation.Relationship(); !ok {
+		v := stakeholder.DefaultRelationship
+		_c.mutation.SetRelationship(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := stakeholder.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -149,6 +213,9 @@ func (_c *StakeholderCreate) check() error {
 		if err := stakeholder.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Stakeholder.name": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Relationship(); !ok {
+		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required field "Stakeholder.relationship"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Stakeholder.created_at"`)}
@@ -203,6 +270,14 @@ func (_c *StakeholderCreate) createSpec() (*Stakeholder, *sqlgraph.CreateSpec) {
 		_spec.SetField(stakeholder.FieldEmail, field.TypeString, value)
 		_node.Email = &value
 	}
+	if value, ok := _c.mutation.Relationship(); ok {
+		_spec.SetField(stakeholder.FieldRelationship, field.TypeString, value)
+		_node.Relationship = value
+	}
+	if value, ok := _c.mutation.Message(); ok {
+		_spec.SetField(stakeholder.FieldMessage, field.TypeString, value)
+		_node.Message = &value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(stakeholder.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -222,6 +297,38 @@ func (_c *StakeholderCreate) createSpec() (*Stakeholder, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.user_stakeholders = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholder.GroupsTable,
+			Columns: stakeholder.GroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholder.AccountsTable,
+			Columns: stakeholder.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

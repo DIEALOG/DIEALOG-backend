@@ -97,7 +97,7 @@ func (lu *legacyUseCase) Delete(c context.Context, id *domain.ID, userID *domain
 
 func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Account, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
 	if !account.IsValid() {
-		return nil, domain.NewBadRequestError(errors.New("account_type_other must be provided when type is Other"))
+		return nil, domain.NewBadRequestError(errors.New("invalid account: type or action is invalid"))
 	}
 
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)

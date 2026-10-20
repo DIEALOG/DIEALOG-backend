@@ -18,8 +18,14 @@ const (
 	FieldID = "id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
-	// FieldAccountTypeOther holds the string denoting the account_type_other field in the database.
-	FieldAccountTypeOther = "account_type_other"
+	// FieldTypeName holds the string denoting the type_name field in the database.
+	FieldTypeName = "type_name"
+	// FieldAction holds the string denoting the action field in the database.
+	FieldAction = "action"
+	// FieldActionMessage holds the string denoting the action_message field in the database.
+	FieldActionMessage = "action_message"
+	// FieldDataLocation holds the string denoting the data_location field in the database.
+	FieldDataLocation = "data_location"
 	// FieldAccountID holds the string denoting the account_id field in the database.
 	FieldAccountID = "account_id"
 	// FieldAccountPassword holds the string denoting the account_password field in the database.
@@ -28,6 +34,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeLegacy holds the string denoting the legacy edge name in mutations.
 	EdgeLegacy = "legacy"
+	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
+	EdgeStakeholders = "stakeholders"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// LegacyTable is the table that holds the legacy relation/edge.
@@ -37,13 +45,21 @@ const (
 	LegacyInverseTable = "legacies"
 	// LegacyColumn is the table column denoting the legacy relation/edge.
 	LegacyColumn = "legacy_accounts"
+	// StakeholdersTable is the table that holds the stakeholders relation/edge. The primary key declared below.
+	StakeholdersTable = "account_stakeholders"
+	// StakeholdersInverseTable is the table name for the Stakeholder entity.
+	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
+	StakeholdersInverseTable = "stakeholders"
 )
 
 // Columns holds all SQL columns for account fields.
 var Columns = []string{
 	FieldID,
 	FieldType,
-	FieldAccountTypeOther,
+	FieldTypeName,
+	FieldAction,
+	FieldActionMessage,
+	FieldDataLocation,
 	FieldAccountID,
 	FieldAccountPassword,
 	FieldCreatedAt,
@@ -54,6 +70,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"legacy_accounts",
 }
+
+var (
+	// StakeholdersPrimaryKey and StakeholdersColumn2 are the table columns denoting the
+	// primary key for the stakeholders relation (M2M).
+	StakeholdersPrimaryKey = []string{"account_id", "stakeholder_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -71,10 +93,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// AccountIDValidator is a validator for the "account_id" field. It is called by the builders before save.
-	AccountIDValidator func(string) error
-	// AccountPasswordValidator is a validator for the "account_password" field. It is called by the builders before save.
-	AccountPasswordValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -94,6 +112,8 @@ const (
 	TypeMicrosoft Type = "Microsoft"
 	TypeKakaoTalk Type = "KakaoTalk"
 	TypeGitHub    Type = "GitHub"
+	TypeTelegram  Type = "Telegram"
+	TypeInstagram Type = "Instagram"
 	TypeOther     Type = "Other"
 )
 
@@ -104,10 +124,39 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeGoogle, TypeFacebook, TypeTwitter, TypeApple, TypeDiscord, TypeMicrosoft, TypeKakaoTalk, TypeGitHub, TypeOther:
+	case TypeGoogle, TypeFacebook, TypeTwitter, TypeApple, TypeDiscord, TypeMicrosoft, TypeKakaoTalk, TypeGitHub, TypeTelegram, TypeInstagram, TypeOther:
 		return nil
 	default:
 		return fmt.Errorf("account: invalid enum value for type field: %q", _type)
+	}
+}
+
+// Action defines the type for the "action" enum field.
+type Action string
+
+// ActionRemain is the default value of the Action enum.
+const DefaultAction = ActionRemain
+
+// Action values.
+const (
+	ActionDelete          Action = "delete"
+	ActionRemain          Action = "remain"
+	ActionPermissionMove  Action = "permission-move"
+	ActionBackupAndDelete Action = "backup-and-delete"
+	ActionOther           Action = "other"
+)
+
+func (a Action) String() string {
+	return string(a)
+}
+
+// ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
+func ActionValidator(a Action) error {
+	switch a {
+	case ActionDelete, ActionRemain, ActionPermissionMove, ActionBackupAndDelete, ActionOther:
+		return nil
+	default:
+		return fmt.Errorf("account: invalid enum value for action field: %q", a)
 	}
 }
 
@@ -124,9 +173,24 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
-// ByAccountTypeOther orders the results by the account_type_other field.
-func ByAccountTypeOther(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAccountTypeOther, opts...).ToFunc()
+// ByTypeName orders the results by the type_name field.
+func ByTypeName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTypeName, opts...).ToFunc()
+}
+
+// ByAction orders the results by the action field.
+func ByAction(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAction, opts...).ToFunc()
+}
+
+// ByActionMessage orders the results by the action_message field.
+func ByActionMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldActionMessage, opts...).ToFunc()
+}
+
+// ByDataLocation orders the results by the data_location field.
+func ByDataLocation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDataLocation, opts...).ToFunc()
 }
 
 // ByAccountID orders the results by the account_id field.
@@ -150,10 +214,31 @@ func ByLegacyField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLegacyStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByStakeholdersCount orders the results by stakeholders count.
+func ByStakeholdersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStakeholdersStep(), opts...)
+	}
+}
+
+// ByStakeholders orders the results by stakeholders terms.
+func ByStakeholders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStakeholdersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newLegacyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LegacyInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, LegacyTable, LegacyColumn),
+	)
+}
+func newStakeholdersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StakeholdersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, StakeholdersTable, StakeholdersPrimaryKey...),
 	)
 }

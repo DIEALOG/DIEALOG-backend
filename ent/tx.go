@@ -18,6 +18,8 @@ type Tx struct {
 	Legacy *LegacyClient
 	// Stakeholder is the client for interacting with the Stakeholder builders.
 	Stakeholder *StakeholderClient
+	// StakeholderGroup is the client for interacting with the StakeholderGroup builders.
+	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -154,6 +156,7 @@ func (tx *Tx) init() {
 	tx.Account = NewAccountClient(tx.config)
 	tx.Legacy = NewLegacyClient(tx.config)
 	tx.Stakeholder = NewStakeholderClient(tx.config)
+	tx.StakeholderGroup = NewStakeholderGroupClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

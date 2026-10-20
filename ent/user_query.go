@@ -16,18 +16,20 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx              *QueryContext
-	order            []user.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.User
-	withStakeholders *StakeholderQuery
-	withLegacies     *LegacyQuery
+	ctx                   *QueryContext
+	order                 []user.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.User
+	withStakeholders      *StakeholderQuery
+	withStakeholderGroups *StakeholderGroupQuery
+	withLegacies          *LegacyQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +81,28 @@ func (_q *UserQuery) QueryStakeholders() *StakeholderQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.StakeholdersTable, user.StakeholdersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStakeholderGroups chains the current query on the "stakeholder_groups" edge.
+func (_q *UserQuery) QueryStakeholderGroups() *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.StakeholderGroupsTable, user.StakeholderGroupsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +319,14 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]user.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.User{}, _q.predicates...),
-		withStakeholders: _q.withStakeholders.Clone(),
-		withLegacies:     _q.withLegacies.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]user.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.User{}, _q.predicates...),
+		withStakeholders:      _q.withStakeholders.Clone(),
+		withStakeholderGroups: _q.withStakeholderGroups.Clone(),
+		withLegacies:          _q.withLegacies.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -316,6 +341,17 @@ func (_q *UserQuery) WithStakeholders(opts ...func(*StakeholderQuery)) *UserQuer
 		opt(query)
 	}
 	_q.withStakeholders = query
+	return _q
+}
+
+// WithStakeholderGroups tells the query-builder to eager-load the nodes that are connected to
+// the "stakeholder_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithStakeholderGroups(opts ...func(*StakeholderGroupQuery)) *UserQuery {
+	query := (&StakeholderGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStakeholderGroups = query
 	return _q
 }
 
@@ -408,8 +444,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withStakeholders != nil,
+			_q.withStakeholderGroups != nil,
 			_q.withLegacies != nil,
 		}
 	)
@@ -435,6 +472,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadStakeholders(ctx, query, nodes,
 			func(n *User) { n.Edges.Stakeholders = []*Stakeholder{} },
 			func(n *User, e *Stakeholder) { n.Edges.Stakeholders = append(n.Edges.Stakeholders, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withStakeholderGroups; query != nil {
+		if err := _q.loadStakeholderGroups(ctx, query, nodes,
+			func(n *User) { n.Edges.StakeholderGroups = []*StakeholderGroup{} },
+			func(n *User, e *StakeholderGroup) { n.Edges.StakeholderGroups = append(n.Edges.StakeholderGroups, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -474,6 +518,37 @@ func (_q *UserQuery) loadStakeholders(ctx context.Context, query *StakeholderQue
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_stakeholders" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadStakeholderGroups(ctx context.Context, query *StakeholderGroupQuery, nodes []*User, init func(*User), assign func(*User, *StakeholderGroup)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.StakeholderGroup(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.StakeholderGroupsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_stakeholder_groups
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_stakeholder_groups" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_stakeholder_groups" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

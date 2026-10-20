@@ -11,10 +11,13 @@ var (
 	// AccountsColumns holds the columns for the "accounts" table.
 	AccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"Google", "Facebook", "Twitter", "Apple", "Discord", "Microsoft", "KakaoTalk", "GitHub", "Other"}},
-		{Name: "account_type_other", Type: field.TypeString, Nullable: true},
-		{Name: "account_id", Type: field.TypeString},
-		{Name: "account_password", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"Google", "Facebook", "Twitter", "Apple", "Discord", "Microsoft", "KakaoTalk", "GitHub", "Telegram", "Instagram", "Other"}},
+		{Name: "type_name", Type: field.TypeString, Nullable: true},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"delete", "remain", "permission-move", "backup-and-delete", "other"}, Default: "remain"},
+		{Name: "action_message", Type: field.TypeString, Nullable: true},
+		{Name: "data_location", Type: field.TypeString, Nullable: true},
+		{Name: "account_id", Type: field.TypeString, Nullable: true},
+		{Name: "account_password", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "legacy_accounts", Type: field.TypeUUID},
 	}
@@ -26,7 +29,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "accounts_legacies_accounts",
-				Columns:    []*schema.Column{AccountsColumns[6]},
+				Columns:    []*schema.Column{AccountsColumns[9]},
 				RefColumns: []*schema.Column{LegaciesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -59,6 +62,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "phone", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "relationship", Type: field.TypeString, Default: ""},
+		{Name: "message", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "user_stakeholders", Type: field.TypeUUID},
 	}
@@ -70,7 +75,28 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "stakeholders_users_stakeholders",
-				Columns:    []*schema.Column{StakeholdersColumns[5]},
+				Columns:    []*schema.Column{StakeholdersColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// StakeholderGroupsColumns holds the columns for the "stakeholder_groups" table.
+	StakeholderGroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_stakeholder_groups", Type: field.TypeUUID},
+	}
+	// StakeholderGroupsTable holds the schema information for the "stakeholder_groups" table.
+	StakeholderGroupsTable = &schema.Table{
+		Name:       "stakeholder_groups",
+		Columns:    StakeholderGroupsColumns,
+		PrimaryKey: []*schema.Column{StakeholderGroupsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stakeholder_groups_users_stakeholder_groups",
+				Columns:    []*schema.Column{StakeholderGroupsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -91,12 +117,65 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// AccountStakeholdersColumns holds the columns for the "account_stakeholders" table.
+	AccountStakeholdersColumns = []*schema.Column{
+		{Name: "account_id", Type: field.TypeUUID},
+		{Name: "stakeholder_id", Type: field.TypeUUID},
+	}
+	// AccountStakeholdersTable holds the schema information for the "account_stakeholders" table.
+	AccountStakeholdersTable = &schema.Table{
+		Name:       "account_stakeholders",
+		Columns:    AccountStakeholdersColumns,
+		PrimaryKey: []*schema.Column{AccountStakeholdersColumns[0], AccountStakeholdersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_stakeholders_account_id",
+				Columns:    []*schema.Column{AccountStakeholdersColumns[0]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "account_stakeholders_stakeholder_id",
+				Columns:    []*schema.Column{AccountStakeholdersColumns[1]},
+				RefColumns: []*schema.Column{StakeholdersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// StakeholderGroupStakeholdersColumns holds the columns for the "stakeholder_group_stakeholders" table.
+	StakeholderGroupStakeholdersColumns = []*schema.Column{
+		{Name: "stakeholder_group_id", Type: field.TypeUUID},
+		{Name: "stakeholder_id", Type: field.TypeUUID},
+	}
+	// StakeholderGroupStakeholdersTable holds the schema information for the "stakeholder_group_stakeholders" table.
+	StakeholderGroupStakeholdersTable = &schema.Table{
+		Name:       "stakeholder_group_stakeholders",
+		Columns:    StakeholderGroupStakeholdersColumns,
+		PrimaryKey: []*schema.Column{StakeholderGroupStakeholdersColumns[0], StakeholderGroupStakeholdersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stakeholder_group_stakeholders_stakeholder_group_id",
+				Columns:    []*schema.Column{StakeholderGroupStakeholdersColumns[0]},
+				RefColumns: []*schema.Column{StakeholderGroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "stakeholder_group_stakeholders_stakeholder_id",
+				Columns:    []*schema.Column{StakeholderGroupStakeholdersColumns[1]},
+				RefColumns: []*schema.Column{StakeholdersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
 		LegaciesTable,
 		StakeholdersTable,
+		StakeholderGroupsTable,
 		UsersTable,
+		AccountStakeholdersTable,
+		StakeholderGroupStakeholdersTable,
 	}
 )
 
@@ -104,4 +183,9 @@ func init() {
 	AccountsTable.ForeignKeys[0].RefTable = LegaciesTable
 	LegaciesTable.ForeignKeys[0].RefTable = UsersTable
 	StakeholdersTable.ForeignKeys[0].RefTable = UsersTable
+	StakeholderGroupsTable.ForeignKeys[0].RefTable = UsersTable
+	AccountStakeholdersTable.ForeignKeys[0].RefTable = AccountsTable
+	AccountStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
+	StakeholderGroupStakeholdersTable.ForeignKeys[0].RefTable = StakeholderGroupsTable
+	StakeholderGroupStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
 }

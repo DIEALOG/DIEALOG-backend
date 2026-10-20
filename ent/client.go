@@ -19,6 +19,7 @@ import (
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -33,6 +34,8 @@ type Client struct {
 	Legacy *LegacyClient
 	// Stakeholder is the client for interacting with the Stakeholder builders.
 	Stakeholder *StakeholderClient
+	// StakeholderGroup is the client for interacting with the StakeholderGroup builders.
+	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -49,6 +52,7 @@ func (c *Client) init() {
 	c.Account = NewAccountClient(c.config)
 	c.Legacy = NewLegacyClient(c.config)
 	c.Stakeholder = NewStakeholderClient(c.config)
+	c.StakeholderGroup = NewStakeholderGroupClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -140,12 +144,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		Account:     NewAccountClient(cfg),
-		Legacy:      NewLegacyClient(cfg),
-		Stakeholder: NewStakeholderClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Account:          NewAccountClient(cfg),
+		Legacy:           NewLegacyClient(cfg),
+		Stakeholder:      NewStakeholderClient(cfg),
+		StakeholderGroup: NewStakeholderGroupClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -163,12 +168,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		Account:     NewAccountClient(cfg),
-		Legacy:      NewLegacyClient(cfg),
-		Stakeholder: NewStakeholderClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Account:          NewAccountClient(cfg),
+		Legacy:           NewLegacyClient(cfg),
+		Stakeholder:      NewStakeholderClient(cfg),
+		StakeholderGroup: NewStakeholderGroupClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -200,6 +206,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Account.Use(hooks...)
 	c.Legacy.Use(hooks...)
 	c.Stakeholder.Use(hooks...)
+	c.StakeholderGroup.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -209,6 +216,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Account.Intercept(interceptors...)
 	c.Legacy.Intercept(interceptors...)
 	c.Stakeholder.Intercept(interceptors...)
+	c.StakeholderGroup.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -221,6 +229,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Legacy.mutate(ctx, m)
 	case *StakeholderMutation:
 		return c.Stakeholder.mutate(ctx, m)
+	case *StakeholderGroupMutation:
+		return c.StakeholderGroup.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -345,6 +355,22 @@ func (c *AccountClient) QueryLegacy(_m *Account) *LegacyQuery {
 			sqlgraph.From(account.Table, account.FieldID, id),
 			sqlgraph.To(legacy.Table, legacy.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, account.LegacyTable, account.LegacyColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStakeholders queries the stakeholders edge of a Account.
+func (c *AccountClient) QueryStakeholders(_m *Account) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, account.StakeholdersTable, account.StakeholdersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -666,6 +692,38 @@ func (c *StakeholderClient) QueryOwner(_m *Stakeholder) *UserQuery {
 	return query
 }
 
+// QueryGroups queries the groups edge of a Stakeholder.
+func (c *StakeholderClient) QueryGroups(_m *Stakeholder) *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.GroupsTable, stakeholder.GroupsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAccounts queries the accounts edge of a Stakeholder.
+func (c *StakeholderClient) QueryAccounts(_m *Stakeholder) *AccountQuery {
+	query := (&AccountClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.AccountsTable, stakeholder.AccountsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *StakeholderClient) Hooks() []Hook {
 	return c.hooks.Stakeholder
@@ -688,6 +746,171 @@ func (c *StakeholderClient) mutate(ctx context.Context, m *StakeholderMutation) 
 		return (&StakeholderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Stakeholder mutation op: %q", m.Op())
+	}
+}
+
+// StakeholderGroupClient is a client for the StakeholderGroup schema.
+type StakeholderGroupClient struct {
+	config
+}
+
+// NewStakeholderGroupClient returns a client for the StakeholderGroup from the given config.
+func NewStakeholderGroupClient(c config) *StakeholderGroupClient {
+	return &StakeholderGroupClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `stakeholdergroup.Hooks(f(g(h())))`.
+func (c *StakeholderGroupClient) Use(hooks ...Hook) {
+	c.hooks.StakeholderGroup = append(c.hooks.StakeholderGroup, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `stakeholdergroup.Intercept(f(g(h())))`.
+func (c *StakeholderGroupClient) Intercept(interceptors ...Interceptor) {
+	c.inters.StakeholderGroup = append(c.inters.StakeholderGroup, interceptors...)
+}
+
+// Create returns a builder for creating a StakeholderGroup entity.
+func (c *StakeholderGroupClient) Create() *StakeholderGroupCreate {
+	mutation := newStakeholderGroupMutation(c.config, OpCreate)
+	return &StakeholderGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of StakeholderGroup entities.
+func (c *StakeholderGroupClient) CreateBulk(builders ...*StakeholderGroupCreate) *StakeholderGroupCreateBulk {
+	return &StakeholderGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StakeholderGroupClient) MapCreateBulk(slice any, setFunc func(*StakeholderGroupCreate, int)) *StakeholderGroupCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StakeholderGroupCreateBulk{err: fmt.Errorf("calling to StakeholderGroupClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StakeholderGroupCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StakeholderGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for StakeholderGroup.
+func (c *StakeholderGroupClient) Update() *StakeholderGroupUpdate {
+	mutation := newStakeholderGroupMutation(c.config, OpUpdate)
+	return &StakeholderGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StakeholderGroupClient) UpdateOne(_m *StakeholderGroup) *StakeholderGroupUpdateOne {
+	mutation := newStakeholderGroupMutation(c.config, OpUpdateOne, withStakeholderGroup(_m))
+	return &StakeholderGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StakeholderGroupClient) UpdateOneID(id uuid.UUID) *StakeholderGroupUpdateOne {
+	mutation := newStakeholderGroupMutation(c.config, OpUpdateOne, withStakeholderGroupID(id))
+	return &StakeholderGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for StakeholderGroup.
+func (c *StakeholderGroupClient) Delete() *StakeholderGroupDelete {
+	mutation := newStakeholderGroupMutation(c.config, OpDelete)
+	return &StakeholderGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StakeholderGroupClient) DeleteOne(_m *StakeholderGroup) *StakeholderGroupDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StakeholderGroupClient) DeleteOneID(id uuid.UUID) *StakeholderGroupDeleteOne {
+	builder := c.Delete().Where(stakeholdergroup.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StakeholderGroupDeleteOne{builder}
+}
+
+// Query returns a query builder for StakeholderGroup.
+func (c *StakeholderGroupClient) Query() *StakeholderGroupQuery {
+	return &StakeholderGroupQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStakeholderGroup},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a StakeholderGroup entity by its id.
+func (c *StakeholderGroupClient) Get(ctx context.Context, id uuid.UUID) (*StakeholderGroup, error) {
+	return c.Query().Where(stakeholdergroup.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StakeholderGroupClient) GetX(ctx context.Context, id uuid.UUID) *StakeholderGroup {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a StakeholderGroup.
+func (c *StakeholderGroupClient) QueryOwner(_m *StakeholderGroup) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, stakeholdergroup.OwnerTable, stakeholdergroup.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStakeholders queries the stakeholders edge of a StakeholderGroup.
+func (c *StakeholderGroupClient) QueryStakeholders(_m *StakeholderGroup) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, stakeholdergroup.StakeholdersTable, stakeholdergroup.StakeholdersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StakeholderGroupClient) Hooks() []Hook {
+	return c.hooks.StakeholderGroup
+}
+
+// Interceptors returns the client interceptors.
+func (c *StakeholderGroupClient) Interceptors() []Interceptor {
+	return c.inters.StakeholderGroup
+}
+
+func (c *StakeholderGroupClient) mutate(ctx context.Context, m *StakeholderGroupMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StakeholderGroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StakeholderGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StakeholderGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StakeholderGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown StakeholderGroup mutation op: %q", m.Op())
 	}
 }
 
@@ -815,6 +1038,22 @@ func (c *UserClient) QueryStakeholders(_m *User) *StakeholderQuery {
 	return query
 }
 
+// QueryStakeholderGroups queries the stakeholder_groups edge of a User.
+func (c *UserClient) QueryStakeholderGroups(_m *User) *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.StakeholderGroupsTable, user.StakeholderGroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryLegacies queries the legacies edge of a User.
 func (c *UserClient) QueryLegacies(_m *User) *LegacyQuery {
 	query := (&LegacyClient{config: c.config}).Query()
@@ -859,9 +1098,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, Legacy, Stakeholder, User []ent.Hook
+		Account, Legacy, Stakeholder, StakeholderGroup, User []ent.Hook
 	}
 	inters struct {
-		Account, Legacy, Stakeholder, User []ent.Interceptor
+		Account, Legacy, Stakeholder, StakeholderGroup, User []ent.Interceptor
 	}
 )

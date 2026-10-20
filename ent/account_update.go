@@ -10,8 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
 )
 
 // AccountUpdate is the builder for updating Account entities.
@@ -41,23 +43,77 @@ func (_u *AccountUpdate) SetNillableType(v *account.Type) *AccountUpdate {
 	return _u
 }
 
-// SetAccountTypeOther sets the "account_type_other" field.
-func (_u *AccountUpdate) SetAccountTypeOther(v string) *AccountUpdate {
-	_u.mutation.SetAccountTypeOther(v)
+// SetTypeName sets the "type_name" field.
+func (_u *AccountUpdate) SetTypeName(v string) *AccountUpdate {
+	_u.mutation.SetTypeName(v)
 	return _u
 }
 
-// SetNillableAccountTypeOther sets the "account_type_other" field if the given value is not nil.
-func (_u *AccountUpdate) SetNillableAccountTypeOther(v *string) *AccountUpdate {
+// SetNillableTypeName sets the "type_name" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableTypeName(v *string) *AccountUpdate {
 	if v != nil {
-		_u.SetAccountTypeOther(*v)
+		_u.SetTypeName(*v)
 	}
 	return _u
 }
 
-// ClearAccountTypeOther clears the value of the "account_type_other" field.
-func (_u *AccountUpdate) ClearAccountTypeOther() *AccountUpdate {
-	_u.mutation.ClearAccountTypeOther()
+// ClearTypeName clears the value of the "type_name" field.
+func (_u *AccountUpdate) ClearTypeName() *AccountUpdate {
+	_u.mutation.ClearTypeName()
+	return _u
+}
+
+// SetAction sets the "action" field.
+func (_u *AccountUpdate) SetAction(v account.Action) *AccountUpdate {
+	_u.mutation.SetAction(v)
+	return _u
+}
+
+// SetNillableAction sets the "action" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableAction(v *account.Action) *AccountUpdate {
+	if v != nil {
+		_u.SetAction(*v)
+	}
+	return _u
+}
+
+// SetActionMessage sets the "action_message" field.
+func (_u *AccountUpdate) SetActionMessage(v string) *AccountUpdate {
+	_u.mutation.SetActionMessage(v)
+	return _u
+}
+
+// SetNillableActionMessage sets the "action_message" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableActionMessage(v *string) *AccountUpdate {
+	if v != nil {
+		_u.SetActionMessage(*v)
+	}
+	return _u
+}
+
+// ClearActionMessage clears the value of the "action_message" field.
+func (_u *AccountUpdate) ClearActionMessage() *AccountUpdate {
+	_u.mutation.ClearActionMessage()
+	return _u
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_u *AccountUpdate) SetDataLocation(v string) *AccountUpdate {
+	_u.mutation.SetDataLocation(v)
+	return _u
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableDataLocation(v *string) *AccountUpdate {
+	if v != nil {
+		_u.SetDataLocation(*v)
+	}
+	return _u
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (_u *AccountUpdate) ClearDataLocation() *AccountUpdate {
+	_u.mutation.ClearDataLocation()
 	return _u
 }
 
@@ -75,6 +131,12 @@ func (_u *AccountUpdate) SetNillableAccountID(v *string) *AccountUpdate {
 	return _u
 }
 
+// ClearAccountID clears the value of the "account_id" field.
+func (_u *AccountUpdate) ClearAccountID() *AccountUpdate {
+	_u.mutation.ClearAccountID()
+	return _u
+}
+
 // SetAccountPassword sets the "account_password" field.
 func (_u *AccountUpdate) SetAccountPassword(v string) *AccountUpdate {
 	_u.mutation.SetAccountPassword(v)
@@ -89,9 +151,51 @@ func (_u *AccountUpdate) SetNillableAccountPassword(v *string) *AccountUpdate {
 	return _u
 }
 
+// ClearAccountPassword clears the value of the "account_password" field.
+func (_u *AccountUpdate) ClearAccountPassword() *AccountUpdate {
+	_u.mutation.ClearAccountPassword()
+	return _u
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_u *AccountUpdate) AddStakeholderIDs(ids ...uuid.UUID) *AccountUpdate {
+	_u.mutation.AddStakeholderIDs(ids...)
+	return _u
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_u *AccountUpdate) AddStakeholders(v ...*Stakeholder) *AccountUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (_u *AccountUpdate) Mutation() *AccountMutation {
 	return _u.mutation
+}
+
+// ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
+func (_u *AccountUpdate) ClearStakeholders() *AccountUpdate {
+	_u.mutation.ClearStakeholders()
+	return _u
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to Stakeholder entities by IDs.
+func (_u *AccountUpdate) RemoveStakeholderIDs(ids ...uuid.UUID) *AccountUpdate {
+	_u.mutation.RemoveStakeholderIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholders removes "stakeholders" edges to Stakeholder entities.
+func (_u *AccountUpdate) RemoveStakeholders(v ...*Stakeholder) *AccountUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -128,14 +232,9 @@ func (_u *AccountUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.AccountID(); ok {
-		if err := account.AccountIDValidator(v); err != nil {
-			return &ValidationError{Name: "account_id", err: fmt.Errorf(`ent: validator failed for field "Account.account_id": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.AccountPassword(); ok {
-		if err := account.AccountPasswordValidator(v); err != nil {
-			return &ValidationError{Name: "account_password", err: fmt.Errorf(`ent: validator failed for field "Account.account_password": %w`, err)}
+	if v, ok := _u.mutation.Action(); ok {
+		if err := account.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Account.action": %w`, err)}
 		}
 	}
 	if _u.mutation.LegacyCleared() && len(_u.mutation.LegacyIDs()) > 0 {
@@ -159,17 +258,83 @@ func (_u *AccountUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(account.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AccountTypeOther(); ok {
-		_spec.SetField(account.FieldAccountTypeOther, field.TypeString, value)
+	if value, ok := _u.mutation.TypeName(); ok {
+		_spec.SetField(account.FieldTypeName, field.TypeString, value)
 	}
-	if _u.mutation.AccountTypeOtherCleared() {
-		_spec.ClearField(account.FieldAccountTypeOther, field.TypeString)
+	if _u.mutation.TypeNameCleared() {
+		_spec.ClearField(account.FieldTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Action(); ok {
+		_spec.SetField(account.FieldAction, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ActionMessage(); ok {
+		_spec.SetField(account.FieldActionMessage, field.TypeString, value)
+	}
+	if _u.mutation.ActionMessageCleared() {
+		_spec.ClearField(account.FieldActionMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.DataLocation(); ok {
+		_spec.SetField(account.FieldDataLocation, field.TypeString, value)
+	}
+	if _u.mutation.DataLocationCleared() {
+		_spec.ClearField(account.FieldDataLocation, field.TypeString)
 	}
 	if value, ok := _u.mutation.AccountID(); ok {
 		_spec.SetField(account.FieldAccountID, field.TypeString, value)
 	}
+	if _u.mutation.AccountIDCleared() {
+		_spec.ClearField(account.FieldAccountID, field.TypeString)
+	}
 	if value, ok := _u.mutation.AccountPassword(); ok {
 		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
+	}
+	if _u.mutation.AccountPasswordCleared() {
+		_spec.ClearField(account.FieldAccountPassword, field.TypeString)
+	}
+	if _u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholdersIDs(); len(nodes) > 0 && !_u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -205,23 +370,77 @@ func (_u *AccountUpdateOne) SetNillableType(v *account.Type) *AccountUpdateOne {
 	return _u
 }
 
-// SetAccountTypeOther sets the "account_type_other" field.
-func (_u *AccountUpdateOne) SetAccountTypeOther(v string) *AccountUpdateOne {
-	_u.mutation.SetAccountTypeOther(v)
+// SetTypeName sets the "type_name" field.
+func (_u *AccountUpdateOne) SetTypeName(v string) *AccountUpdateOne {
+	_u.mutation.SetTypeName(v)
 	return _u
 }
 
-// SetNillableAccountTypeOther sets the "account_type_other" field if the given value is not nil.
-func (_u *AccountUpdateOne) SetNillableAccountTypeOther(v *string) *AccountUpdateOne {
+// SetNillableTypeName sets the "type_name" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableTypeName(v *string) *AccountUpdateOne {
 	if v != nil {
-		_u.SetAccountTypeOther(*v)
+		_u.SetTypeName(*v)
 	}
 	return _u
 }
 
-// ClearAccountTypeOther clears the value of the "account_type_other" field.
-func (_u *AccountUpdateOne) ClearAccountTypeOther() *AccountUpdateOne {
-	_u.mutation.ClearAccountTypeOther()
+// ClearTypeName clears the value of the "type_name" field.
+func (_u *AccountUpdateOne) ClearTypeName() *AccountUpdateOne {
+	_u.mutation.ClearTypeName()
+	return _u
+}
+
+// SetAction sets the "action" field.
+func (_u *AccountUpdateOne) SetAction(v account.Action) *AccountUpdateOne {
+	_u.mutation.SetAction(v)
+	return _u
+}
+
+// SetNillableAction sets the "action" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableAction(v *account.Action) *AccountUpdateOne {
+	if v != nil {
+		_u.SetAction(*v)
+	}
+	return _u
+}
+
+// SetActionMessage sets the "action_message" field.
+func (_u *AccountUpdateOne) SetActionMessage(v string) *AccountUpdateOne {
+	_u.mutation.SetActionMessage(v)
+	return _u
+}
+
+// SetNillableActionMessage sets the "action_message" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableActionMessage(v *string) *AccountUpdateOne {
+	if v != nil {
+		_u.SetActionMessage(*v)
+	}
+	return _u
+}
+
+// ClearActionMessage clears the value of the "action_message" field.
+func (_u *AccountUpdateOne) ClearActionMessage() *AccountUpdateOne {
+	_u.mutation.ClearActionMessage()
+	return _u
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_u *AccountUpdateOne) SetDataLocation(v string) *AccountUpdateOne {
+	_u.mutation.SetDataLocation(v)
+	return _u
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableDataLocation(v *string) *AccountUpdateOne {
+	if v != nil {
+		_u.SetDataLocation(*v)
+	}
+	return _u
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (_u *AccountUpdateOne) ClearDataLocation() *AccountUpdateOne {
+	_u.mutation.ClearDataLocation()
 	return _u
 }
 
@@ -239,6 +458,12 @@ func (_u *AccountUpdateOne) SetNillableAccountID(v *string) *AccountUpdateOne {
 	return _u
 }
 
+// ClearAccountID clears the value of the "account_id" field.
+func (_u *AccountUpdateOne) ClearAccountID() *AccountUpdateOne {
+	_u.mutation.ClearAccountID()
+	return _u
+}
+
 // SetAccountPassword sets the "account_password" field.
 func (_u *AccountUpdateOne) SetAccountPassword(v string) *AccountUpdateOne {
 	_u.mutation.SetAccountPassword(v)
@@ -253,9 +478,51 @@ func (_u *AccountUpdateOne) SetNillableAccountPassword(v *string) *AccountUpdate
 	return _u
 }
 
+// ClearAccountPassword clears the value of the "account_password" field.
+func (_u *AccountUpdateOne) ClearAccountPassword() *AccountUpdateOne {
+	_u.mutation.ClearAccountPassword()
+	return _u
+}
+
+// AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
+func (_u *AccountUpdateOne) AddStakeholderIDs(ids ...uuid.UUID) *AccountUpdateOne {
+	_u.mutation.AddStakeholderIDs(ids...)
+	return _u
+}
+
+// AddStakeholders adds the "stakeholders" edges to the Stakeholder entity.
+func (_u *AccountUpdateOne) AddStakeholders(v ...*Stakeholder) *AccountUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStakeholderIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (_u *AccountUpdateOne) Mutation() *AccountMutation {
 	return _u.mutation
+}
+
+// ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
+func (_u *AccountUpdateOne) ClearStakeholders() *AccountUpdateOne {
+	_u.mutation.ClearStakeholders()
+	return _u
+}
+
+// RemoveStakeholderIDs removes the "stakeholders" edge to Stakeholder entities by IDs.
+func (_u *AccountUpdateOne) RemoveStakeholderIDs(ids ...uuid.UUID) *AccountUpdateOne {
+	_u.mutation.RemoveStakeholderIDs(ids...)
+	return _u
+}
+
+// RemoveStakeholders removes "stakeholders" edges to Stakeholder entities.
+func (_u *AccountUpdateOne) RemoveStakeholders(v ...*Stakeholder) *AccountUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStakeholderIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -305,14 +572,9 @@ func (_u *AccountUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.AccountID(); ok {
-		if err := account.AccountIDValidator(v); err != nil {
-			return &ValidationError{Name: "account_id", err: fmt.Errorf(`ent: validator failed for field "Account.account_id": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.AccountPassword(); ok {
-		if err := account.AccountPasswordValidator(v); err != nil {
-			return &ValidationError{Name: "account_password", err: fmt.Errorf(`ent: validator failed for field "Account.account_password": %w`, err)}
+	if v, ok := _u.mutation.Action(); ok {
+		if err := account.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Account.action": %w`, err)}
 		}
 	}
 	if _u.mutation.LegacyCleared() && len(_u.mutation.LegacyIDs()) > 0 {
@@ -353,17 +615,83 @@ func (_u *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err er
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(account.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AccountTypeOther(); ok {
-		_spec.SetField(account.FieldAccountTypeOther, field.TypeString, value)
+	if value, ok := _u.mutation.TypeName(); ok {
+		_spec.SetField(account.FieldTypeName, field.TypeString, value)
 	}
-	if _u.mutation.AccountTypeOtherCleared() {
-		_spec.ClearField(account.FieldAccountTypeOther, field.TypeString)
+	if _u.mutation.TypeNameCleared() {
+		_spec.ClearField(account.FieldTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Action(); ok {
+		_spec.SetField(account.FieldAction, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ActionMessage(); ok {
+		_spec.SetField(account.FieldActionMessage, field.TypeString, value)
+	}
+	if _u.mutation.ActionMessageCleared() {
+		_spec.ClearField(account.FieldActionMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.DataLocation(); ok {
+		_spec.SetField(account.FieldDataLocation, field.TypeString, value)
+	}
+	if _u.mutation.DataLocationCleared() {
+		_spec.ClearField(account.FieldDataLocation, field.TypeString)
 	}
 	if value, ok := _u.mutation.AccountID(); ok {
 		_spec.SetField(account.FieldAccountID, field.TypeString, value)
 	}
+	if _u.mutation.AccountIDCleared() {
+		_spec.ClearField(account.FieldAccountID, field.TypeString)
+	}
 	if value, ok := _u.mutation.AccountPassword(); ok {
 		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
+	}
+	if _u.mutation.AccountPasswordCleared() {
+		_spec.ClearField(account.FieldAccountPassword, field.TypeString)
+	}
+	if _u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStakeholdersIDs(); len(nodes) > 0 && !_u.mutation.StakeholdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StakeholdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholdersTable,
+			Columns: account.StakeholdersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Account{config: _u.config}
 	_spec.Assign = _node.assignValues

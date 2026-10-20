@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
 )
 
@@ -96,6 +97,21 @@ func (_c *UserCreate) AddStakeholders(v ...*Stakeholder) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddStakeholderIDs(ids...)
+}
+
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (_c *UserCreate) AddStakeholderGroupIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddStakeholderGroupIDs(ids...)
+	return _c
+}
+
+// AddStakeholderGroups adds the "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_c *UserCreate) AddStakeholderGroups(v ...*StakeholderGroup) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStakeholderGroupIDs(ids...)
 }
 
 // AddLegacyIDs adds the "legacies" edge to the Legacy entity by IDs.
@@ -258,6 +274,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StakeholderGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StakeholderGroupsTable,
+			Columns: []string{user.StakeholderGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

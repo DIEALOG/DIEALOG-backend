@@ -56,9 +56,19 @@ func IDLTE(id uuid.UUID) predicate.Account {
 	return predicate.Account(sql.FieldLTE(FieldID, id))
 }
 
-// AccountTypeOther applies equality check predicate on the "account_type_other" field. It's identical to AccountTypeOtherEQ.
-func AccountTypeOther(v string) predicate.Account {
-	return predicate.Account(sql.FieldEQ(FieldAccountTypeOther, v))
+// TypeName applies equality check predicate on the "type_name" field. It's identical to TypeNameEQ.
+func TypeName(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldTypeName, v))
+}
+
+// ActionMessage applies equality check predicate on the "action_message" field. It's identical to ActionMessageEQ.
+func ActionMessage(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldActionMessage, v))
+}
+
+// DataLocation applies equality check predicate on the "data_location" field. It's identical to DataLocationEQ.
+func DataLocation(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldDataLocation, v))
 }
 
 // AccountID applies equality check predicate on the "account_id" field. It's identical to AccountIDEQ.
@@ -96,79 +106,249 @@ func TypeNotIn(vs ...Type) predicate.Account {
 	return predicate.Account(sql.FieldNotIn(FieldType, vs...))
 }
 
-// AccountTypeOtherEQ applies the EQ predicate on the "account_type_other" field.
-func AccountTypeOtherEQ(v string) predicate.Account {
-	return predicate.Account(sql.FieldEQ(FieldAccountTypeOther, v))
+// TypeNameEQ applies the EQ predicate on the "type_name" field.
+func TypeNameEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldTypeName, v))
 }
 
-// AccountTypeOtherNEQ applies the NEQ predicate on the "account_type_other" field.
-func AccountTypeOtherNEQ(v string) predicate.Account {
-	return predicate.Account(sql.FieldNEQ(FieldAccountTypeOther, v))
+// TypeNameNEQ applies the NEQ predicate on the "type_name" field.
+func TypeNameNEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldTypeName, v))
 }
 
-// AccountTypeOtherIn applies the In predicate on the "account_type_other" field.
-func AccountTypeOtherIn(vs ...string) predicate.Account {
-	return predicate.Account(sql.FieldIn(FieldAccountTypeOther, vs...))
+// TypeNameIn applies the In predicate on the "type_name" field.
+func TypeNameIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldTypeName, vs...))
 }
 
-// AccountTypeOtherNotIn applies the NotIn predicate on the "account_type_other" field.
-func AccountTypeOtherNotIn(vs ...string) predicate.Account {
-	return predicate.Account(sql.FieldNotIn(FieldAccountTypeOther, vs...))
+// TypeNameNotIn applies the NotIn predicate on the "type_name" field.
+func TypeNameNotIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldTypeName, vs...))
 }
 
-// AccountTypeOtherGT applies the GT predicate on the "account_type_other" field.
-func AccountTypeOtherGT(v string) predicate.Account {
-	return predicate.Account(sql.FieldGT(FieldAccountTypeOther, v))
+// TypeNameGT applies the GT predicate on the "type_name" field.
+func TypeNameGT(v string) predicate.Account {
+	return predicate.Account(sql.FieldGT(FieldTypeName, v))
 }
 
-// AccountTypeOtherGTE applies the GTE predicate on the "account_type_other" field.
-func AccountTypeOtherGTE(v string) predicate.Account {
-	return predicate.Account(sql.FieldGTE(FieldAccountTypeOther, v))
+// TypeNameGTE applies the GTE predicate on the "type_name" field.
+func TypeNameGTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldGTE(FieldTypeName, v))
 }
 
-// AccountTypeOtherLT applies the LT predicate on the "account_type_other" field.
-func AccountTypeOtherLT(v string) predicate.Account {
-	return predicate.Account(sql.FieldLT(FieldAccountTypeOther, v))
+// TypeNameLT applies the LT predicate on the "type_name" field.
+func TypeNameLT(v string) predicate.Account {
+	return predicate.Account(sql.FieldLT(FieldTypeName, v))
 }
 
-// AccountTypeOtherLTE applies the LTE predicate on the "account_type_other" field.
-func AccountTypeOtherLTE(v string) predicate.Account {
-	return predicate.Account(sql.FieldLTE(FieldAccountTypeOther, v))
+// TypeNameLTE applies the LTE predicate on the "type_name" field.
+func TypeNameLTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldLTE(FieldTypeName, v))
 }
 
-// AccountTypeOtherContains applies the Contains predicate on the "account_type_other" field.
-func AccountTypeOtherContains(v string) predicate.Account {
-	return predicate.Account(sql.FieldContains(FieldAccountTypeOther, v))
+// TypeNameContains applies the Contains predicate on the "type_name" field.
+func TypeNameContains(v string) predicate.Account {
+	return predicate.Account(sql.FieldContains(FieldTypeName, v))
 }
 
-// AccountTypeOtherHasPrefix applies the HasPrefix predicate on the "account_type_other" field.
-func AccountTypeOtherHasPrefix(v string) predicate.Account {
-	return predicate.Account(sql.FieldHasPrefix(FieldAccountTypeOther, v))
+// TypeNameHasPrefix applies the HasPrefix predicate on the "type_name" field.
+func TypeNameHasPrefix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasPrefix(FieldTypeName, v))
 }
 
-// AccountTypeOtherHasSuffix applies the HasSuffix predicate on the "account_type_other" field.
-func AccountTypeOtherHasSuffix(v string) predicate.Account {
-	return predicate.Account(sql.FieldHasSuffix(FieldAccountTypeOther, v))
+// TypeNameHasSuffix applies the HasSuffix predicate on the "type_name" field.
+func TypeNameHasSuffix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasSuffix(FieldTypeName, v))
 }
 
-// AccountTypeOtherIsNil applies the IsNil predicate on the "account_type_other" field.
-func AccountTypeOtherIsNil() predicate.Account {
-	return predicate.Account(sql.FieldIsNull(FieldAccountTypeOther))
+// TypeNameIsNil applies the IsNil predicate on the "type_name" field.
+func TypeNameIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldTypeName))
 }
 
-// AccountTypeOtherNotNil applies the NotNil predicate on the "account_type_other" field.
-func AccountTypeOtherNotNil() predicate.Account {
-	return predicate.Account(sql.FieldNotNull(FieldAccountTypeOther))
+// TypeNameNotNil applies the NotNil predicate on the "type_name" field.
+func TypeNameNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldTypeName))
 }
 
-// AccountTypeOtherEqualFold applies the EqualFold predicate on the "account_type_other" field.
-func AccountTypeOtherEqualFold(v string) predicate.Account {
-	return predicate.Account(sql.FieldEqualFold(FieldAccountTypeOther, v))
+// TypeNameEqualFold applies the EqualFold predicate on the "type_name" field.
+func TypeNameEqualFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldEqualFold(FieldTypeName, v))
 }
 
-// AccountTypeOtherContainsFold applies the ContainsFold predicate on the "account_type_other" field.
-func AccountTypeOtherContainsFold(v string) predicate.Account {
-	return predicate.Account(sql.FieldContainsFold(FieldAccountTypeOther, v))
+// TypeNameContainsFold applies the ContainsFold predicate on the "type_name" field.
+func TypeNameContainsFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldContainsFold(FieldTypeName, v))
+}
+
+// ActionEQ applies the EQ predicate on the "action" field.
+func ActionEQ(v Action) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldAction, v))
+}
+
+// ActionNEQ applies the NEQ predicate on the "action" field.
+func ActionNEQ(v Action) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldAction, v))
+}
+
+// ActionIn applies the In predicate on the "action" field.
+func ActionIn(vs ...Action) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldAction, vs...))
+}
+
+// ActionNotIn applies the NotIn predicate on the "action" field.
+func ActionNotIn(vs ...Action) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldAction, vs...))
+}
+
+// ActionMessageEQ applies the EQ predicate on the "action_message" field.
+func ActionMessageEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldActionMessage, v))
+}
+
+// ActionMessageNEQ applies the NEQ predicate on the "action_message" field.
+func ActionMessageNEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldActionMessage, v))
+}
+
+// ActionMessageIn applies the In predicate on the "action_message" field.
+func ActionMessageIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldActionMessage, vs...))
+}
+
+// ActionMessageNotIn applies the NotIn predicate on the "action_message" field.
+func ActionMessageNotIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldActionMessage, vs...))
+}
+
+// ActionMessageGT applies the GT predicate on the "action_message" field.
+func ActionMessageGT(v string) predicate.Account {
+	return predicate.Account(sql.FieldGT(FieldActionMessage, v))
+}
+
+// ActionMessageGTE applies the GTE predicate on the "action_message" field.
+func ActionMessageGTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldGTE(FieldActionMessage, v))
+}
+
+// ActionMessageLT applies the LT predicate on the "action_message" field.
+func ActionMessageLT(v string) predicate.Account {
+	return predicate.Account(sql.FieldLT(FieldActionMessage, v))
+}
+
+// ActionMessageLTE applies the LTE predicate on the "action_message" field.
+func ActionMessageLTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldLTE(FieldActionMessage, v))
+}
+
+// ActionMessageContains applies the Contains predicate on the "action_message" field.
+func ActionMessageContains(v string) predicate.Account {
+	return predicate.Account(sql.FieldContains(FieldActionMessage, v))
+}
+
+// ActionMessageHasPrefix applies the HasPrefix predicate on the "action_message" field.
+func ActionMessageHasPrefix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasPrefix(FieldActionMessage, v))
+}
+
+// ActionMessageHasSuffix applies the HasSuffix predicate on the "action_message" field.
+func ActionMessageHasSuffix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasSuffix(FieldActionMessage, v))
+}
+
+// ActionMessageIsNil applies the IsNil predicate on the "action_message" field.
+func ActionMessageIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldActionMessage))
+}
+
+// ActionMessageNotNil applies the NotNil predicate on the "action_message" field.
+func ActionMessageNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldActionMessage))
+}
+
+// ActionMessageEqualFold applies the EqualFold predicate on the "action_message" field.
+func ActionMessageEqualFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldEqualFold(FieldActionMessage, v))
+}
+
+// ActionMessageContainsFold applies the ContainsFold predicate on the "action_message" field.
+func ActionMessageContainsFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldContainsFold(FieldActionMessage, v))
+}
+
+// DataLocationEQ applies the EQ predicate on the "data_location" field.
+func DataLocationEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldDataLocation, v))
+}
+
+// DataLocationNEQ applies the NEQ predicate on the "data_location" field.
+func DataLocationNEQ(v string) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldDataLocation, v))
+}
+
+// DataLocationIn applies the In predicate on the "data_location" field.
+func DataLocationIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldDataLocation, vs...))
+}
+
+// DataLocationNotIn applies the NotIn predicate on the "data_location" field.
+func DataLocationNotIn(vs ...string) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldDataLocation, vs...))
+}
+
+// DataLocationGT applies the GT predicate on the "data_location" field.
+func DataLocationGT(v string) predicate.Account {
+	return predicate.Account(sql.FieldGT(FieldDataLocation, v))
+}
+
+// DataLocationGTE applies the GTE predicate on the "data_location" field.
+func DataLocationGTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldGTE(FieldDataLocation, v))
+}
+
+// DataLocationLT applies the LT predicate on the "data_location" field.
+func DataLocationLT(v string) predicate.Account {
+	return predicate.Account(sql.FieldLT(FieldDataLocation, v))
+}
+
+// DataLocationLTE applies the LTE predicate on the "data_location" field.
+func DataLocationLTE(v string) predicate.Account {
+	return predicate.Account(sql.FieldLTE(FieldDataLocation, v))
+}
+
+// DataLocationContains applies the Contains predicate on the "data_location" field.
+func DataLocationContains(v string) predicate.Account {
+	return predicate.Account(sql.FieldContains(FieldDataLocation, v))
+}
+
+// DataLocationHasPrefix applies the HasPrefix predicate on the "data_location" field.
+func DataLocationHasPrefix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasPrefix(FieldDataLocation, v))
+}
+
+// DataLocationHasSuffix applies the HasSuffix predicate on the "data_location" field.
+func DataLocationHasSuffix(v string) predicate.Account {
+	return predicate.Account(sql.FieldHasSuffix(FieldDataLocation, v))
+}
+
+// DataLocationIsNil applies the IsNil predicate on the "data_location" field.
+func DataLocationIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldDataLocation))
+}
+
+// DataLocationNotNil applies the NotNil predicate on the "data_location" field.
+func DataLocationNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldDataLocation))
+}
+
+// DataLocationEqualFold applies the EqualFold predicate on the "data_location" field.
+func DataLocationEqualFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldEqualFold(FieldDataLocation, v))
+}
+
+// DataLocationContainsFold applies the ContainsFold predicate on the "data_location" field.
+func DataLocationContainsFold(v string) predicate.Account {
+	return predicate.Account(sql.FieldContainsFold(FieldDataLocation, v))
 }
 
 // AccountIDEQ applies the EQ predicate on the "account_id" field.
@@ -224,6 +404,16 @@ func AccountIDHasPrefix(v string) predicate.Account {
 // AccountIDHasSuffix applies the HasSuffix predicate on the "account_id" field.
 func AccountIDHasSuffix(v string) predicate.Account {
 	return predicate.Account(sql.FieldHasSuffix(FieldAccountID, v))
+}
+
+// AccountIDIsNil applies the IsNil predicate on the "account_id" field.
+func AccountIDIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldAccountID))
+}
+
+// AccountIDNotNil applies the NotNil predicate on the "account_id" field.
+func AccountIDNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldAccountID))
 }
 
 // AccountIDEqualFold applies the EqualFold predicate on the "account_id" field.
@@ -291,6 +481,16 @@ func AccountPasswordHasSuffix(v string) predicate.Account {
 	return predicate.Account(sql.FieldHasSuffix(FieldAccountPassword, v))
 }
 
+// AccountPasswordIsNil applies the IsNil predicate on the "account_password" field.
+func AccountPasswordIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldAccountPassword))
+}
+
+// AccountPasswordNotNil applies the NotNil predicate on the "account_password" field.
+func AccountPasswordNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldAccountPassword))
+}
+
 // AccountPasswordEqualFold applies the EqualFold predicate on the "account_password" field.
 func AccountPasswordEqualFold(v string) predicate.Account {
 	return predicate.Account(sql.FieldEqualFold(FieldAccountPassword, v))
@@ -356,6 +556,29 @@ func HasLegacy() predicate.Account {
 func HasLegacyWith(preds ...predicate.Legacy) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		step := newLegacyStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStakeholders applies the HasEdge predicate on the "stakeholders" edge.
+func HasStakeholders() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, StakeholdersTable, StakeholdersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStakeholdersWith applies the HasEdge predicate on the "stakeholders" edge with a given conditions (other predicates).
+func HasStakeholdersWith(preds ...predicate.Stakeholder) predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := newStakeholdersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
