@@ -14,7 +14,1546 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {},
+    "paths": {
+        "/legacy/protected": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 사용자의 레거시 목록을 페이징하여 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 목록 조회 (페이지네이션)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "페이지 번호",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "페이지당 개수",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "레거시 목록 조회 성공",
+                        "schema": {
+                            "$ref": "#/definitions/handler.PaginatedLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "페이지네이션 파라미터 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "새로운 레거시(디지털 유산 그룹) 항목을 생성합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 생성",
+                "parameters": [
+                    {
+                        "description": "생성할 레거시 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Legacy"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "레거시 생성 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Legacy"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/legacy/protected/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ID에 해당하는 레거시의 상세 정보 및 하위 계정 목록을 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 상세 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "레거시 상세 조회 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Legacy"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "레거시를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 레거시의 이름을 수정합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 정보 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 레거시 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "레거시 수정 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Legacy"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "레거시를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 레거시 및 연관된 데이터를 삭제합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "레거시 삭제 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/legacy/protected/{id}/account": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 레거시에 디지털 서비스 계정 정보 및 사후 처리 방침을 등록합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 하위 계정 등록",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "등록할 계정 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Account"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "계정 등록 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Account"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/legacy/protected/{id}/account/{accountId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 레거시에 등록된 디지털 서비스 계정을 삭제합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 하위 계정 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "계정 ID (UUID)",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "계정 삭제 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "이메일과 비밀번호로 로그인하여 액세스 및 리프레시 토큰을 발급합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "로그인",
+                "parameters": [
+                    {
+                        "description": "로그인 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "로그인 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "이메일 또는 비밀번호 불일치",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/protected": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 로그인된 사용자의 기본 프로필 및 등록된 이해관계자 정보를 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "내 프로필 조회",
+                "responses": {
+                    "200": {
+                        "description": "프로필 조회 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Profile"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/protected/testament": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "사용자의 유언장(Testament) 내용을 등록 또는 수정합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "유언장 내용 수정",
+                "parameters": [
+                    {
+                        "description": "수정할 유언장 내용",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateTestamentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "유언장 수정 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/refresh": {
+            "post": {
+                "description": "리프레시 토큰으로 새로운 액세스 및 리프레시 토큰을 재발급합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "토큰 갱신",
+                "parameters": [
+                    {
+                        "description": "리프레시 토큰 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "토큰 재발급 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "유효하지 않은 리프레시 토큰",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/signup": {
+            "post": {
+                "description": "새로운 사용자 계정을 생성하고 액세스 및 리프레시 토큰을 발급합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "회원가입",
+                "parameters": [
+                    {
+                        "description": "회원가입 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.SignupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "회원가입 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stakeholder/protected": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 사용자가 등록한 모든 관계자(이해관계자) 목록을 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder"
+                ],
+                "summary": "관계자 목록 조회",
+                "responses": {
+                    "200": {
+                        "description": "관계자 목록 조회 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Stakeholder"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "사후 디지털 유산 전달 또는 연락 대상이 될 관계자(이해관계자) 정보를 등록합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder"
+                ],
+                "summary": "관계자 등록",
+                "parameters": [
+                    {
+                        "description": "등록할 관계자 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Stakeholder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "관계자 등록 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Stakeholder"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stakeholder/protected/group": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 사용자가 등록한 모든 관계자 그룹 목록을 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder Group"
+                ],
+                "summary": "관계자 그룹 목록 조회",
+                "responses": {
+                    "200": {
+                        "description": "관계자 그룹 목록 조회 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.StakeholderGroup"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "이해관계자들을 묶어 관리할 수 있는 새로운 그룹을 등록합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder Group"
+                ],
+                "summary": "관계자 그룹 등록",
+                "parameters": [
+                    {
+                        "description": "등록할 관계자 그룹 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.StakeholderGroup"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "관계자 그룹 등록 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.StakeholderGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stakeholder/protected/group/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ID에 해당하는 특정 관계자 그룹의 상세 정보를 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder Group"
+                ],
+                "summary": "관계자 그룹 상세 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 그룹 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "그룹 상세 조회 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.StakeholderGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "그룹을 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 관계자 그룹의 이름 및 속한 관계자 목록을 수정합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder Group"
+                ],
+                "summary": "관계자 그룹 정보 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 그룹 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 관계자 그룹 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.StakeholderGroup"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "그룹 수정 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.StakeholderGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "그룹을 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 관계자 그룹을 삭제합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder Group"
+                ],
+                "summary": "관계자 그룹 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 그룹 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "그룹 삭제 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stakeholder/protected/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ID에 해당하는 특정 관계자의 상세 정보를 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder"
+                ],
+                "summary": "관계자 상세 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "관계자 상세 조회 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Stakeholder"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "관계자를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 관계자의 연락처, 이름, 관계 등의 정보를 수정합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder"
+                ],
+                "summary": "관계자 정보 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 관계자 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Stakeholder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "관계자 수정 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Stakeholder"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "관계자를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 관계자 정보를 삭제합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stakeholder"
+                ],
+                "summary": "관계자 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "관계자 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "관계자 삭제 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Account": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "account_password": {
+                    "type": "string"
+                },
+                "action": {
+                    "$ref": "#/definitions/domain.AccountAction"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "data_location": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "legacy_id": {
+                    "type": "string"
+                },
+                "stakeholder_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "stakeholders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Stakeholder"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountType"
+                }
+            }
+        },
+        "domain.AccountAction": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/domain.AccountActionField"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.AccountActionField": {
+            "type": "string",
+            "enum": [
+                "delete",
+                "remain",
+                "permission-move",
+                "backup-and-delete",
+                "other"
+            ],
+            "x-enum-varnames": [
+                "AccountActionDelete",
+                "AccountActionRemain",
+                "AccountActionPermissionMove",
+                "AccountActionBackupAndDelete",
+                "AccountActionOther"
+            ]
+        },
+        "domain.AccountType": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountTypeField"
+                }
+            }
+        },
+        "domain.AccountTypeField": {
+            "type": "string",
+            "enum": [
+                "Google",
+                "Facebook",
+                "Twitter",
+                "Apple",
+                "Discord",
+                "Microsoft",
+                "KakaoTalk",
+                "GitHub",
+                "Telegram",
+                "Instagram",
+                "Other"
+            ],
+            "x-enum-varnames": [
+                "AccountTypeGoogle",
+                "AccountTypeFacebook",
+                "AccountTypeTwitter",
+                "AccountTypeApple",
+                "AccountTypeDiscord",
+                "AccountTypeMicrosoft",
+                "AccountTypeKakaoTalk",
+                "AccountTypeGitHub",
+                "AccountTypeTelegram",
+                "AccountTypeInstagram",
+                "AccountTypeOther"
+            ]
+        },
+        "domain.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Legacy": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Account"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Profile": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stakeholders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Stakeholder"
+                    }
+                },
+                "testament": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SignupRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Stakeholder": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "group_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.StakeholderGroup"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "relationship": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.StakeholderGroup": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stakeholder_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "stakeholders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Stakeholder"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateTestamentRequest": {
+            "type": "object",
+            "required": [
+                "testament"
+            ],
+            "properties": {
+                "testament": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.PaginatedLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Legacy"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.UpdateLegacyRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
     "securityDefinitions": {
         "BearerAuth": {
             "description": "Enter your JWT token with the ` + "`" + `Bearer ` + "`" + ` prefix.",
@@ -31,8 +1570,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Fiber Backend API",
-	Description:      "Fiber Backend API",
+	Title:            "DIEALOG Backend API",
+	Description:      "DIEALOG 디지털 유산 관리 서비스 백엔드 API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

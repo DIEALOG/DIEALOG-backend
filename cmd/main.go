@@ -19,14 +19,15 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/api/route"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/config"
+	_ "github.com/janghanul090801/go-backend-clean-architecture-fiber/docs"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/infra/database"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/infra/repository"
 	"github.com/janghanul090801/go-backend-clean-architecture-fiber/usecase"
 )
 
-// @title          Fiber Backend API
+// @title          DIEALOG Backend API
 // @version        1.0
-// @description    Fiber Backend API
+// @description    DIEALOG 디지털 유산 관리 서비스 백엔드 API
 // @host			localhost:8080
 // @BasePath		/api
 // @securityDefinitions.apikey BearerAuth
@@ -63,7 +64,13 @@ func main() {
 
 	api := app.Group("/api")
 
+	app.Get("/swagger", func(c fiber.Ctx) error {
+		return c.Redirect().To("/swagger/index.html")
+	})
 	app.Get("/swagger/*", swaggo.HandlerDefault)
+	app.Get("/docs", func(c fiber.Ctx) error {
+		return c.Redirect().To("/docs/index.html")
+	})
 	app.Get("/docs/*", swaggo.HandlerDefault)
 
 	client, err := database.NewClient()
