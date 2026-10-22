@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.env
+.env.example
+tmp
+docs
+*.md
+LICENSE
+Makefile
+help.ps1
+docker-compose.yaml
+Dockerfile
