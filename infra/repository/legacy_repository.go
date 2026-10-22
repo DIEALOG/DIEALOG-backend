@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/ent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 )
 
 type legacyRepository struct {

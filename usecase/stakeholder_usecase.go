@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/ent"
 )
 
 type stakeholderUseCase struct {

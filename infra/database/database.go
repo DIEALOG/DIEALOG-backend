@@ -3,8 +3,8 @@ package database
 import (
 	"entgo.io/ent/dialect"
 	"fmt"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/config"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent"
+	"github.com/DIEALOG/DIEALOG-backend/config"
+	"github.com/DIEALOG/DIEALOG-backend/ent"
 	_ "github.com/lib/pq"
 )
 

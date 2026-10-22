@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/config"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/internal/token"
+	"github.com/DIEALOG/DIEALOG-backend/config"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/internal/token"
 	"golang.org/x/crypto/bcrypt"
 )
 

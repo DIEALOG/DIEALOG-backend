@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/runtime.go
+// The schema-stitching logic is generated in github.com/DIEALOG/DIEALOG-backend/ent/runtime.go
 
 const (
 	Version = "v0.14.5"                                         // Version of ent codegen.

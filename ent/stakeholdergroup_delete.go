@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 )
 
 // StakeholderGroupDelete is the builder for deleting a StakeholderGroup entity.

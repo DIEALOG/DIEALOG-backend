@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/DIEALOG/DIEALOG-backend/config"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/internal/token"
 	"github.com/gofiber/fiber/v3"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/config"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/internal/token"
 )
 
 func JwtMiddleware(c fiber.Ctx) error {

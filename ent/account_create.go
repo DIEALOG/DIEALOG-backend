@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 )
 
 // AccountCreate is the builder for creating a Account entity.

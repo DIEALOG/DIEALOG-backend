@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
+	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 )
 
 // StakeholderGroupCreate is the builder for creating a StakeholderGroup entity.

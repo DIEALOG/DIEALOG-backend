@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
+	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/gofiber/fiber/v3"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
 )
 
 // CreateStakeholder godoc

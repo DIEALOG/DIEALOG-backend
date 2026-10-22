@@ -7,6 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DIEALOG/DIEALOG-backend/api/route"
+	"github.com/DIEALOG/DIEALOG-backend/config"
+	_ "github.com/DIEALOG/DIEALOG-backend/docs"
+	"github.com/DIEALOG/DIEALOG-backend/infra/database"
+	"github.com/DIEALOG/DIEALOG-backend/infra/repository"
+	"github.com/DIEALOG/DIEALOG-backend/usecase"
 	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
@@ -17,12 +23,6 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/api/route"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/config"
-	_ "github.com/janghanul090801/go-backend-clean-architecture-fiber/docs"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/infra/database"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/infra/repository"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/usecase"
 )
 
 // @title          DIEALOG Backend API

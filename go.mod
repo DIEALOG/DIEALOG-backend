@@ -1,4 +1,4 @@
-module github.com/janghanul090801/go-backend-clean-architecture-fiber
+module github.com/DIEALOG/DIEALOG-backend
 
 go 1.26.0
 

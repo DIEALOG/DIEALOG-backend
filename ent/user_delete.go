@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
+	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 )
 
 // UserDelete is the builder for deleting a User entity.

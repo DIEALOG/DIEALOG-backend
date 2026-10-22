@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/schema"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholder"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/schema"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
+	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

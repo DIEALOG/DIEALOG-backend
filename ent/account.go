@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/account"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 )
 
 // Account is the model entity for the Account schema.

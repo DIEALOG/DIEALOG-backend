@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/legacy"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/predicate"
+	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 )
 
 // LegacyDelete is the builder for deleting a Legacy entity.

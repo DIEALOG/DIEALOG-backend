@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain/mocks"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/usecase"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/domain/mocks"
+	"github.com/DIEALOG/DIEALOG-backend/usecase"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

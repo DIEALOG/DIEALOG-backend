@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent"
+	"github.com/DIEALOG/DIEALOG-backend/ent"
 )
 
 // The AccountFunc type is an adapter to allow the use of ordinary

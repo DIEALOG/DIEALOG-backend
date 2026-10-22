@@ -3,7 +3,7 @@ package mocks
 import (
 	context "context"
 
-	domain "github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
+	domain "github.com/DIEALOG/DIEALOG-backend/domain"
 	mock "github.com/stretchr/testify/mock"
 
 	uuid "github.com/google/uuid"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/enttest"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/infra/repository"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/ent/enttest"
+	"github.com/DIEALOG/DIEALOG-backend/infra/repository"
 	"github.com/stretchr/testify/assert"
 
 	_ "github.com/mattn/go-sqlite3"

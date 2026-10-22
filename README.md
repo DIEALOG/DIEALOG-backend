@@ -19,7 +19,7 @@
 ```bash
 cd your-workspace
 
-git clone https://github.com/janghanul090801/go-backend-clean-architecture-fiber.git
+git clone https://github.com/DIEALOG/DIEALOG-backend.git
 
 cd go-backend-clean-architecture-fiber
 ```

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/domain"
+	"github.com/DIEALOG/DIEALOG-backend/domain"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 )

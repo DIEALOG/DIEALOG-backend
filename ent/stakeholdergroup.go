@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/stakeholdergroup"
-	"github.com/janghanul090801/go-backend-clean-architecture-fiber/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
+	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 )
 
 // StakeholderGroup is the model entity for the StakeholderGroup schema.
