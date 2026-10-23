@@ -21,6 +21,7 @@ type Env struct {
 	RefreshTokenExpiryHour int    `mapstructure:"REFRESH_TOKEN_EXPIRY_HOUR"`
 	AccessTokenSecret      string `mapstructure:"ACCESS_TOKEN_SECRET"`
 	RefreshTokenSecret     string `mapstructure:"REFRESH_TOKEN_SECRET"`
+	InternalSecretKey      string `mapstructure:"INTERNAL_SECRET_KEY"`
 }
 
 func NewEnv() {
@@ -28,7 +29,7 @@ func NewEnv() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal("Can't find the file .E : ", err)
+		log.Fatal("Can't find the file .env : ", err)
 	}
 
 	err = viper.Unmarshal(&E)
@@ -37,6 +38,6 @@ func NewEnv() {
 	}
 
 	if E.AppEnv == "development" {
-		log.Println("The App is running in development E")
+		log.Println("The App is running in development env")
 	}
 }
