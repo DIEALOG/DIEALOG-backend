@@ -22,39 +22,22 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "현재 사용자의 레거시 목록을 페이징하여 조회합니다.",
+                "description": "현재 사용자의 레거시 목록을 조회합니다.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Legacy"
                 ],
-                "summary": "레거시 목록 조회 (페이지네이션)",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "페이지 번호",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "페이지당 개수",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
+                "summary": "레거시 목록 조회",
                 "responses": {
                     "200": {
                         "description": "레거시 목록 조회 성공",
                         "schema": {
-                            "$ref": "#/definitions/handler.PaginatedLegacyResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "페이지네이션 파라미터 오류",
-                        "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.LegacyResponse"
+                            }
                         }
                     },
                     "401": {
@@ -103,7 +86,7 @@ const docTemplate = `{
                     "201": {
                         "description": "레거시 생성 성공",
                         "schema": {
-                            "$ref": "#/definitions/domain.Legacy"
+                            "$ref": "#/definitions/domain.LegacyResponse"
                         }
                     },
                     "400": {
@@ -155,7 +138,7 @@ const docTemplate = `{
                     "200": {
                         "description": "레거시 상세 조회 성공",
                         "schema": {
-                            "$ref": "#/definitions/domain.Legacy"
+                            "$ref": "#/definitions/domain.LegacyResponse"
                         }
                     },
                     "400": {
@@ -223,7 +206,7 @@ const docTemplate = `{
                     "200": {
                         "description": "레거시 수정 성공",
                         "schema": {
-                            "$ref": "#/definitions/domain.Legacy"
+                            "$ref": "#/definitions/domain.LegacyResponse"
                         }
                     },
                     "400": {
@@ -343,7 +326,7 @@ const docTemplate = `{
                     "201": {
                         "description": "계정 등록 성공",
                         "schema": {
-                            "$ref": "#/definitions/domain.Account"
+                            "$ref": "#/definitions/domain.AccountDetailResponse"
                         }
                     },
                     "400": {
@@ -368,6 +351,66 @@ const docTemplate = `{
             }
         },
         "/legacy/protected/{id}/account/{accountId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 계정의 상세 정보(비밀번호 포함) 을 조회합니다",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "특정 계정 detail 정보",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "계정 ID (UUID)",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "계정 정보",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AccountDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
@@ -1208,9 +1251,6 @@ const docTemplate = `{
                 "account_id": {
                     "type": "string"
                 },
-                "account_password": {
-                    "type": "string"
-                },
                 "action": {
                     "$ref": "#/definitions/domain.AccountAction"
                 },
@@ -1224,6 +1264,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "legacy_id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "stakeholder_ids": {
@@ -1273,6 +1316,73 @@ const docTemplate = `{
                 "AccountActionBackupAndDelete",
                 "AccountActionOther"
             ]
+        },
+        "domain.AccountDetailResponse": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "account_password": {
+                    "type": "string"
+                },
+                "action": {
+                    "$ref": "#/definitions/domain.AccountAction"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "data_location": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "legacy_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stakeholders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Stakeholder"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountType"
+                }
+            }
+        },
+        "domain.AccountListResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/domain.AccountAction"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "legacy_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stakeholder_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountType"
+                }
+            }
         },
         "domain.AccountType": {
             "type": "object",
@@ -1346,6 +1456,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.Account"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.LegacyResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.AccountListResponse"
                     }
                 },
                 "created_at": {
@@ -1519,26 +1652,6 @@ const docTemplate = `{
             "properties": {
                 "testament": {
                     "type": "string"
-                }
-            }
-        },
-        "handler.PaginatedLegacyResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.Legacy"
-                    }
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
                 }
             }
         },

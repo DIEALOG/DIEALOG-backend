@@ -5,18 +5,10 @@ import (
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/paginate"
 )
 
 type UpdateLegacyRequest struct {
 	Name string `form:"name" binding:"required" json:"name"`
-}
-
-type PaginatedLegacyResponse struct {
-	Items  []domain.Legacy `json:"items"`
-	Total  int             `json:"total"`
-	Limit  int             `json:"limit"`
-	Offset int             `json:"offset"`
 }
 
 // CreateLegacy godoc
@@ -27,7 +19,7 @@ type PaginatedLegacyResponse struct {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body domain.Legacy true "생성할 레거시 정보"
-// @Success      201 {object} domain.Legacy "레거시 생성 성공"
+// @Success      201 {object} domain.LegacyResponse "레거시 생성 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 요청 파라미터"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
@@ -49,20 +41,19 @@ func CreateLegacy(service domain.LegacyUseCase) fiber.Handler {
 			return RespondError(c, err)
 		}
 
-		return c.Status(http.StatusCreated).JSON(created)
+		return c.Status(http.StatusCreated).JSON(
+			domain.ToLegacyResponse(*created),
+		)
 	}
 }
 
 // FetchLegacies godoc
-// @Summary      레거시 목록 조회 (페이지네이션)
-// @Description  현재 사용자의 레거시 목록을 페이징하여 조회합니다.
+// @Summary      레거시 목록 조회
+// @Description  현재 사용자의 레거시 목록을 조회합니다.
 // @Tags         Legacy
 // @Produce      json
 // @Security     BearerAuth
-// @Param        page query int false "페이지 번호"
-// @Param        limit query int false "페이지당 개수"
-// @Success      200 {object} PaginatedLegacyResponse "레거시 목록 조회 성공"
-// @Failure      400 {object} domain.ErrorResponse "페이지네이션 파라미터 오류"
+// @Success      200 {array} domain.LegacyResponse "레거시 목록 조회 성공"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
 // @Router       /legacy/protected [get]
@@ -71,17 +62,17 @@ func FetchLegacies(service domain.LegacyUseCase) fiber.Handler {
 		ctx := c.RequestCtx()
 		userID := c.Locals("id").(*domain.ID)
 
-		pageInfo, ok := paginate.FromContext(c)
-		if !ok {
-			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "Pagination failed"})
-		}
-
-		legacies, err := service.ListByUserID(ctx, userID, pageInfo.Start(), pageInfo.Limit)
+		legacies, err := service.ListByUserID(ctx, userID)
 		if err != nil {
 			return RespondError(c, err)
 		}
 
-		return c.Status(http.StatusOK).JSON(legacies)
+		response := make([]domain.LegacyResponse, 0, len(legacies))
+		for _, legacy := range legacies {
+			response = append(response, domain.ToLegacyResponse(*legacy))
+		}
+
+		return c.Status(http.StatusOK).JSON(response)
 	}
 }
 
@@ -92,7 +83,7 @@ func FetchLegacies(service domain.LegacyUseCase) fiber.Handler {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "레거시 ID (UUID)"
-// @Success      200 {object} domain.Legacy "레거시 상세 조회 성공"
+// @Success      200 {object} domain.LegacyResponse "레거시 상세 조회 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 ID 형식"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      404 {object} domain.ErrorResponse "레거시를 찾을 수 없음"
@@ -103,10 +94,11 @@ func GetLegacy(service domain.LegacyUseCase) fiber.Handler {
 		ctx := c.RequestCtx()
 		userID := c.Locals("id").(*domain.ID)
 
-		idStr := c.Params("id")
-		id, err := domain.StringToID(idStr)
+		id, err := domain.StringToID(c.Params("id"))
 		if err != nil {
-			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid id format"})
+			return c.Status(http.StatusBadRequest).JSON(
+				domain.ErrorResponse{Message: "invalid id format"},
+			)
 		}
 
 		legacy, err := service.GetByID(ctx, &id, userID)
@@ -114,7 +106,9 @@ func GetLegacy(service domain.LegacyUseCase) fiber.Handler {
 			return RespondError(c, err)
 		}
 
-		return c.Status(http.StatusOK).JSON(legacy)
+		return c.Status(http.StatusOK).JSON(
+			domain.ToLegacyResponse(*legacy),
+		)
 	}
 }
 
@@ -127,7 +121,7 @@ func GetLegacy(service domain.LegacyUseCase) fiber.Handler {
 // @Security     BearerAuth
 // @Param        id path string true "레거시 ID (UUID)"
 // @Param        request body UpdateLegacyRequest true "수정할 레거시 정보"
-// @Success      200 {object} domain.Legacy "레거시 수정 성공"
+// @Success      200 {object} domain.LegacyResponse "레거시 수정 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 요청 파라미터 또는 ID 형식"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      404 {object} domain.ErrorResponse "레거시를 찾을 수 없음"
@@ -155,7 +149,9 @@ func UpdateLegacy(service domain.LegacyUseCase) fiber.Handler {
 			return RespondError(c, err)
 		}
 
-		return c.Status(http.StatusOK).JSON(updated)
+		return c.Status(http.StatusOK).JSON(
+			domain.ToLegacyResponse(*updated),
+		)
 	}
 }
 
@@ -202,7 +198,7 @@ func DeleteLegacy(service domain.LegacyUseCase) fiber.Handler {
 // @Security     BearerAuth
 // @Param        id path string true "레거시 ID (UUID)"
 // @Param        request body domain.Account true "등록할 계정 정보"
-// @Success      201 {object} domain.Account "계정 등록 성공"
+// @Success      201 {object} domain.AccountDetailResponse "계정 등록 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 요청 파라미터 또는 ID 형식"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
@@ -218,18 +214,58 @@ func CreateAccount(service domain.LegacyUseCase) fiber.Handler {
 			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid legacy id format"})
 		}
 
-		var acc domain.Account
-		err = c.Bind().Body(&acc)
+		var req domain.CreateAccountRequest
+		err = c.Bind().Body(&req)
 		if err != nil {
 			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
 		}
 
-		created, err := service.CreateAccount(ctx, &acc, &legacyID, userID)
+		created, err := service.CreateAccount(ctx, &domain.Account{
+			Type:           req.Type,
+			Name:           req.Name,
+			AccountID:      req.AccountID,
+			DataLocation:   req.DataLocation,
+			StakeholderIDs: req.StakeholderIDs,
+			Action:         req.Action,
+		}, req.AccountPassword, &legacyID, userID)
 		if err != nil {
 			return RespondError(c, err)
 		}
 
-		return c.Status(http.StatusCreated).JSON(created)
+		return c.Status(http.StatusCreated).JSON(domain.ToAccountDetailResponse(*created, req.AccountPassword))
+	}
+}
+
+// GetAccount godoc
+// @Summary      특정 계정 detail 정보
+// @Description  특정 계정의 상세 정보(비밀번호 포함) 을 조회합니다
+// @Tags         Legacy
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "레거시 ID (UUID)"
+// @Param        accountId path string true "계정 ID (UUID)"
+// @Success      200 {object} domain.AccountDetailResponse "계정 정보"
+// @Failure      400 {object} domain.ErrorResponse "잘못된 요청 파라미터 또는 ID 형식"
+// @Failure      401 {object} domain.ErrorResponse "인증 실패"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /legacy/protected/{id}/account/{accountId} [get]
+func GetAccount(service domain.LegacyUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		ctx := c.RequestCtx()
+		userID := c.Locals("id").(*domain.ID)
+		idStr := c.Params("accountId")
+		id, err := domain.StringToID(idStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid id format"})
+		}
+
+		acc, pwd, err := service.GetAccountByID(ctx, &id, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		return c.Status(http.StatusOK).JSON(domain.ToAccountDetailResponse(*acc, pwd))
 	}
 }
 

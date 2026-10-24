@@ -10,8 +10,10 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/api/route"
 	"github.com/DIEALOG/DIEALOG-backend/config"
 	_ "github.com/DIEALOG/DIEALOG-backend/docs"
+	"github.com/DIEALOG/DIEALOG-backend/infra/client/crypto"
 	"github.com/DIEALOG/DIEALOG-backend/infra/database"
 	"github.com/DIEALOG/DIEALOG-backend/infra/repository"
+	"github.com/DIEALOG/DIEALOG-backend/internal/httpclient"
 	"github.com/DIEALOG/DIEALOG-backend/usecase"
 	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
@@ -85,6 +87,10 @@ func main() {
 
 	timeout := time.Duration(config.E.ContextTimeout) * time.Second
 
+	// client
+	httpClient := httpclient.NewHTTPClient()
+	cryptoClient := crypto.NewClient(httpClient, config.E.InternalSecretKey)
+
 	// repository
 	userRepository := repository.NewUserRepository(client)
 	legacyRepository := repository.NewLegacyRepository(client)
@@ -92,15 +98,16 @@ func main() {
 	stakeholderGroupRepository := repository.NewStakeholderGroupRepository(client)
 
 	// usecase
-	profileUsecase := usecase.NewProfileUseCase(userRepository, timeout)
+	profileUseCase := usecase.NewProfileUseCase(userRepository, timeout)
 	authUseCase := usecase.NewAuthUseCase(userRepository, timeout)
-	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, timeout)
+	credentialUseCase := usecase.NewCredentialUseCase(cryptoClient)
+	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, timeout)
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
 	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
-	route.NewProfileRouter(api.Group("/profile"), profileUsecase)
+	route.NewProfileRouter(api.Group("/profile"), profileUseCase)
 	route.NewRefreshTokenRouter(api.Group("/refresh"), authUseCase)
 	route.NewSignupRouter(api.Group("/signup"), authUseCase)
 	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase)

@@ -59,7 +59,7 @@ func (c *Client) Store(ctx context.Context, dto domain.StoreCredentialRequest) e
 	return nil
 }
 
-func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (string, error) {
+func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*string, error) {
 	reqBody, err := json.Marshal(dto)
 	if err != nil {
 		panic(err)
@@ -67,7 +67,7 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (s
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+"/retrieve", bytes.NewBuffer(reqBody))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
@@ -76,14 +76,17 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (s
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf(
+		if resp.StatusCode != http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, fmt.Errorf(
 			"unexpected status code: %d\nbody: %s",
 			resp.StatusCode,
 			string(body),
@@ -91,15 +94,15 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (s
 	}
 
 	var res struct {
-		AccountName string `json:"account_name"`
-		Password    string `json:"password"`
+		AccountName string  `json:"account_name"`
+		Password    *string `json:"password"`
 	}
 	if err := xml.Unmarshal(body, &res); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if res.AccountName != dto.AccountName {
-		return "", fmt.Errorf(
+		return nil, fmt.Errorf(
 			"invalid account name: %s, expected %s",
 			res.AccountName,
 			dto.AccountName,

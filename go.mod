@@ -4,7 +4,7 @@ go 1.27
 
 require (
 	entgo.io/ent v0.14.6
-	github.com/DIEALOG/DIEALOG-crypto v0.0.0-20261024040114-4a72ba9f064e
+	github.com/DIEALOG/DIEALOG-crypto v0.0.0-20261024113720-d747d3395f89
 	github.com/gofiber/contrib/v3/swaggo v1.0.14
 	github.com/gofiber/fiber/v3 v3.6.1
 	github.com/golang-jwt/jwt/v4 v4.5.2

@@ -4,8 +4,6 @@ definitions:
     properties:
       account_id:
         type: string
-      account_password:
-        type: string
       action:
         $ref: '#/definitions/domain.AccountAction'
       created_at:
@@ -15,6 +13,8 @@ definitions:
       id:
         type: string
       legacy_id:
+        type: string
+      name:
         type: string
       stakeholder_ids:
         items:
@@ -50,6 +50,50 @@ definitions:
     - AccountActionPermissionMove
     - AccountActionBackupAndDelete
     - AccountActionOther
+  domain.AccountDetailResponse:
+    properties:
+      account_id:
+        type: string
+      account_password:
+        type: string
+      action:
+        $ref: '#/definitions/domain.AccountAction'
+      created_at:
+        type: string
+      data_location:
+        type: string
+      id:
+        type: string
+      legacy_id:
+        type: string
+      name:
+        type: string
+      stakeholders:
+        items:
+          $ref: '#/definitions/domain.Stakeholder'
+        type: array
+      type:
+        $ref: '#/definitions/domain.AccountType'
+    type: object
+  domain.AccountListResponse:
+    properties:
+      action:
+        $ref: '#/definitions/domain.AccountAction'
+      created_at:
+        type: string
+      id:
+        type: string
+      legacy_id:
+        type: string
+      name:
+        type: string
+      stakeholder_ids:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/domain.AccountType'
+    type: object
   domain.AccountType:
     properties:
       id:
@@ -113,6 +157,21 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  domain.LegacyResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/domain.AccountListResponse'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
     type: object
   domain.LoginRequest:
     properties:
@@ -219,19 +278,6 @@ definitions:
     required:
     - testament
     type: object
-  handler.PaginatedLegacyResponse:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/domain.Legacy'
-        type: array
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
-    type: object
   handler.UpdateLegacyRequest:
     properties:
       name:
@@ -248,27 +294,16 @@ info:
 paths:
   /legacy/protected:
     get:
-      description: 현재 사용자의 레거시 목록을 페이징하여 조회합니다.
-      parameters:
-      - description: 페이지 번호
-        in: query
-        name: page
-        type: integer
-      - description: 페이지당 개수
-        in: query
-        name: limit
-        type: integer
+      description: 현재 사용자의 레거시 목록을 조회합니다.
       produces:
       - application/json
       responses:
         "200":
           description: 레거시 목록 조회 성공
           schema:
-            $ref: '#/definitions/handler.PaginatedLegacyResponse'
-        "400":
-          description: 페이지네이션 파라미터 오류
-          schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            items:
+              $ref: '#/definitions/domain.LegacyResponse'
+            type: array
         "401":
           description: 인증 실패
           schema:
@@ -279,7 +314,7 @@ paths:
             $ref: '#/definitions/domain.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: 레거시 목록 조회 (페이지네이션)
+      summary: 레거시 목록 조회
       tags:
       - Legacy
     post:
@@ -299,7 +334,7 @@ paths:
         "201":
           description: 레거시 생성 성공
           schema:
-            $ref: '#/definitions/domain.Legacy'
+            $ref: '#/definitions/domain.LegacyResponse'
         "400":
           description: 잘못된 요청 파라미터
           schema:
@@ -364,7 +399,7 @@ paths:
         "200":
           description: 레거시 상세 조회 성공
           schema:
-            $ref: '#/definitions/domain.Legacy'
+            $ref: '#/definitions/domain.LegacyResponse'
         "400":
           description: 잘못된 ID 형식
           schema:
@@ -408,7 +443,7 @@ paths:
         "200":
           description: 레거시 수정 성공
           schema:
-            $ref: '#/definitions/domain.Legacy'
+            $ref: '#/definitions/domain.LegacyResponse'
         "400":
           description: 잘못된 요청 파라미터 또는 ID 형식
           schema:
@@ -453,7 +488,7 @@ paths:
         "201":
           description: 계정 등록 성공
           schema:
-            $ref: '#/definitions/domain.Account'
+            $ref: '#/definitions/domain.AccountDetailResponse'
         "400":
           description: 잘못된 요청 파라미터 또는 ID 형식
           schema:
@@ -507,6 +542,45 @@ paths:
       security:
       - BearerAuth: []
       summary: 레거시 하위 계정 삭제
+      tags:
+      - Legacy
+    get:
+      consumes:
+      - application/json
+      description: 특정 계정의 상세 정보(비밀번호 포함) 을 조회합니다
+      parameters:
+      - description: 레거시 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 계정 ID (UUID)
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 계정 정보
+          schema:
+            $ref: '#/definitions/domain.AccountDetailResponse'
+        "400":
+          description: 잘못된 요청 파라미터 또는 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 특정 계정 detail 정보
       tags:
       - Legacy
   /login:

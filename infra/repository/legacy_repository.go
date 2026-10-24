@@ -34,25 +34,18 @@ func (r *legacyRepository) Create(c context.Context, leg *domain.Legacy, userID 
 	return result, nil
 }
 
-func (r *legacyRepository) FindAllByUserID(c context.Context, userID *domain.ID, offset, limit int) ([]*domain.Legacy, int, error) {
+func (r *legacyRepository) FindAllByUserID(c context.Context, userID *domain.ID) ([]*domain.Legacy, error) {
 	query := r.client.Legacy.Query().
 		Where(legacy.HasOwnerWith(user.IDEQ(*userID)))
-
-	total, err := query.Count(c)
-	if err != nil {
-		return nil, 0, err
-	}
 
 	entities, err := query.
 		WithAccounts(func(q *ent.AccountQuery) {
 			q.WithStakeholders()
 		}).
-		Limit(limit).
-		Offset(offset).
 		Order(ent.Desc(legacy.FieldCreatedAt)).
 		All(c)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	legacies := make([]*domain.Legacy, len(entities))
@@ -62,7 +55,7 @@ func (r *legacyRepository) FindAllByUserID(c context.Context, userID *domain.ID,
 		legacies[i] = item
 	}
 
-	return legacies, total, nil
+	return legacies, nil
 }
 
 func (r *legacyRepository) FindByID(c context.Context, id *domain.ID, userID *domain.ID) (*domain.Legacy, error) {
@@ -180,6 +173,25 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	result := toDomainAccount(loaded)
 	result.LegacyID = *legacyID
 	return result, nil
+}
+
+func (r *legacyRepository) FindAccountById(c context.Context, id *domain.ID, userID *domain.ID) (*domain.Account, error) {
+	entity, err := r.client.Account.Query().
+		Where(
+			account.IDEQ(*id),
+			account.HasLegacyWith(
+				legacy.HasOwnerWith(user.IDEQ(*userID)),
+			),
+		).
+		WithStakeholders().
+		WithLegacy().
+		Only(c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainAccount(entity), nil
 }
 
 func (r *legacyRepository) DeleteAccount(c context.Context, accountID *domain.ID, legacyID *domain.ID, userID *domain.ID) error {
