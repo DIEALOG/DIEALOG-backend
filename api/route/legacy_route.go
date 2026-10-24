@@ -5,7 +5,6 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/api/middleware"
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/paginate"
 )
 
 func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase) {
@@ -14,15 +13,13 @@ func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase) {
 	protected.Use(middleware.JwtMiddleware)
 
 	protected.Post("/", handler.CreateLegacy(service))
+	protected.Get("/", handler.FetchLegacies(service))
 	protected.Get("/:id", handler.GetLegacy(service))
 	protected.Put("/:id", handler.UpdateLegacy(service))
 	protected.Delete("/:id", handler.DeleteLegacy(service))
 
 	// account endpoints under legacy
 	protected.Post("/:id/account", handler.CreateAccount(service))
+	protected.Get("/:id/account/:accountId", handler.GetAccount(service))
 	protected.Delete("/:id/account/:accountId", handler.DeleteAccount(service))
-
-	// paginated list
-	protected.Use(paginate.New())
-	protected.Get("/", handler.FetchLegacies(service))
 }

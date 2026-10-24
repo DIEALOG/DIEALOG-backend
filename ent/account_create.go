@@ -10,10 +10,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/google/uuid"
 )
 
 // AccountCreate is the builder for creating a Account entity.
@@ -95,20 +95,6 @@ func (_c *AccountCreate) SetAccountID(v string) *AccountCreate {
 func (_c *AccountCreate) SetNillableAccountID(v *string) *AccountCreate {
 	if v != nil {
 		_c.SetAccountID(*v)
-	}
-	return _c
-}
-
-// SetAccountPassword sets the "account_password" field.
-func (_c *AccountCreate) SetAccountPassword(v string) *AccountCreate {
-	_c.mutation.SetAccountPassword(v)
-	return _c
-}
-
-// SetNillableAccountPassword sets the "account_password" field if the given value is not nil.
-func (_c *AccountCreate) SetNillableAccountPassword(v *string) *AccountCreate {
-	if v != nil {
-		_c.SetAccountPassword(*v)
 	}
 	return _c
 }
@@ -298,10 +284,6 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.AccountID(); ok {
 		_spec.SetField(account.FieldAccountID, field.TypeString, value)
 		_node.AccountID = &value
-	}
-	if value, ok := _c.mutation.AccountPassword(); ok {
-		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
-		_node.AccountPassword = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(account.FieldCreatedAt, field.TypeTime, value)

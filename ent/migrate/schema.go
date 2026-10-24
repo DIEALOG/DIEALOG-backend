@@ -17,7 +17,6 @@ var (
 		{Name: "action_message", Type: field.TypeString, Nullable: true},
 		{Name: "data_location", Type: field.TypeString, Nullable: true},
 		{Name: "account_id", Type: field.TypeString, Nullable: true},
-		{Name: "account_password", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "legacy_accounts", Type: field.TypeUUID},
 	}
@@ -29,7 +28,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "accounts_legacies_accounts",
-				Columns:    []*schema.Column{AccountsColumns[9]},
+				Columns:    []*schema.Column{AccountsColumns[8]},
 				RefColumns: []*schema.Column{LegaciesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

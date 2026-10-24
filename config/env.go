@@ -22,6 +22,7 @@ type Env struct {
 	AccessTokenSecret      string `mapstructure:"ACCESS_TOKEN_SECRET"`
 	RefreshTokenSecret     string `mapstructure:"REFRESH_TOKEN_SECRET"`
 	InternalSecretKey      string `mapstructure:"INTERNAL_SECRET_KEY"`
+	InternalCryptoUrl      string `mapstructure:"INTERNAL_CRYPTO_URL"`
 }
 
 func NewEnv() {

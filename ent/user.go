@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
