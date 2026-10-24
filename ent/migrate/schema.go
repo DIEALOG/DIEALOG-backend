@@ -86,7 +86,6 @@ var (
 		{Name: "relationship", Type: field.TypeString, Default: ""},
 		{Name: "message", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "last_word_receiver", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_stakeholders", Type: field.TypeUUID},
 	}
 	// StakeholdersTable holds the schema information for the "stakeholders" table.
@@ -96,14 +95,8 @@ var (
 		PrimaryKey: []*schema.Column{StakeholdersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "stakeholders_last_words_receiver",
-				Columns:    []*schema.Column{StakeholdersColumns[7]},
-				RefColumns: []*schema.Column{LastWordsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "stakeholders_users_stakeholders",
-				Columns:    []*schema.Column{StakeholdersColumns[8]},
+				Columns:    []*schema.Column{StakeholdersColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -114,7 +107,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "last_word_receiver_groups", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_stakeholder_groups", Type: field.TypeUUID},
 	}
 	// StakeholderGroupsTable holds the schema information for the "stakeholder_groups" table.
@@ -124,14 +116,8 @@ var (
 		PrimaryKey: []*schema.Column{StakeholderGroupsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "stakeholder_groups_last_words_receiver_groups",
-				Columns:    []*schema.Column{StakeholderGroupsColumns[3]},
-				RefColumns: []*schema.Column{LastWordsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "stakeholder_groups_users_stakeholder_groups",
-				Columns:    []*schema.Column{StakeholderGroupsColumns[4]},
+				Columns:    []*schema.Column{StakeholderGroupsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -152,6 +138,29 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
+	// UserConfigsColumns holds the columns for the "user_configs" table.
+	UserConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "lock_by_face_id", Type: field.TypeBool, Default: true},
+		{Name: "certification_before_sensitive_information", Type: field.TypeBool, Default: true},
+		{Name: "conversion_criteria", Type: field.TypeString},
+		{Name: "survival_check_interval_days", Type: field.TypeInt, Default: 90},
+		{Name: "user_user_config", Type: field.TypeUUID},
+	}
+	// UserConfigsTable holds the schema information for the "user_configs" table.
+	UserConfigsTable = &schema.Table{
+		Name:       "user_configs",
+		Columns:    UserConfigsColumns,
+		PrimaryKey: []*schema.Column{UserConfigsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_configs_users_user_config",
+				Columns:    []*schema.Column{UserConfigsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// AccountStakeholdersColumns holds the columns for the "account_stakeholders" table.
 	AccountStakeholdersColumns = []*schema.Column{
@@ -203,6 +212,56 @@ var (
 			},
 		},
 	}
+	// LastWordReceiverColumns holds the columns for the "last_word_receiver" table.
+	LastWordReceiverColumns = []*schema.Column{
+		{Name: "last_word_id", Type: field.TypeUUID},
+		{Name: "stakeholder_id", Type: field.TypeUUID},
+	}
+	// LastWordReceiverTable holds the schema information for the "last_word_receiver" table.
+	LastWordReceiverTable = &schema.Table{
+		Name:       "last_word_receiver",
+		Columns:    LastWordReceiverColumns,
+		PrimaryKey: []*schema.Column{LastWordReceiverColumns[0], LastWordReceiverColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "last_word_receiver_last_word_id",
+				Columns:    []*schema.Column{LastWordReceiverColumns[0]},
+				RefColumns: []*schema.Column{LastWordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "last_word_receiver_stakeholder_id",
+				Columns:    []*schema.Column{LastWordReceiverColumns[1]},
+				RefColumns: []*schema.Column{StakeholdersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// LastWordReceiverGroupsColumns holds the columns for the "last_word_receiver_groups" table.
+	LastWordReceiverGroupsColumns = []*schema.Column{
+		{Name: "last_word_id", Type: field.TypeUUID},
+		{Name: "stakeholder_group_id", Type: field.TypeUUID},
+	}
+	// LastWordReceiverGroupsTable holds the schema information for the "last_word_receiver_groups" table.
+	LastWordReceiverGroupsTable = &schema.Table{
+		Name:       "last_word_receiver_groups",
+		Columns:    LastWordReceiverGroupsColumns,
+		PrimaryKey: []*schema.Column{LastWordReceiverGroupsColumns[0], LastWordReceiverGroupsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "last_word_receiver_groups_last_word_id",
+				Columns:    []*schema.Column{LastWordReceiverGroupsColumns[0]},
+				RefColumns: []*schema.Column{LastWordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "last_word_receiver_groups_stakeholder_group_id",
+				Columns:    []*schema.Column{LastWordReceiverGroupsColumns[1]},
+				RefColumns: []*schema.Column{StakeholderGroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// StakeholderGroupStakeholdersColumns holds the columns for the "stakeholder_group_stakeholders" table.
 	StakeholderGroupStakeholdersColumns = []*schema.Column{
 		{Name: "stakeholder_group_id", Type: field.TypeUUID},
@@ -228,6 +287,31 @@ var (
 			},
 		},
 	}
+	// UserConfigVerifierColumns holds the columns for the "user_config_verifier" table.
+	UserConfigVerifierColumns = []*schema.Column{
+		{Name: "user_config_id", Type: field.TypeUUID},
+		{Name: "stakeholder_id", Type: field.TypeUUID},
+	}
+	// UserConfigVerifierTable holds the schema information for the "user_config_verifier" table.
+	UserConfigVerifierTable = &schema.Table{
+		Name:       "user_config_verifier",
+		Columns:    UserConfigVerifierColumns,
+		PrimaryKey: []*schema.Column{UserConfigVerifierColumns[0], UserConfigVerifierColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_config_verifier_user_config_id",
+				Columns:    []*schema.Column{UserConfigVerifierColumns[0]},
+				RefColumns: []*schema.Column{UserConfigsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_config_verifier_stakeholder_id",
+				Columns:    []*schema.Column{UserConfigVerifierColumns[1]},
+				RefColumns: []*schema.Column{StakeholdersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
@@ -236,9 +320,13 @@ var (
 		StakeholdersTable,
 		StakeholderGroupsTable,
 		UsersTable,
+		UserConfigsTable,
 		AccountStakeholdersTable,
 		AccountStakeholderGroupsTable,
+		LastWordReceiverTable,
+		LastWordReceiverGroupsTable,
 		StakeholderGroupStakeholdersTable,
+		UserConfigVerifierTable,
 	}
 )
 
@@ -246,14 +334,19 @@ func init() {
 	AccountsTable.ForeignKeys[0].RefTable = LegaciesTable
 	LastWordsTable.ForeignKeys[0].RefTable = UsersTable
 	LegaciesTable.ForeignKeys[0].RefTable = UsersTable
-	StakeholdersTable.ForeignKeys[0].RefTable = LastWordsTable
-	StakeholdersTable.ForeignKeys[1].RefTable = UsersTable
-	StakeholderGroupsTable.ForeignKeys[0].RefTable = LastWordsTable
-	StakeholderGroupsTable.ForeignKeys[1].RefTable = UsersTable
+	StakeholdersTable.ForeignKeys[0].RefTable = UsersTable
+	StakeholderGroupsTable.ForeignKeys[0].RefTable = UsersTable
+	UserConfigsTable.ForeignKeys[0].RefTable = UsersTable
 	AccountStakeholdersTable.ForeignKeys[0].RefTable = AccountsTable
 	AccountStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
 	AccountStakeholderGroupsTable.ForeignKeys[0].RefTable = AccountsTable
 	AccountStakeholderGroupsTable.ForeignKeys[1].RefTable = StakeholderGroupsTable
+	LastWordReceiverTable.ForeignKeys[0].RefTable = LastWordsTable
+	LastWordReceiverTable.ForeignKeys[1].RefTable = StakeholdersTable
+	LastWordReceiverGroupsTable.ForeignKeys[0].RefTable = LastWordsTable
+	LastWordReceiverGroupsTable.ForeignKeys[1].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[0].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
+	UserConfigVerifierTable.ForeignKeys[0].RefTable = UserConfigsTable
+	UserConfigVerifierTable.ForeignKeys[1].RefTable = StakeholdersTable
 }

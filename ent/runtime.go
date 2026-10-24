@@ -12,6 +12,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -119,4 +120,26 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	userconfigFields := schema.UserConfig{}.Fields()
+	_ = userconfigFields
+	// userconfigDescLockByFaceID is the schema descriptor for lock_by_face_id field.
+	userconfigDescLockByFaceID := userconfigFields[1].Descriptor()
+	// userconfig.DefaultLockByFaceID holds the default value on creation for the lock_by_face_id field.
+	userconfig.DefaultLockByFaceID = userconfigDescLockByFaceID.Default.(bool)
+	// userconfigDescCertificationBeforeSensitiveInformation is the schema descriptor for certification_before_sensitive_information field.
+	userconfigDescCertificationBeforeSensitiveInformation := userconfigFields[2].Descriptor()
+	// userconfig.DefaultCertificationBeforeSensitiveInformation holds the default value on creation for the certification_before_sensitive_information field.
+	userconfig.DefaultCertificationBeforeSensitiveInformation = userconfigDescCertificationBeforeSensitiveInformation.Default.(bool)
+	// userconfigDescConversionCriteria is the schema descriptor for conversion_criteria field.
+	userconfigDescConversionCriteria := userconfigFields[3].Descriptor()
+	// userconfig.ConversionCriteriaValidator is a validator for the "conversion_criteria" field. It is called by the builders before save.
+	userconfig.ConversionCriteriaValidator = userconfigDescConversionCriteria.Validators[0].(func(string) error)
+	// userconfigDescSurvivalCheckIntervalDays is the schema descriptor for survival_check_interval_days field.
+	userconfigDescSurvivalCheckIntervalDays := userconfigFields[4].Descriptor()
+	// userconfig.DefaultSurvivalCheckIntervalDays holds the default value on creation for the survival_check_interval_days field.
+	userconfig.DefaultSurvivalCheckIntervalDays = userconfigDescSurvivalCheckIntervalDays.Default.(int)
+	// userconfigDescID is the schema descriptor for id field.
+	userconfigDescID := userconfigFields[0].Descriptor()
+	// userconfig.DefaultID holds the default value on creation for the id field.
+	userconfig.DefaultID = userconfigDescID.Default.(func() uuid.UUID)
 }

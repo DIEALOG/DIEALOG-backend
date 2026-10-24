@@ -33,10 +33,9 @@ type Stakeholder struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StakeholderQuery when eager-loading is set.
-	Edges              StakeholderEdges `json:"edges"`
-	last_word_receiver *uuid.UUID
-	user_stakeholders  *uuid.UUID
-	selectValues       sql.SelectValues
+	Edges             StakeholderEdges `json:"edges"`
+	user_stakeholders *uuid.UUID
+	selectValues      sql.SelectValues
 }
 
 // StakeholderEdges holds the relations/edges for other nodes in the graph.
@@ -47,9 +46,13 @@ type StakeholderEdges struct {
 	Groups []*StakeholderGroup `json:"groups,omitempty"`
 	// Accounts holds the value of the accounts edge.
 	Accounts []*Account `json:"accounts,omitempty"`
+	// LastWords holds the value of the last_words edge.
+	LastWords []*LastWord `json:"last_words,omitempty"`
+	// UserConfig holds the value of the user_config edge.
+	UserConfig []*UserConfig `json:"user_config,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -81,6 +84,24 @@ func (e StakeholderEdges) AccountsOrErr() ([]*Account, error) {
 	return nil, &NotLoadedError{edge: "accounts"}
 }
 
+// LastWordsOrErr returns the LastWords value or an error if the edge
+// was not loaded in eager-loading.
+func (e StakeholderEdges) LastWordsOrErr() ([]*LastWord, error) {
+	if e.loadedTypes[3] {
+		return e.LastWords, nil
+	}
+	return nil, &NotLoadedError{edge: "last_words"}
+}
+
+// UserConfigOrErr returns the UserConfig value or an error if the edge
+// was not loaded in eager-loading.
+func (e StakeholderEdges) UserConfigOrErr() ([]*UserConfig, error) {
+	if e.loadedTypes[4] {
+		return e.UserConfig, nil
+	}
+	return nil, &NotLoadedError{edge: "user_config"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Stakeholder) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -92,9 +113,7 @@ func (*Stakeholder) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case stakeholder.FieldID:
 			values[i] = new(uuid.UUID)
-		case stakeholder.ForeignKeys[0]: // last_word_receiver
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case stakeholder.ForeignKeys[1]: // user_stakeholders
+		case stakeholder.ForeignKeys[0]: // user_stakeholders
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -158,13 +177,6 @@ func (_m *Stakeholder) assignValues(columns []string, values []any) error {
 			}
 		case stakeholder.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field last_word_receiver", values[i])
-			} else if value.Valid {
-				_m.last_word_receiver = new(uuid.UUID)
-				*_m.last_word_receiver = *value.S.(*uuid.UUID)
-			}
-		case stakeholder.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_stakeholders", values[i])
 			} else if value.Valid {
 				_m.user_stakeholders = new(uuid.UUID)
@@ -196,6 +208,16 @@ func (_m *Stakeholder) QueryGroups() *StakeholderGroupQuery {
 // QueryAccounts queries the "accounts" edge of the Stakeholder entity.
 func (_m *Stakeholder) QueryAccounts() *AccountQuery {
 	return NewStakeholderClient(_m.config).QueryAccounts(_m)
+}
+
+// QueryLastWords queries the "last_words" edge of the Stakeholder entity.
+func (_m *Stakeholder) QueryLastWords() *LastWordQuery {
+	return NewStakeholderClient(_m.config).QueryLastWords(_m)
+}
+
+// QueryUserConfig queries the "user_config" edge of the Stakeholder entity.
+func (_m *Stakeholder) QueryUserConfig() *UserConfigQuery {
+	return NewStakeholderClient(_m.config).QueryUserConfig(_m)
 }
 
 // Update returns a builder for updating this Stakeholder.

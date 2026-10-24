@@ -16,6 +16,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -162,6 +163,21 @@ func (_u *UserUpdate) AddLastWords(v ...*LastWord) *UserUpdate {
 	return _u.AddLastWordIDs(ids...)
 }
 
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
+func (_u *UserUpdate) AddUserConfigIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddUserConfigIDs(ids...)
+	return _u
+}
+
+// AddUserConfig adds the "user_config" edges to the UserConfig entity.
+func (_u *UserUpdate) AddUserConfig(v ...*UserConfig) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUserConfigIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -249,6 +265,27 @@ func (_u *UserUpdate) RemoveLastWords(v ...*LastWord) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLastWordIDs(ids...)
+}
+
+// ClearUserConfig clears all "user_config" edges to the UserConfig entity.
+func (_u *UserUpdate) ClearUserConfig() *UserUpdate {
+	_u.mutation.ClearUserConfig()
+	return _u
+}
+
+// RemoveUserConfigIDs removes the "user_config" edge to UserConfig entities by IDs.
+func (_u *UserUpdate) RemoveUserConfigIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveUserConfigIDs(ids...)
+	return _u
+}
+
+// RemoveUserConfig removes "user_config" edges to UserConfig entities.
+func (_u *UserUpdate) RemoveUserConfig(v ...*UserConfig) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUserConfigIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -510,6 +547,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.UserConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUserConfigIDs(); len(nodes) > 0 && !_u.mutation.UserConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -660,6 +742,21 @@ func (_u *UserUpdateOne) AddLastWords(v ...*LastWord) *UserUpdateOne {
 	return _u.AddLastWordIDs(ids...)
 }
 
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
+func (_u *UserUpdateOne) AddUserConfigIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddUserConfigIDs(ids...)
+	return _u
+}
+
+// AddUserConfig adds the "user_config" edges to the UserConfig entity.
+func (_u *UserUpdateOne) AddUserConfig(v ...*UserConfig) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUserConfigIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -747,6 +844,27 @@ func (_u *UserUpdateOne) RemoveLastWords(v ...*LastWord) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLastWordIDs(ids...)
+}
+
+// ClearUserConfig clears all "user_config" edges to the UserConfig entity.
+func (_u *UserUpdateOne) ClearUserConfig() *UserUpdateOne {
+	_u.mutation.ClearUserConfig()
+	return _u
+}
+
+// RemoveUserConfigIDs removes the "user_config" edge to UserConfig entities by IDs.
+func (_u *UserUpdateOne) RemoveUserConfigIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveUserConfigIDs(ids...)
+	return _u
+}
+
+// RemoveUserConfig removes "user_config" edges to UserConfig entities.
+func (_u *UserUpdateOne) RemoveUserConfig(v ...*UserConfig) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUserConfigIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1031,6 +1149,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUserConfigIDs(); len(nodes) > 0 && !_u.mutation.UserConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

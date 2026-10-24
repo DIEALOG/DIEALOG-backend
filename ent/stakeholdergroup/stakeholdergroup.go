@@ -25,6 +25,8 @@ const (
 	EdgeAccounts = "accounts"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
 	EdgeStakeholders = "stakeholders"
+	// EdgeLastWords holds the string denoting the last_words edge name in mutations.
+	EdgeLastWords = "last_words"
 	// Table holds the table name of the stakeholdergroup in the database.
 	Table = "stakeholder_groups"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -44,6 +46,11 @@ const (
 	// StakeholdersInverseTable is the table name for the Stakeholder entity.
 	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
 	StakeholdersInverseTable = "stakeholders"
+	// LastWordsTable is the table that holds the last_words relation/edge. The primary key declared below.
+	LastWordsTable = "last_word_receiver_groups"
+	// LastWordsInverseTable is the table name for the LastWord entity.
+	// It exists in this package in order to avoid circular dependency with the "lastword" package.
+	LastWordsInverseTable = "last_words"
 )
 
 // Columns holds all SQL columns for stakeholdergroup fields.
@@ -56,7 +63,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "stakeholder_groups"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"last_word_receiver_groups",
 	"user_stakeholder_groups",
 }
 
@@ -67,6 +73,9 @@ var (
 	// StakeholdersPrimaryKey and StakeholdersColumn2 are the table columns denoting the
 	// primary key for the stakeholders relation (M2M).
 	StakeholdersPrimaryKey = []string{"stakeholder_group_id", "stakeholder_id"}
+	// LastWordsPrimaryKey and LastWordsColumn2 are the table columns denoting the
+	// primary key for the last_words relation (M2M).
+	LastWordsPrimaryKey = []string{"last_word_id", "stakeholder_group_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -145,6 +154,20 @@ func ByStakeholders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newStakeholdersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLastWordsCount orders the results by last_words count.
+func ByLastWordsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLastWordsStep(), opts...)
+	}
+}
+
+// ByLastWords orders the results by last_words terms.
+func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLastWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -164,5 +187,12 @@ func newStakeholdersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StakeholdersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, StakeholdersTable, StakeholdersPrimaryKey...),
+	)
+}
+func newLastWordsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LastWordsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, LastWordsTable, LastWordsPrimaryKey...),
 	)
 }

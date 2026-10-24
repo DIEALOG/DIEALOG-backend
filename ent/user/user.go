@@ -35,6 +35,8 @@ const (
 	EdgeLegacies = "legacies"
 	// EdgeLastWords holds the string denoting the last_words edge name in mutations.
 	EdgeLastWords = "last_words"
+	// EdgeUserConfig holds the string denoting the user_config edge name in mutations.
+	EdgeUserConfig = "user_config"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// StakeholdersTable is the table that holds the stakeholders relation/edge.
@@ -65,6 +67,13 @@ const (
 	LastWordsInverseTable = "last_words"
 	// LastWordsColumn is the table column denoting the last_words relation/edge.
 	LastWordsColumn = "user_last_words"
+	// UserConfigTable is the table that holds the user_config relation/edge.
+	UserConfigTable = "user_configs"
+	// UserConfigInverseTable is the table name for the UserConfig entity.
+	// It exists in this package in order to avoid circular dependency with the "userconfig" package.
+	UserConfigInverseTable = "user_configs"
+	// UserConfigColumn is the table column denoting the user_config relation/edge.
+	UserConfigColumn = "user_user_config"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -196,6 +205,20 @@ func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLastWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByUserConfigCount orders the results by user_config count.
+func ByUserConfigCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUserConfigStep(), opts...)
+	}
+}
+
+// ByUserConfig orders the results by user_config terms.
+func ByUserConfig(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStakeholdersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -222,5 +245,12 @@ func newLastWordsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LastWordsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LastWordsTable, LastWordsColumn),
+	)
+}
+func newUserConfigStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserConfigInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UserConfigTable, UserConfigColumn),
 	)
 }

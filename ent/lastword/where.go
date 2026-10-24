@@ -199,7 +199,7 @@ func HasReceiver() predicate.LastWord {
 	return predicate.LastWord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ReceiverTable, ReceiverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ReceiverTable, ReceiverPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -222,7 +222,7 @@ func HasReceiverGroups() predicate.LastWord {
 	return predicate.LastWord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ReceiverGroupsTable, ReceiverGroupsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ReceiverGroupsTable, ReceiverGroupsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

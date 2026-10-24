@@ -13,24 +13,28 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
 // StakeholderQuery is the builder for querying Stakeholder entities.
 type StakeholderQuery struct {
 	config
-	ctx          *QueryContext
-	order        []stakeholder.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Stakeholder
-	withOwner    *UserQuery
-	withGroups   *StakeholderGroupQuery
-	withAccounts *AccountQuery
-	withFKs      bool
+	ctx            *QueryContext
+	order          []stakeholder.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Stakeholder
+	withOwner      *UserQuery
+	withGroups     *StakeholderGroupQuery
+	withAccounts   *AccountQuery
+	withLastWords  *LastWordQuery
+	withUserConfig *UserConfigQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -126,6 +130,50 @@ func (_q *StakeholderQuery) QueryAccounts() *AccountQuery {
 			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
 			sqlgraph.To(account.Table, account.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.AccountsTable, stakeholder.AccountsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLastWords chains the current query on the "last_words" edge.
+func (_q *StakeholderQuery) QueryLastWords() *LastWordQuery {
+	query := (&LastWordClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
+			sqlgraph.To(lastword.Table, lastword.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.LastWordsTable, stakeholder.LastWordsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserConfig chains the current query on the "user_config" edge.
+func (_q *StakeholderQuery) QueryUserConfig() *UserConfigQuery {
+	query := (&UserConfigClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, selector),
+			sqlgraph.To(userconfig.Table, userconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.UserConfigTable, stakeholder.UserConfigPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -320,14 +368,16 @@ func (_q *StakeholderQuery) Clone() *StakeholderQuery {
 		return nil
 	}
 	return &StakeholderQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]stakeholder.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.Stakeholder{}, _q.predicates...),
-		withOwner:    _q.withOwner.Clone(),
-		withGroups:   _q.withGroups.Clone(),
-		withAccounts: _q.withAccounts.Clone(),
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]stakeholder.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.Stakeholder{}, _q.predicates...),
+		withOwner:      _q.withOwner.Clone(),
+		withGroups:     _q.withGroups.Clone(),
+		withAccounts:   _q.withAccounts.Clone(),
+		withLastWords:  _q.withLastWords.Clone(),
+		withUserConfig: _q.withUserConfig.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -364,6 +414,28 @@ func (_q *StakeholderQuery) WithAccounts(opts ...func(*AccountQuery)) *Stakehold
 		opt(query)
 	}
 	_q.withAccounts = query
+	return _q
+}
+
+// WithLastWords tells the query-builder to eager-load the nodes that are connected to
+// the "last_words" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderQuery) WithLastWords(opts ...func(*LastWordQuery)) *StakeholderQuery {
+	query := (&LastWordClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLastWords = query
+	return _q
+}
+
+// WithUserConfig tells the query-builder to eager-load the nodes that are connected to
+// the "user_config" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderQuery) WithUserConfig(opts ...func(*UserConfigQuery)) *StakeholderQuery {
+	query := (&UserConfigClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUserConfig = query
 	return _q
 }
 
@@ -446,10 +518,12 @@ func (_q *StakeholderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*Stakeholder{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			_q.withOwner != nil,
 			_q.withGroups != nil,
 			_q.withAccounts != nil,
+			_q.withLastWords != nil,
+			_q.withUserConfig != nil,
 		}
 	)
 	if _q.withOwner != nil {
@@ -493,6 +567,20 @@ func (_q *StakeholderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		if err := _q.loadAccounts(ctx, query, nodes,
 			func(n *Stakeholder) { n.Edges.Accounts = []*Account{} },
 			func(n *Stakeholder, e *Account) { n.Edges.Accounts = append(n.Edges.Accounts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLastWords; query != nil {
+		if err := _q.loadLastWords(ctx, query, nodes,
+			func(n *Stakeholder) { n.Edges.LastWords = []*LastWord{} },
+			func(n *Stakeholder, e *LastWord) { n.Edges.LastWords = append(n.Edges.LastWords, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUserConfig; query != nil {
+		if err := _q.loadUserConfig(ctx, query, nodes,
+			func(n *Stakeholder) { n.Edges.UserConfig = []*UserConfig{} },
+			func(n *Stakeholder, e *UserConfig) { n.Edges.UserConfig = append(n.Edges.UserConfig, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -646,6 +734,128 @@ func (_q *StakeholderQuery) loadAccounts(ctx context.Context, query *AccountQuer
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "accounts" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderQuery) loadLastWords(ctx context.Context, query *LastWordQuery, nodes []*Stakeholder, init func(*Stakeholder), assign func(*Stakeholder, *LastWord)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Stakeholder)
+	nids := make(map[uuid.UUID]map[*Stakeholder]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholder.LastWordsTable)
+		s.Join(joinT).On(s.C(lastword.FieldID), joinT.C(stakeholder.LastWordsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholder.LastWordsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholder.LastWordsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Stakeholder]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*LastWord](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "last_words" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderQuery) loadUserConfig(ctx context.Context, query *UserConfigQuery, nodes []*Stakeholder, init func(*Stakeholder), assign func(*Stakeholder, *UserConfig)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Stakeholder)
+	nids := make(map[uuid.UUID]map[*Stakeholder]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholder.UserConfigTable)
+		s.Join(joinT).On(s.C(userconfig.FieldID), joinT.C(stakeholder.UserConfigPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholder.UserConfigPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholder.UserConfigPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Stakeholder]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*UserConfig](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "user_config" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

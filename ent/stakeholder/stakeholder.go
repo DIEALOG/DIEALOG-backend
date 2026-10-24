@@ -33,6 +33,10 @@ const (
 	EdgeGroups = "groups"
 	// EdgeAccounts holds the string denoting the accounts edge name in mutations.
 	EdgeAccounts = "accounts"
+	// EdgeLastWords holds the string denoting the last_words edge name in mutations.
+	EdgeLastWords = "last_words"
+	// EdgeUserConfig holds the string denoting the user_config edge name in mutations.
+	EdgeUserConfig = "user_config"
 	// Table holds the table name of the stakeholder in the database.
 	Table = "stakeholders"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -52,6 +56,16 @@ const (
 	// AccountsInverseTable is the table name for the Account entity.
 	// It exists in this package in order to avoid circular dependency with the "account" package.
 	AccountsInverseTable = "accounts"
+	// LastWordsTable is the table that holds the last_words relation/edge. The primary key declared below.
+	LastWordsTable = "last_word_receiver"
+	// LastWordsInverseTable is the table name for the LastWord entity.
+	// It exists in this package in order to avoid circular dependency with the "lastword" package.
+	LastWordsInverseTable = "last_words"
+	// UserConfigTable is the table that holds the user_config relation/edge. The primary key declared below.
+	UserConfigTable = "user_config_verifier"
+	// UserConfigInverseTable is the table name for the UserConfig entity.
+	// It exists in this package in order to avoid circular dependency with the "userconfig" package.
+	UserConfigInverseTable = "user_configs"
 )
 
 // Columns holds all SQL columns for stakeholder fields.
@@ -68,7 +82,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "stakeholders"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"last_word_receiver",
 	"user_stakeholders",
 }
 
@@ -79,6 +92,12 @@ var (
 	// AccountsPrimaryKey and AccountsColumn2 are the table columns denoting the
 	// primary key for the accounts relation (M2M).
 	AccountsPrimaryKey = []string{"account_id", "stakeholder_id"}
+	// LastWordsPrimaryKey and LastWordsColumn2 are the table columns denoting the
+	// primary key for the last_words relation (M2M).
+	LastWordsPrimaryKey = []string{"last_word_id", "stakeholder_id"}
+	// UserConfigPrimaryKey and UserConfigColumn2 are the table columns denoting the
+	// primary key for the user_config relation (M2M).
+	UserConfigPrimaryKey = []string{"user_config_id", "stakeholder_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -179,6 +198,34 @@ func ByAccounts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAccountsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLastWordsCount orders the results by last_words count.
+func ByLastWordsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLastWordsStep(), opts...)
+	}
+}
+
+// ByLastWords orders the results by last_words terms.
+func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLastWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUserConfigCount orders the results by user_config count.
+func ByUserConfigCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUserConfigStep(), opts...)
+	}
+}
+
+// ByUserConfig orders the results by user_config terms.
+func ByUserConfig(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -198,5 +245,19 @@ func newAccountsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AccountsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AccountsTable, AccountsPrimaryKey...),
+	)
+}
+func newLastWordsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LastWordsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, LastWordsTable, LastWordsPrimaryKey...),
+	)
+}
+func newUserConfigStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserConfigInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, UserConfigTable, UserConfigPrimaryKey...),
 	)
 }

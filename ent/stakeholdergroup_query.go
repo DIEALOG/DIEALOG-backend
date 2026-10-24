@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -30,6 +31,7 @@ type StakeholderGroupQuery struct {
 	withOwner        *UserQuery
 	withAccounts     *AccountQuery
 	withStakeholders *StakeholderQuery
+	withLastWords    *LastWordQuery
 	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -126,6 +128,28 @@ func (_q *StakeholderGroupQuery) QueryStakeholders() *StakeholderQuery {
 			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, selector),
 			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, stakeholdergroup.StakeholdersTable, stakeholdergroup.StakeholdersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLastWords chains the current query on the "last_words" edge.
+func (_q *StakeholderGroupQuery) QueryLastWords() *LastWordQuery {
+	query := (&LastWordClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, selector),
+			sqlgraph.To(lastword.Table, lastword.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholdergroup.LastWordsTable, stakeholdergroup.LastWordsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -328,6 +352,7 @@ func (_q *StakeholderGroupQuery) Clone() *StakeholderGroupQuery {
 		withOwner:        _q.withOwner.Clone(),
 		withAccounts:     _q.withAccounts.Clone(),
 		withStakeholders: _q.withStakeholders.Clone(),
+		withLastWords:    _q.withLastWords.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -364,6 +389,17 @@ func (_q *StakeholderGroupQuery) WithStakeholders(opts ...func(*StakeholderQuery
 		opt(query)
 	}
 	_q.withStakeholders = query
+	return _q
+}
+
+// WithLastWords tells the query-builder to eager-load the nodes that are connected to
+// the "last_words" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderGroupQuery) WithLastWords(opts ...func(*LastWordQuery)) *StakeholderGroupQuery {
+	query := (&LastWordClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLastWords = query
 	return _q
 }
 
@@ -446,10 +482,11 @@ func (_q *StakeholderGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes       = []*StakeholderGroup{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withOwner != nil,
 			_q.withAccounts != nil,
 			_q.withStakeholders != nil,
+			_q.withLastWords != nil,
 		}
 	)
 	if _q.withOwner != nil {
@@ -493,6 +530,13 @@ func (_q *StakeholderGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		if err := _q.loadStakeholders(ctx, query, nodes,
 			func(n *StakeholderGroup) { n.Edges.Stakeholders = []*Stakeholder{} },
 			func(n *StakeholderGroup, e *Stakeholder) { n.Edges.Stakeholders = append(n.Edges.Stakeholders, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLastWords; query != nil {
+		if err := _q.loadLastWords(ctx, query, nodes,
+			func(n *StakeholderGroup) { n.Edges.LastWords = []*LastWord{} },
+			func(n *StakeholderGroup, e *LastWord) { n.Edges.LastWords = append(n.Edges.LastWords, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -646,6 +690,67 @@ func (_q *StakeholderGroupQuery) loadStakeholders(ctx context.Context, query *St
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "stakeholders" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderGroupQuery) loadLastWords(ctx context.Context, query *LastWordQuery, nodes []*StakeholderGroup, init func(*StakeholderGroup), assign func(*StakeholderGroup, *LastWord)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*StakeholderGroup)
+	nids := make(map[uuid.UUID]map[*StakeholderGroup]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholdergroup.LastWordsTable)
+		s.Join(joinT).On(s.C(lastword.FieldID), joinT.C(stakeholdergroup.LastWordsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholdergroup.LastWordsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholdergroup.LastWordsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*StakeholderGroup]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*LastWord](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "last_words" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

@@ -240,6 +240,29 @@ func HasStakeholdersWith(preds ...predicate.Stakeholder) predicate.StakeholderGr
 	})
 }
 
+// HasLastWords applies the HasEdge predicate on the "last_words" edge.
+func HasLastWords() predicate.StakeholderGroup {
+	return predicate.StakeholderGroup(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, LastWordsTable, LastWordsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLastWordsWith applies the HasEdge predicate on the "last_words" edge with a given conditions (other predicates).
+func HasLastWordsWith(preds ...predicate.LastWord) predicate.StakeholderGroup {
+	return predicate.StakeholderGroup(func(s *sql.Selector) {
+		step := newLastWordsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.StakeholderGroup) predicate.StakeholderGroup {
 	return predicate.StakeholderGroup(sql.AndPredicates(predicates...))

@@ -14,7 +14,7 @@ type User struct {
 	ProfileImagePath  *string            `json:"profile_image_path"`
 	Stakeholders      []Stakeholder      `json:"stakeholders,omitempty"`
 	StakeholderGroups []StakeholderGroup `json:"stakeholder_groups,omitempty"`
-	Testament         string             `json:"testament"`
+	Config            UserConfig         `json:"config"`
 	CreatedAt         time.Time          `json:"created_at"`
 }
 
@@ -66,6 +66,18 @@ type StakeholderGroup struct {
 	Stakeholders   []Stakeholder `json:"stakeholders,omitempty"`
 	CreatedAt      time.Time     `json:"created_at"`
 }
+
+type UserConfig struct {
+	ID                                      ID                       `json:"id"`
+	UserID                                  ID                       `json:"user_id"`
+	LockByFaceID                            bool                     `json:"lock_by_face_id"`
+	CertificationBeforeSensitiveInformation bool                     `json:"certification_before_sensitive_information"`
+	Verifier                                []Stakeholder            `json:"verifier"`
+	ConversionCriteria                      ConfigConversionCriteria `json:"conversion_criteria"`
+	SurvivalCheckIntervalDays               int                      `json:"survival_check_interval_days"`
+}
+
+type ConfigConversionCriteria string
 
 type UserRepository interface {
 	Create(c context.Context, user *User) (*User, error)
@@ -125,4 +137,10 @@ type LastWordUseCase interface {
 	GetByID(c context.Context, id *ID, userID *ID) (*LastWord, error)
 	Update(c context.Context, id *ID, lastWord *LastWord, userID *ID) (*LastWord, error)
 	Delete(c context.Context, id *ID, userID *ID) error
+}
+
+type UserConfigRepository interface {
+	Create(c context.Context, config *UserConfig) (*UserConfig, error)
+	FindByUserID(c context.Context, userID *ID) (*UserConfig, error)
+	Update(c context.Context, config *UserConfig) (*UserConfig, error)
 }

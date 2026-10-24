@@ -17,16 +17,18 @@ import (
 )
 
 type profileUseCase struct {
-	userRepository domain.UserRepository
-	contextTimeout time.Duration
+	userRepository       domain.UserRepository
+	userConfigRepository domain.UserConfigRepository
+	contextTimeout       time.Duration
 }
 
 const maxProfileImageSize = 5 * 1024 * 1024
 
-func NewProfileUseCase(userRepository domain.UserRepository, timeout time.Duration) domain.ProfileUseCase {
+func NewProfileUseCase(userRepository domain.UserRepository, userConfigRepository domain.UserConfigRepository, timeout time.Duration) domain.ProfileUseCase {
 	return &profileUseCase{
-		userRepository: userRepository,
-		contextTimeout: timeout,
+		userRepository:       userRepository,
+		userConfigRepository: userConfigRepository,
+		contextTimeout:       timeout,
 	}
 }
 
@@ -147,4 +149,31 @@ func (pu *profileUseCase) UpdateProfileImage(c context.Context, userID *domain.I
 		Stakeholders:      user.Stakeholders,
 		StakeholderGroups: user.StakeholderGroups,
 	}, nil
+}
+
+func (pu *profileUseCase) UpdateUserConfig(c context.Context, config *domain.UserConfig, userID *domain.ID) (*domain.UserConfig, error) {
+	ctx, cancel := context.WithTimeout(c, pu.contextTimeout)
+	defer cancel()
+
+	if config.UserID != *userID {
+		return nil, domain.NewBadRequestError(errors.New("user id not match"))
+	}
+
+	_, err := pu.userConfigRepository.FindByUserID(ctx, userID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	cf, err := pu.userConfigRepository.Update(ctx, config)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	return cf, nil
 }

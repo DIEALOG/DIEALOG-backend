@@ -18,6 +18,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -36,6 +37,7 @@ const (
 	TypeStakeholder      = "Stakeholder"
 	TypeStakeholderGroup = "StakeholderGroup"
 	TypeUser             = "User"
+	TypeUserConfig       = "UserConfig"
 )
 
 // AccountMutation represents an operation that mutates the Account nodes in the graph.
@@ -2224,27 +2226,33 @@ func (m *LegacyMutation) ResetEdge(name string) error {
 // StakeholderMutation represents an operation that mutates the Stakeholder nodes in the graph.
 type StakeholderMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	name            *string
-	phone           *string
-	email           *string
-	relationship    *string
-	message         *string
-	created_at      *time.Time
-	clearedFields   map[string]struct{}
-	owner           *uuid.UUID
-	clearedowner    bool
-	groups          map[uuid.UUID]struct{}
-	removedgroups   map[uuid.UUID]struct{}
-	clearedgroups   bool
-	accounts        map[uuid.UUID]struct{}
-	removedaccounts map[uuid.UUID]struct{}
-	clearedaccounts bool
-	done            bool
-	oldValue        func(context.Context) (*Stakeholder, error)
-	predicates      []predicate.Stakeholder
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	name               *string
+	phone              *string
+	email              *string
+	relationship       *string
+	message            *string
+	created_at         *time.Time
+	clearedFields      map[string]struct{}
+	owner              *uuid.UUID
+	clearedowner       bool
+	groups             map[uuid.UUID]struct{}
+	removedgroups      map[uuid.UUID]struct{}
+	clearedgroups      bool
+	accounts           map[uuid.UUID]struct{}
+	removedaccounts    map[uuid.UUID]struct{}
+	clearedaccounts    bool
+	last_words         map[uuid.UUID]struct{}
+	removedlast_words  map[uuid.UUID]struct{}
+	clearedlast_words  bool
+	user_config        map[uuid.UUID]struct{}
+	removeduser_config map[uuid.UUID]struct{}
+	cleareduser_config bool
+	done               bool
+	oldValue           func(context.Context) (*Stakeholder, error)
+	predicates         []predicate.Stakeholder
 }
 
 var _ ent.Mutation = (*StakeholderMutation)(nil)
@@ -2753,6 +2761,114 @@ func (m *StakeholderMutation) ResetAccounts() {
 	m.removedaccounts = nil
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by ids.
+func (m *StakeholderMutation) AddLastWordIDs(ids ...uuid.UUID) {
+	if m.last_words == nil {
+		m.last_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.last_words[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLastWords clears the "last_words" edge to the LastWord entity.
+func (m *StakeholderMutation) ClearLastWords() {
+	m.clearedlast_words = true
+}
+
+// LastWordsCleared reports if the "last_words" edge to the LastWord entity was cleared.
+func (m *StakeholderMutation) LastWordsCleared() bool {
+	return m.clearedlast_words
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to the LastWord entity by IDs.
+func (m *StakeholderMutation) RemoveLastWordIDs(ids ...uuid.UUID) {
+	if m.removedlast_words == nil {
+		m.removedlast_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.last_words, ids[i])
+		m.removedlast_words[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLastWords returns the removed IDs of the "last_words" edge to the LastWord entity.
+func (m *StakeholderMutation) RemovedLastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.removedlast_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LastWordsIDs returns the "last_words" edge IDs in the mutation.
+func (m *StakeholderMutation) LastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.last_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLastWords resets all changes to the "last_words" edge.
+func (m *StakeholderMutation) ResetLastWords() {
+	m.last_words = nil
+	m.clearedlast_words = false
+	m.removedlast_words = nil
+}
+
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by ids.
+func (m *StakeholderMutation) AddUserConfigIDs(ids ...uuid.UUID) {
+	if m.user_config == nil {
+		m.user_config = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.user_config[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUserConfig clears the "user_config" edge to the UserConfig entity.
+func (m *StakeholderMutation) ClearUserConfig() {
+	m.cleareduser_config = true
+}
+
+// UserConfigCleared reports if the "user_config" edge to the UserConfig entity was cleared.
+func (m *StakeholderMutation) UserConfigCleared() bool {
+	return m.cleareduser_config
+}
+
+// RemoveUserConfigIDs removes the "user_config" edge to the UserConfig entity by IDs.
+func (m *StakeholderMutation) RemoveUserConfigIDs(ids ...uuid.UUID) {
+	if m.removeduser_config == nil {
+		m.removeduser_config = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.user_config, ids[i])
+		m.removeduser_config[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUserConfig returns the removed IDs of the "user_config" edge to the UserConfig entity.
+func (m *StakeholderMutation) RemovedUserConfigIDs() (ids []uuid.UUID) {
+	for id := range m.removeduser_config {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserConfigIDs returns the "user_config" edge IDs in the mutation.
+func (m *StakeholderMutation) UserConfigIDs() (ids []uuid.UUID) {
+	for id := range m.user_config {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUserConfig resets all changes to the "user_config" edge.
+func (m *StakeholderMutation) ResetUserConfig() {
+	m.user_config = nil
+	m.cleareduser_config = false
+	m.removeduser_config = nil
+}
+
 // Where appends a list predicates to the StakeholderMutation builder.
 func (m *StakeholderMutation) Where(ps ...predicate.Stakeholder) {
 	m.predicates = append(m.predicates, ps...)
@@ -2992,7 +3108,7 @@ func (m *StakeholderMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StakeholderMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.owner != nil {
 		edges = append(edges, stakeholder.EdgeOwner)
 	}
@@ -3001,6 +3117,12 @@ func (m *StakeholderMutation) AddedEdges() []string {
 	}
 	if m.accounts != nil {
 		edges = append(edges, stakeholder.EdgeAccounts)
+	}
+	if m.last_words != nil {
+		edges = append(edges, stakeholder.EdgeLastWords)
+	}
+	if m.user_config != nil {
+		edges = append(edges, stakeholder.EdgeUserConfig)
 	}
 	return edges
 }
@@ -3025,18 +3147,36 @@ func (m *StakeholderMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case stakeholder.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.last_words))
+		for id := range m.last_words {
+			ids = append(ids, id)
+		}
+		return ids
+	case stakeholder.EdgeUserConfig:
+		ids := make([]ent.Value, 0, len(m.user_config))
+		for id := range m.user_config {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StakeholderMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.removedgroups != nil {
 		edges = append(edges, stakeholder.EdgeGroups)
 	}
 	if m.removedaccounts != nil {
 		edges = append(edges, stakeholder.EdgeAccounts)
+	}
+	if m.removedlast_words != nil {
+		edges = append(edges, stakeholder.EdgeLastWords)
+	}
+	if m.removeduser_config != nil {
+		edges = append(edges, stakeholder.EdgeUserConfig)
 	}
 	return edges
 }
@@ -3057,13 +3197,25 @@ func (m *StakeholderMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case stakeholder.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.removedlast_words))
+		for id := range m.removedlast_words {
+			ids = append(ids, id)
+		}
+		return ids
+	case stakeholder.EdgeUserConfig:
+		ids := make([]ent.Value, 0, len(m.removeduser_config))
+		for id := range m.removeduser_config {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StakeholderMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.clearedowner {
 		edges = append(edges, stakeholder.EdgeOwner)
 	}
@@ -3072,6 +3224,12 @@ func (m *StakeholderMutation) ClearedEdges() []string {
 	}
 	if m.clearedaccounts {
 		edges = append(edges, stakeholder.EdgeAccounts)
+	}
+	if m.clearedlast_words {
+		edges = append(edges, stakeholder.EdgeLastWords)
+	}
+	if m.cleareduser_config {
+		edges = append(edges, stakeholder.EdgeUserConfig)
 	}
 	return edges
 }
@@ -3086,6 +3244,10 @@ func (m *StakeholderMutation) EdgeCleared(name string) bool {
 		return m.clearedgroups
 	case stakeholder.EdgeAccounts:
 		return m.clearedaccounts
+	case stakeholder.EdgeLastWords:
+		return m.clearedlast_words
+	case stakeholder.EdgeUserConfig:
+		return m.cleareduser_config
 	}
 	return false
 }
@@ -3114,6 +3276,12 @@ func (m *StakeholderMutation) ResetEdge(name string) error {
 	case stakeholder.EdgeAccounts:
 		m.ResetAccounts()
 		return nil
+	case stakeholder.EdgeLastWords:
+		m.ResetLastWords()
+		return nil
+	case stakeholder.EdgeUserConfig:
+		m.ResetUserConfig()
+		return nil
 	}
 	return fmt.Errorf("unknown Stakeholder edge %s", name)
 }
@@ -3135,6 +3303,9 @@ type StakeholderGroupMutation struct {
 	stakeholders        map[uuid.UUID]struct{}
 	removedstakeholders map[uuid.UUID]struct{}
 	clearedstakeholders bool
+	last_words          map[uuid.UUID]struct{}
+	removedlast_words   map[uuid.UUID]struct{}
+	clearedlast_words   bool
 	done                bool
 	oldValue            func(context.Context) (*StakeholderGroup, error)
 	predicates          []predicate.StakeholderGroup
@@ -3463,6 +3634,60 @@ func (m *StakeholderGroupMutation) ResetStakeholders() {
 	m.removedstakeholders = nil
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by ids.
+func (m *StakeholderGroupMutation) AddLastWordIDs(ids ...uuid.UUID) {
+	if m.last_words == nil {
+		m.last_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.last_words[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLastWords clears the "last_words" edge to the LastWord entity.
+func (m *StakeholderGroupMutation) ClearLastWords() {
+	m.clearedlast_words = true
+}
+
+// LastWordsCleared reports if the "last_words" edge to the LastWord entity was cleared.
+func (m *StakeholderGroupMutation) LastWordsCleared() bool {
+	return m.clearedlast_words
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to the LastWord entity by IDs.
+func (m *StakeholderGroupMutation) RemoveLastWordIDs(ids ...uuid.UUID) {
+	if m.removedlast_words == nil {
+		m.removedlast_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.last_words, ids[i])
+		m.removedlast_words[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLastWords returns the removed IDs of the "last_words" edge to the LastWord entity.
+func (m *StakeholderGroupMutation) RemovedLastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.removedlast_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LastWordsIDs returns the "last_words" edge IDs in the mutation.
+func (m *StakeholderGroupMutation) LastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.last_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLastWords resets all changes to the "last_words" edge.
+func (m *StakeholderGroupMutation) ResetLastWords() {
+	m.last_words = nil
+	m.clearedlast_words = false
+	m.removedlast_words = nil
+}
+
 // Where appends a list predicates to the StakeholderGroupMutation builder.
 func (m *StakeholderGroupMutation) Where(ps ...predicate.StakeholderGroup) {
 	m.predicates = append(m.predicates, ps...)
@@ -3613,7 +3838,7 @@ func (m *StakeholderGroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StakeholderGroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.owner != nil {
 		edges = append(edges, stakeholdergroup.EdgeOwner)
 	}
@@ -3622,6 +3847,9 @@ func (m *StakeholderGroupMutation) AddedEdges() []string {
 	}
 	if m.stakeholders != nil {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	if m.last_words != nil {
+		edges = append(edges, stakeholdergroup.EdgeLastWords)
 	}
 	return edges
 }
@@ -3646,18 +3874,27 @@ func (m *StakeholderGroupMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case stakeholdergroup.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.last_words))
+		for id := range m.last_words {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StakeholderGroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedaccounts != nil {
 		edges = append(edges, stakeholdergroup.EdgeAccounts)
 	}
 	if m.removedstakeholders != nil {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	if m.removedlast_words != nil {
+		edges = append(edges, stakeholdergroup.EdgeLastWords)
 	}
 	return edges
 }
@@ -3678,13 +3915,19 @@ func (m *StakeholderGroupMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case stakeholdergroup.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.removedlast_words))
+		for id := range m.removedlast_words {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StakeholderGroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedowner {
 		edges = append(edges, stakeholdergroup.EdgeOwner)
 	}
@@ -3693,6 +3936,9 @@ func (m *StakeholderGroupMutation) ClearedEdges() []string {
 	}
 	if m.clearedstakeholders {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
+	}
+	if m.clearedlast_words {
+		edges = append(edges, stakeholdergroup.EdgeLastWords)
 	}
 	return edges
 }
@@ -3707,6 +3953,8 @@ func (m *StakeholderGroupMutation) EdgeCleared(name string) bool {
 		return m.clearedaccounts
 	case stakeholdergroup.EdgeStakeholders:
 		return m.clearedstakeholders
+	case stakeholdergroup.EdgeLastWords:
+		return m.clearedlast_words
 	}
 	return false
 }
@@ -3734,6 +3982,9 @@ func (m *StakeholderGroupMutation) ResetEdge(name string) error {
 		return nil
 	case stakeholdergroup.EdgeStakeholders:
 		m.ResetStakeholders()
+		return nil
+	case stakeholdergroup.EdgeLastWords:
+		m.ResetLastWords()
 		return nil
 	}
 	return fmt.Errorf("unknown StakeholderGroup edge %s", name)
@@ -3764,6 +4015,9 @@ type UserMutation struct {
 	last_words                map[uuid.UUID]struct{}
 	removedlast_words         map[uuid.UUID]struct{}
 	clearedlast_words         bool
+	user_config               map[uuid.UUID]struct{}
+	removeduser_config        map[uuid.UUID]struct{}
+	cleareduser_config        bool
 	done                      bool
 	oldValue                  func(context.Context) (*User, error)
 	predicates                []predicate.User
@@ -4305,6 +4559,60 @@ func (m *UserMutation) ResetLastWords() {
 	m.removedlast_words = nil
 }
 
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by ids.
+func (m *UserMutation) AddUserConfigIDs(ids ...uuid.UUID) {
+	if m.user_config == nil {
+		m.user_config = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.user_config[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUserConfig clears the "user_config" edge to the UserConfig entity.
+func (m *UserMutation) ClearUserConfig() {
+	m.cleareduser_config = true
+}
+
+// UserConfigCleared reports if the "user_config" edge to the UserConfig entity was cleared.
+func (m *UserMutation) UserConfigCleared() bool {
+	return m.cleareduser_config
+}
+
+// RemoveUserConfigIDs removes the "user_config" edge to the UserConfig entity by IDs.
+func (m *UserMutation) RemoveUserConfigIDs(ids ...uuid.UUID) {
+	if m.removeduser_config == nil {
+		m.removeduser_config = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.user_config, ids[i])
+		m.removeduser_config[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUserConfig returns the removed IDs of the "user_config" edge to the UserConfig entity.
+func (m *UserMutation) RemovedUserConfigIDs() (ids []uuid.UUID) {
+	for id := range m.removeduser_config {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserConfigIDs returns the "user_config" edge IDs in the mutation.
+func (m *UserMutation) UserConfigIDs() (ids []uuid.UUID) {
+	for id := range m.user_config {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUserConfig resets all changes to the "user_config" edge.
+func (m *UserMutation) ResetUserConfig() {
+	m.user_config = nil
+	m.cleareduser_config = false
+	m.removeduser_config = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -4523,7 +4831,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.stakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -4535,6 +4843,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.last_words != nil {
 		edges = append(edges, user.EdgeLastWords)
+	}
+	if m.user_config != nil {
+		edges = append(edges, user.EdgeUserConfig)
 	}
 	return edges
 }
@@ -4567,13 +4878,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeUserConfig:
+		ids := make([]ent.Value, 0, len(m.user_config))
+		for id := range m.user_config {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedstakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -4585,6 +4902,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedlast_words != nil {
 		edges = append(edges, user.EdgeLastWords)
+	}
+	if m.removeduser_config != nil {
+		edges = append(edges, user.EdgeUserConfig)
 	}
 	return edges
 }
@@ -4617,13 +4937,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeUserConfig:
+		ids := make([]ent.Value, 0, len(m.removeduser_config))
+		for id := range m.removeduser_config {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedstakeholders {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -4635,6 +4961,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedlast_words {
 		edges = append(edges, user.EdgeLastWords)
+	}
+	if m.cleareduser_config {
+		edges = append(edges, user.EdgeUserConfig)
 	}
 	return edges
 }
@@ -4651,6 +4980,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedlegacies
 	case user.EdgeLastWords:
 		return m.clearedlast_words
+	case user.EdgeUserConfig:
+		return m.cleareduser_config
 	}
 	return false
 }
@@ -4679,6 +5010,691 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeLastWords:
 		m.ResetLastWords()
 		return nil
+	case user.EdgeUserConfig:
+		m.ResetUserConfig()
+		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// UserConfigMutation represents an operation that mutates the UserConfig nodes in the graph.
+type UserConfigMutation struct {
+	config
+	op                                         Op
+	typ                                        string
+	id                                         *uuid.UUID
+	lock_by_face_id                            *bool
+	certification_before_sensitive_information *bool
+	conversion_criteria                        *string
+	survival_check_interval_days               *int
+	addsurvival_check_interval_days            *int
+	clearedFields                              map[string]struct{}
+	verifier                                   map[uuid.UUID]struct{}
+	removedverifier                            map[uuid.UUID]struct{}
+	clearedverifier                            bool
+	user                                       *uuid.UUID
+	cleareduser                                bool
+	done                                       bool
+	oldValue                                   func(context.Context) (*UserConfig, error)
+	predicates                                 []predicate.UserConfig
+}
+
+var _ ent.Mutation = (*UserConfigMutation)(nil)
+
+// userconfigOption allows management of the mutation configuration using functional options.
+type userconfigOption func(*UserConfigMutation)
+
+// newUserConfigMutation creates new mutation for the UserConfig entity.
+func newUserConfigMutation(c config, op Op, opts ...userconfigOption) *UserConfigMutation {
+	m := &UserConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUserConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUserConfigID sets the ID field of the mutation.
+func withUserConfigID(id uuid.UUID) userconfigOption {
+	return func(m *UserConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UserConfig
+		)
+		m.oldValue = func(ctx context.Context) (*UserConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UserConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUserConfig sets the old UserConfig of the mutation.
+func withUserConfig(node *UserConfig) userconfigOption {
+	return func(m *UserConfigMutation) {
+		m.oldValue = func(context.Context) (*UserConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UserConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UserConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UserConfig entities.
+func (m *UserConfigMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UserConfigMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UserConfigMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UserConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetLockByFaceID sets the "lock_by_face_id" field.
+func (m *UserConfigMutation) SetLockByFaceID(b bool) {
+	m.lock_by_face_id = &b
+}
+
+// LockByFaceID returns the value of the "lock_by_face_id" field in the mutation.
+func (m *UserConfigMutation) LockByFaceID() (r bool, exists bool) {
+	v := m.lock_by_face_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLockByFaceID returns the old "lock_by_face_id" field's value of the UserConfig entity.
+// If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserConfigMutation) OldLockByFaceID(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLockByFaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLockByFaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLockByFaceID: %w", err)
+	}
+	return oldValue.LockByFaceID, nil
+}
+
+// ResetLockByFaceID resets all changes to the "lock_by_face_id" field.
+func (m *UserConfigMutation) ResetLockByFaceID() {
+	m.lock_by_face_id = nil
+}
+
+// SetCertificationBeforeSensitiveInformation sets the "certification_before_sensitive_information" field.
+func (m *UserConfigMutation) SetCertificationBeforeSensitiveInformation(b bool) {
+	m.certification_before_sensitive_information = &b
+}
+
+// CertificationBeforeSensitiveInformation returns the value of the "certification_before_sensitive_information" field in the mutation.
+func (m *UserConfigMutation) CertificationBeforeSensitiveInformation() (r bool, exists bool) {
+	v := m.certification_before_sensitive_information
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCertificationBeforeSensitiveInformation returns the old "certification_before_sensitive_information" field's value of the UserConfig entity.
+// If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserConfigMutation) OldCertificationBeforeSensitiveInformation(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCertificationBeforeSensitiveInformation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCertificationBeforeSensitiveInformation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCertificationBeforeSensitiveInformation: %w", err)
+	}
+	return oldValue.CertificationBeforeSensitiveInformation, nil
+}
+
+// ResetCertificationBeforeSensitiveInformation resets all changes to the "certification_before_sensitive_information" field.
+func (m *UserConfigMutation) ResetCertificationBeforeSensitiveInformation() {
+	m.certification_before_sensitive_information = nil
+}
+
+// SetConversionCriteria sets the "conversion_criteria" field.
+func (m *UserConfigMutation) SetConversionCriteria(s string) {
+	m.conversion_criteria = &s
+}
+
+// ConversionCriteria returns the value of the "conversion_criteria" field in the mutation.
+func (m *UserConfigMutation) ConversionCriteria() (r string, exists bool) {
+	v := m.conversion_criteria
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConversionCriteria returns the old "conversion_criteria" field's value of the UserConfig entity.
+// If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserConfigMutation) OldConversionCriteria(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConversionCriteria is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConversionCriteria requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConversionCriteria: %w", err)
+	}
+	return oldValue.ConversionCriteria, nil
+}
+
+// ResetConversionCriteria resets all changes to the "conversion_criteria" field.
+func (m *UserConfigMutation) ResetConversionCriteria() {
+	m.conversion_criteria = nil
+}
+
+// SetSurvivalCheckIntervalDays sets the "survival_check_interval_days" field.
+func (m *UserConfigMutation) SetSurvivalCheckIntervalDays(i int) {
+	m.survival_check_interval_days = &i
+	m.addsurvival_check_interval_days = nil
+}
+
+// SurvivalCheckIntervalDays returns the value of the "survival_check_interval_days" field in the mutation.
+func (m *UserConfigMutation) SurvivalCheckIntervalDays() (r int, exists bool) {
+	v := m.survival_check_interval_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSurvivalCheckIntervalDays returns the old "survival_check_interval_days" field's value of the UserConfig entity.
+// If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserConfigMutation) OldSurvivalCheckIntervalDays(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSurvivalCheckIntervalDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSurvivalCheckIntervalDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSurvivalCheckIntervalDays: %w", err)
+	}
+	return oldValue.SurvivalCheckIntervalDays, nil
+}
+
+// AddSurvivalCheckIntervalDays adds i to the "survival_check_interval_days" field.
+func (m *UserConfigMutation) AddSurvivalCheckIntervalDays(i int) {
+	if m.addsurvival_check_interval_days != nil {
+		*m.addsurvival_check_interval_days += i
+	} else {
+		m.addsurvival_check_interval_days = &i
+	}
+}
+
+// AddedSurvivalCheckIntervalDays returns the value that was added to the "survival_check_interval_days" field in this mutation.
+func (m *UserConfigMutation) AddedSurvivalCheckIntervalDays() (r int, exists bool) {
+	v := m.addsurvival_check_interval_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSurvivalCheckIntervalDays resets all changes to the "survival_check_interval_days" field.
+func (m *UserConfigMutation) ResetSurvivalCheckIntervalDays() {
+	m.survival_check_interval_days = nil
+	m.addsurvival_check_interval_days = nil
+}
+
+// AddVerifierIDs adds the "verifier" edge to the Stakeholder entity by ids.
+func (m *UserConfigMutation) AddVerifierIDs(ids ...uuid.UUID) {
+	if m.verifier == nil {
+		m.verifier = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.verifier[ids[i]] = struct{}{}
+	}
+}
+
+// ClearVerifier clears the "verifier" edge to the Stakeholder entity.
+func (m *UserConfigMutation) ClearVerifier() {
+	m.clearedverifier = true
+}
+
+// VerifierCleared reports if the "verifier" edge to the Stakeholder entity was cleared.
+func (m *UserConfigMutation) VerifierCleared() bool {
+	return m.clearedverifier
+}
+
+// RemoveVerifierIDs removes the "verifier" edge to the Stakeholder entity by IDs.
+func (m *UserConfigMutation) RemoveVerifierIDs(ids ...uuid.UUID) {
+	if m.removedverifier == nil {
+		m.removedverifier = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.verifier, ids[i])
+		m.removedverifier[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedVerifier returns the removed IDs of the "verifier" edge to the Stakeholder entity.
+func (m *UserConfigMutation) RemovedVerifierIDs() (ids []uuid.UUID) {
+	for id := range m.removedverifier {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// VerifierIDs returns the "verifier" edge IDs in the mutation.
+func (m *UserConfigMutation) VerifierIDs() (ids []uuid.UUID) {
+	for id := range m.verifier {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetVerifier resets all changes to the "verifier" edge.
+func (m *UserConfigMutation) ResetVerifier() {
+	m.verifier = nil
+	m.clearedverifier = false
+	m.removedverifier = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *UserConfigMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *UserConfigMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UserConfigMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *UserConfigMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UserConfigMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *UserConfigMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the UserConfigMutation builder.
+func (m *UserConfigMutation) Where(ps ...predicate.UserConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UserConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UserConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UserConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UserConfig).
+func (m *UserConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UserConfigMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.lock_by_face_id != nil {
+		fields = append(fields, userconfig.FieldLockByFaceID)
+	}
+	if m.certification_before_sensitive_information != nil {
+		fields = append(fields, userconfig.FieldCertificationBeforeSensitiveInformation)
+	}
+	if m.conversion_criteria != nil {
+		fields = append(fields, userconfig.FieldConversionCriteria)
+	}
+	if m.survival_check_interval_days != nil {
+		fields = append(fields, userconfig.FieldSurvivalCheckIntervalDays)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UserConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case userconfig.FieldLockByFaceID:
+		return m.LockByFaceID()
+	case userconfig.FieldCertificationBeforeSensitiveInformation:
+		return m.CertificationBeforeSensitiveInformation()
+	case userconfig.FieldConversionCriteria:
+		return m.ConversionCriteria()
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		return m.SurvivalCheckIntervalDays()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UserConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case userconfig.FieldLockByFaceID:
+		return m.OldLockByFaceID(ctx)
+	case userconfig.FieldCertificationBeforeSensitiveInformation:
+		return m.OldCertificationBeforeSensitiveInformation(ctx)
+	case userconfig.FieldConversionCriteria:
+		return m.OldConversionCriteria(ctx)
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		return m.OldSurvivalCheckIntervalDays(ctx)
+	}
+	return nil, fmt.Errorf("unknown UserConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case userconfig.FieldLockByFaceID:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLockByFaceID(v)
+		return nil
+	case userconfig.FieldCertificationBeforeSensitiveInformation:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCertificationBeforeSensitiveInformation(v)
+		return nil
+	case userconfig.FieldConversionCriteria:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConversionCriteria(v)
+		return nil
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSurvivalCheckIntervalDays(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UserConfigMutation) AddedFields() []string {
+	var fields []string
+	if m.addsurvival_check_interval_days != nil {
+		fields = append(fields, userconfig.FieldSurvivalCheckIntervalDays)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UserConfigMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		return m.AddedSurvivalCheckIntervalDays()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSurvivalCheckIntervalDays(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UserConfigMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UserConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UserConfigMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UserConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UserConfigMutation) ResetField(name string) error {
+	switch name {
+	case userconfig.FieldLockByFaceID:
+		m.ResetLockByFaceID()
+		return nil
+	case userconfig.FieldCertificationBeforeSensitiveInformation:
+		m.ResetCertificationBeforeSensitiveInformation()
+		return nil
+	case userconfig.FieldConversionCriteria:
+		m.ResetConversionCriteria()
+		return nil
+	case userconfig.FieldSurvivalCheckIntervalDays:
+		m.ResetSurvivalCheckIntervalDays()
+		return nil
+	}
+	return fmt.Errorf("unknown UserConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UserConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.verifier != nil {
+		edges = append(edges, userconfig.EdgeVerifier)
+	}
+	if m.user != nil {
+		edges = append(edges, userconfig.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UserConfigMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case userconfig.EdgeVerifier:
+		ids := make([]ent.Value, 0, len(m.verifier))
+		for id := range m.verifier {
+			ids = append(ids, id)
+		}
+		return ids
+	case userconfig.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UserConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedverifier != nil {
+		edges = append(edges, userconfig.EdgeVerifier)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UserConfigMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case userconfig.EdgeVerifier:
+		ids := make([]ent.Value, 0, len(m.removedverifier))
+		for id := range m.removedverifier {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UserConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedverifier {
+		edges = append(edges, userconfig.EdgeVerifier)
+	}
+	if m.cleareduser {
+		edges = append(edges, userconfig.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UserConfigMutation) EdgeCleared(name string) bool {
+	switch name {
+	case userconfig.EdgeVerifier:
+		return m.clearedverifier
+	case userconfig.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UserConfigMutation) ClearEdge(name string) error {
+	switch name {
+	case userconfig.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UserConfigMutation) ResetEdge(name string) error {
+	switch name {
+	case userconfig.EdgeVerifier:
+		m.ResetVerifier()
+		return nil
+	case userconfig.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserConfig edge %s", name)
 }

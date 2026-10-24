@@ -81,7 +81,7 @@ func (_q *LastWordQuery) QueryReceiver() *StakeholderQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(lastword.Table, lastword.FieldID, selector),
 			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverTable, lastword.ReceiverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, lastword.ReceiverTable, lastword.ReceiverPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -103,7 +103,7 @@ func (_q *LastWordQuery) QueryReceiverGroups() *StakeholderGroupQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(lastword.Table, lastword.FieldID, selector),
 			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverGroupsTable, lastword.ReceiverGroupsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, lastword.ReceiverGroupsTable, lastword.ReceiverGroupsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -500,64 +500,124 @@ func (_q *LastWordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Las
 }
 
 func (_q *LastWordQuery) loadReceiver(ctx context.Context, query *StakeholderQuery, nodes []*LastWord, init func(*LastWord), assign func(*LastWord, *Stakeholder)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*LastWord)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*LastWord)
+	nids := make(map[uuid.UUID]map[*LastWord]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Stakeholder(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(lastword.ReceiverColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(lastword.ReceiverTable)
+		s.Join(joinT).On(s.C(stakeholder.FieldID), joinT.C(lastword.ReceiverPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(lastword.ReceiverPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(lastword.ReceiverPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*LastWord]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Stakeholder](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.last_word_receiver
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "last_word_receiver" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "last_word_receiver" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "receiver" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (_q *LastWordQuery) loadReceiverGroups(ctx context.Context, query *StakeholderGroupQuery, nodes []*LastWord, init func(*LastWord), assign func(*LastWord, *StakeholderGroup)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*LastWord)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*LastWord)
+	nids := make(map[uuid.UUID]map[*LastWord]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.StakeholderGroup(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(lastword.ReceiverGroupsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(lastword.ReceiverGroupsTable)
+		s.Join(joinT).On(s.C(stakeholdergroup.FieldID), joinT.C(lastword.ReceiverGroupsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(lastword.ReceiverGroupsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(lastword.ReceiverGroupsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*LastWord]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*StakeholderGroup](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.last_word_receiver_groups
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "last_word_receiver_groups" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "last_word_receiver_groups" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "receiver_groups" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

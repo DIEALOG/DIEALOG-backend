@@ -98,10 +98,11 @@ func main() {
 	stakeholderRepository := repository.NewStakeholderRepository(client)
 	stakeholderGroupRepository := repository.NewStakeholderGroupRepository(client)
 	lastWordRepository := repository.NewLastWordRepository(client)
+	userConfigRepository := repository.NewUserConfigRepository(client)
 
 	// usecase
-	profileUseCase := usecase.NewProfileUseCase(userRepository, timeout)
-	authUseCase := usecase.NewAuthUseCase(userRepository, timeout)
+	profileUseCase := usecase.NewProfileUseCase(userRepository, userConfigRepository, timeout)
+	authUseCase := usecase.NewAuthUseCase(userRepository, userConfigRepository, timeout)
 	credentialUseCase := usecase.NewCredentialUseCase(cryptoClient)
 	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, timeout)
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)

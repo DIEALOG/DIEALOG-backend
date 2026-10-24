@@ -18,6 +18,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -32,6 +33,7 @@ type UserQuery struct {
 	withStakeholderGroups *StakeholderGroupQuery
 	withLegacies          *LegacyQuery
 	withLastWords         *LastWordQuery
+	withUserConfig        *UserConfigQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -149,6 +151,28 @@ func (_q *UserQuery) QueryLastWords() *LastWordQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(lastword.Table, lastword.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.LastWordsTable, user.LastWordsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserConfig chains the current query on the "user_config" edge.
+func (_q *UserQuery) QueryUserConfig() *UserConfigQuery {
+	query := (&UserConfigClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(userconfig.Table, userconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UserConfigTable, user.UserConfigColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +376,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withStakeholderGroups: _q.withStakeholderGroups.Clone(),
 		withLegacies:          _q.withLegacies.Clone(),
 		withLastWords:         _q.withLastWords.Clone(),
+		withUserConfig:        _q.withUserConfig.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -399,6 +424,17 @@ func (_q *UserQuery) WithLastWords(opts ...func(*LastWordQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withLastWords = query
+	return _q
+}
+
+// WithUserConfig tells the query-builder to eager-load the nodes that are connected to
+// the "user_config" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithUserConfig(opts ...func(*UserConfigQuery)) *UserQuery {
+	query := (&UserConfigClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUserConfig = query
 	return _q
 }
 
@@ -480,11 +516,12 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withStakeholders != nil,
 			_q.withStakeholderGroups != nil,
 			_q.withLegacies != nil,
 			_q.withLastWords != nil,
+			_q.withUserConfig != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -530,6 +567,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadLastWords(ctx, query, nodes,
 			func(n *User) { n.Edges.LastWords = []*LastWord{} },
 			func(n *User, e *LastWord) { n.Edges.LastWords = append(n.Edges.LastWords, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUserConfig; query != nil {
+		if err := _q.loadUserConfig(ctx, query, nodes,
+			func(n *User) { n.Edges.UserConfig = []*UserConfig{} },
+			func(n *User, e *UserConfig) { n.Edges.UserConfig = append(n.Edges.UserConfig, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -655,6 +699,37 @@ func (_q *UserQuery) loadLastWords(ctx context.Context, query *LastWordQuery, no
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_last_words" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadUserConfig(ctx context.Context, query *UserConfigQuery, nodes []*User, init func(*User), assign func(*User, *UserConfig)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UserConfig(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.UserConfigColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_user_config
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_user_config" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_user_config" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

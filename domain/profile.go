@@ -18,4 +18,5 @@ type Profile struct {
 type ProfileUseCase interface {
 	GetProfileByID(c context.Context, userID *ID) (*Profile, error)
 	UpdateProfileImage(c context.Context, userID *ID, file *multipart.FileHeader) (*Profile, error)
+	UpdateUserConfig(c context.Context, config *UserConfig, userID *ID) (*UserConfig, error)
 }

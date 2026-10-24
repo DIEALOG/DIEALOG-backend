@@ -197,10 +197,10 @@ func (_c *LastWordCreate) createSpec() (*LastWord, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.ReceiverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -213,10 +213,10 @@ func (_c *LastWordCreate) createSpec() (*LastWord, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.ReceiverGroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),

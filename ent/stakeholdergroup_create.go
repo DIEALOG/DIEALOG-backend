@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
@@ -97,6 +98,21 @@ func (_c *StakeholderGroupCreate) AddStakeholders(v ...*Stakeholder) *Stakeholde
 		ids[i] = v[i].ID
 	}
 	return _c.AddStakeholderIDs(ids...)
+}
+
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_c *StakeholderGroupCreate) AddLastWordIDs(ids ...uuid.UUID) *StakeholderGroupCreate {
+	_c.mutation.AddLastWordIDs(ids...)
+	return _c
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_c *StakeholderGroupCreate) AddLastWords(v ...*LastWord) *StakeholderGroupCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLastWordIDs(ids...)
 }
 
 // Mutation returns the StakeholderGroupMutation object of the builder.
@@ -245,6 +261,22 @@ func (_c *StakeholderGroupCreate) createSpec() (*StakeholderGroup, *sqlgraph.Cre
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

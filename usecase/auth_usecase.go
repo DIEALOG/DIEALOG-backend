@@ -13,14 +13,16 @@ import (
 )
 
 type authUseCase struct {
-	userRepository domain.UserRepository
-	contextTimeout time.Duration
+	userRepository       domain.UserRepository
+	userConfigRepository domain.UserConfigRepository
+	contextTimeout       time.Duration
 }
 
-func NewAuthUseCase(userRepository domain.UserRepository, timeout time.Duration) domain.AuthUseCase {
+func NewAuthUseCase(userRepository domain.UserRepository, userConfigRepository domain.UserConfigRepository, timeout time.Duration) domain.AuthUseCase {
 	return &authUseCase{
-		userRepository: userRepository,
-		contextTimeout: timeout,
+		userRepository:       userRepository,
+		userConfigRepository: userConfigRepository,
+		contextTimeout:       timeout,
 	}
 }
 
@@ -61,6 +63,13 @@ func (u *authUseCase) Register(c context.Context, name, email, password, phoneNu
 		Email:       email,
 		Password:    string(encrypted),
 		PhoneNumber: phoneNumber,
+	})
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	_, err = u.userConfigRepository.Create(ctx, &domain.UserConfig{
+		UserID: user.ID,
 	})
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)

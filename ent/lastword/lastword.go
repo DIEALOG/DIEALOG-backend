@@ -25,20 +25,16 @@ const (
 	EdgeOwner = "owner"
 	// Table holds the table name of the lastword in the database.
 	Table = "last_words"
-	// ReceiverTable is the table that holds the receiver relation/edge.
-	ReceiverTable = "stakeholders"
+	// ReceiverTable is the table that holds the receiver relation/edge. The primary key declared below.
+	ReceiverTable = "last_word_receiver"
 	// ReceiverInverseTable is the table name for the Stakeholder entity.
 	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
 	ReceiverInverseTable = "stakeholders"
-	// ReceiverColumn is the table column denoting the receiver relation/edge.
-	ReceiverColumn = "last_word_receiver"
-	// ReceiverGroupsTable is the table that holds the receiver_groups relation/edge.
-	ReceiverGroupsTable = "stakeholder_groups"
+	// ReceiverGroupsTable is the table that holds the receiver_groups relation/edge. The primary key declared below.
+	ReceiverGroupsTable = "last_word_receiver_groups"
 	// ReceiverGroupsInverseTable is the table name for the StakeholderGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "stakeholdergroup" package.
 	ReceiverGroupsInverseTable = "stakeholder_groups"
-	// ReceiverGroupsColumn is the table column denoting the receiver_groups relation/edge.
-	ReceiverGroupsColumn = "last_word_receiver_groups"
 	// OwnerTable is the table that holds the owner relation/edge.
 	OwnerTable = "last_words"
 	// OwnerInverseTable is the table name for the User entity.
@@ -60,6 +56,15 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"user_last_words",
 }
+
+var (
+	// ReceiverPrimaryKey and ReceiverColumn2 are the table columns denoting the
+	// primary key for the receiver relation (M2M).
+	ReceiverPrimaryKey = []string{"last_word_id", "stakeholder_id"}
+	// ReceiverGroupsPrimaryKey and ReceiverGroupsColumn2 are the table columns denoting the
+	// primary key for the receiver_groups relation (M2M).
+	ReceiverGroupsPrimaryKey = []string{"last_word_id", "stakeholder_group_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -141,14 +146,14 @@ func newReceiverStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReceiverInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ReceiverTable, ReceiverColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, ReceiverTable, ReceiverPrimaryKey...),
 	)
 }
 func newReceiverGroupsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReceiverGroupsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ReceiverGroupsTable, ReceiverGroupsColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, ReceiverGroupsTable, ReceiverGroupsPrimaryKey...),
 	)
 }
 func newOwnerStep() *sqlgraph.Step {

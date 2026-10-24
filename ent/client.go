@@ -22,6 +22,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 )
 
 // Client is the client that holds all ent builders.
@@ -41,6 +42,8 @@ type Client struct {
 	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserConfig is the client for interacting with the UserConfig builders.
+	UserConfig *UserConfigClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -58,6 +61,7 @@ func (c *Client) init() {
 	c.Stakeholder = NewStakeholderClient(c.config)
 	c.StakeholderGroup = NewStakeholderGroupClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserConfig = NewUserConfigClient(c.config)
 }
 
 type (
@@ -156,6 +160,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Stakeholder:      NewStakeholderClient(cfg),
 		StakeholderGroup: NewStakeholderGroupClient(cfg),
 		User:             NewUserClient(cfg),
+		UserConfig:       NewUserConfigClient(cfg),
 	}, nil
 }
 
@@ -181,6 +186,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Stakeholder:      NewStakeholderClient(cfg),
 		StakeholderGroup: NewStakeholderGroupClient(cfg),
 		User:             NewUserClient(cfg),
+		UserConfig:       NewUserConfigClient(cfg),
 	}, nil
 }
 
@@ -211,6 +217,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
+		c.UserConfig,
 	} {
 		n.Use(hooks...)
 	}
@@ -221,6 +228,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
+		c.UserConfig,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -241,6 +249,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.StakeholderGroup.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserConfigMutation:
+		return c.UserConfig.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -543,7 +553,7 @@ func (c *LastWordClient) QueryReceiver(_m *LastWord) *StakeholderQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(lastword.Table, lastword.FieldID, id),
 			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverTable, lastword.ReceiverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, lastword.ReceiverTable, lastword.ReceiverPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -559,7 +569,7 @@ func (c *LastWordClient) QueryReceiverGroups(_m *LastWord) *StakeholderGroupQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(lastword.Table, lastword.FieldID, id),
 			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverGroupsTable, lastword.ReceiverGroupsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, lastword.ReceiverGroupsTable, lastword.ReceiverGroupsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -929,6 +939,38 @@ func (c *StakeholderClient) QueryAccounts(_m *Stakeholder) *AccountQuery {
 	return query
 }
 
+// QueryLastWords queries the last_words edge of a Stakeholder.
+func (c *StakeholderClient) QueryLastWords(_m *Stakeholder) *LastWordQuery {
+	query := (&LastWordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
+			sqlgraph.To(lastword.Table, lastword.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.LastWordsTable, stakeholder.LastWordsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserConfig queries the user_config edge of a Stakeholder.
+func (c *StakeholderClient) QueryUserConfig(_m *Stakeholder) *UserConfigQuery {
+	query := (&UserConfigClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
+			sqlgraph.To(userconfig.Table, userconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.UserConfigTable, stakeholder.UserConfigPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *StakeholderClient) Hooks() []Hook {
 	return c.hooks.Stakeholder
@@ -1103,6 +1145,22 @@ func (c *StakeholderGroupClient) QueryStakeholders(_m *StakeholderGroup) *Stakeh
 			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, id),
 			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, stakeholdergroup.StakeholdersTable, stakeholdergroup.StakeholdersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLastWords queries the last_words edge of a StakeholderGroup.
+func (c *StakeholderGroupClient) QueryLastWords(_m *StakeholderGroup) *LastWordQuery {
+	query := (&LastWordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, id),
+			sqlgraph.To(lastword.Table, lastword.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholdergroup.LastWordsTable, stakeholdergroup.LastWordsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1307,6 +1365,22 @@ func (c *UserClient) QueryLastWords(_m *User) *LastWordQuery {
 	return query
 }
 
+// QueryUserConfig queries the user_config edge of a User.
+func (c *UserClient) QueryUserConfig(_m *User) *UserConfigQuery {
+	query := (&UserConfigClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(userconfig.Table, userconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UserConfigTable, user.UserConfigColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1332,12 +1406,179 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserConfigClient is a client for the UserConfig schema.
+type UserConfigClient struct {
+	config
+}
+
+// NewUserConfigClient returns a client for the UserConfig from the given config.
+func NewUserConfigClient(c config) *UserConfigClient {
+	return &UserConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userconfig.Hooks(f(g(h())))`.
+func (c *UserConfigClient) Use(hooks ...Hook) {
+	c.hooks.UserConfig = append(c.hooks.UserConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userconfig.Intercept(f(g(h())))`.
+func (c *UserConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserConfig = append(c.inters.UserConfig, interceptors...)
+}
+
+// Create returns a builder for creating a UserConfig entity.
+func (c *UserConfigClient) Create() *UserConfigCreate {
+	mutation := newUserConfigMutation(c.config, OpCreate)
+	return &UserConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserConfig entities.
+func (c *UserConfigClient) CreateBulk(builders ...*UserConfigCreate) *UserConfigCreateBulk {
+	return &UserConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserConfigClient) MapCreateBulk(slice any, setFunc func(*UserConfigCreate, int)) *UserConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserConfigCreateBulk{err: fmt.Errorf("calling to UserConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserConfig.
+func (c *UserConfigClient) Update() *UserConfigUpdate {
+	mutation := newUserConfigMutation(c.config, OpUpdate)
+	return &UserConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserConfigClient) UpdateOne(_m *UserConfig) *UserConfigUpdateOne {
+	mutation := newUserConfigMutation(c.config, OpUpdateOne, withUserConfig(_m))
+	return &UserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserConfigClient) UpdateOneID(id uuid.UUID) *UserConfigUpdateOne {
+	mutation := newUserConfigMutation(c.config, OpUpdateOne, withUserConfigID(id))
+	return &UserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserConfig.
+func (c *UserConfigClient) Delete() *UserConfigDelete {
+	mutation := newUserConfigMutation(c.config, OpDelete)
+	return &UserConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserConfigClient) DeleteOne(_m *UserConfig) *UserConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserConfigClient) DeleteOneID(id uuid.UUID) *UserConfigDeleteOne {
+	builder := c.Delete().Where(userconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for UserConfig.
+func (c *UserConfigClient) Query() *UserConfigQuery {
+	return &UserConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserConfig entity by its id.
+func (c *UserConfigClient) Get(ctx context.Context, id uuid.UUID) (*UserConfig, error) {
+	return c.Query().Where(userconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserConfigClient) GetX(ctx context.Context, id uuid.UUID) *UserConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryVerifier queries the verifier edge of a UserConfig.
+func (c *UserConfigClient) QueryVerifier(_m *UserConfig) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userconfig.Table, userconfig.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, userconfig.VerifierTable, userconfig.VerifierPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a UserConfig.
+func (c *UserConfigClient) QueryUser(_m *UserConfig) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userconfig.Table, userconfig.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, userconfig.UserTable, userconfig.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserConfigClient) Hooks() []Hook {
+	return c.hooks.UserConfig
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserConfigClient) Interceptors() []Interceptor {
+	return c.inters.UserConfig
+}
+
+func (c *UserConfigClient) mutate(ctx context.Context, m *UserConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserConfig mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User []ent.Hook
+		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User,
+		UserConfig []ent.Hook
 	}
 	inters struct {
-		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User []ent.Interceptor
+		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User,
+		UserConfig []ent.Interceptor
 	}
 )

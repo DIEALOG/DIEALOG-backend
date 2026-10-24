@@ -11,9 +11,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -153,6 +155,36 @@ func (_c *StakeholderCreate) AddAccounts(v ...*Account) *StakeholderCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAccountIDs(ids...)
+}
+
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_c *StakeholderCreate) AddLastWordIDs(ids ...uuid.UUID) *StakeholderCreate {
+	_c.mutation.AddLastWordIDs(ids...)
+	return _c
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_c *StakeholderCreate) AddLastWords(v ...*LastWord) *StakeholderCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLastWordIDs(ids...)
+}
+
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
+func (_c *StakeholderCreate) AddUserConfigIDs(ids ...uuid.UUID) *StakeholderCreate {
+	_c.mutation.AddUserConfigIDs(ids...)
+	return _c
+}
+
+// AddUserConfig adds the "user_config" edges to the UserConfig entity.
+func (_c *StakeholderCreate) AddUserConfig(v ...*UserConfig) *StakeholderCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUserConfigIDs(ids...)
 }
 
 // Mutation returns the StakeholderMutation object of the builder.
@@ -324,6 +356,38 @@ func (_c *StakeholderCreate) createSpec() (*Stakeholder, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholder.LastWordsTable,
+			Columns: stakeholder.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholder.UserConfigTable,
+			Columns: stakeholder.UserConfigPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

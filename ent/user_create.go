@@ -15,6 +15,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
 )
 
@@ -141,6 +142,21 @@ func (_c *UserCreate) AddLastWords(v ...*LastWord) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddLastWordIDs(ids...)
+}
+
+// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
+func (_c *UserCreate) AddUserConfigIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddUserConfigIDs(ids...)
+	return _c
+}
+
+// AddUserConfig adds the "user_config" edges to the UserConfig entity.
+func (_c *UserCreate) AddUserConfig(v ...*UserConfig) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUserConfigIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -344,6 +360,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UserConfigTable,
+			Columns: []string{user.UserConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

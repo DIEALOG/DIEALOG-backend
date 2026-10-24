@@ -35,5 +35,7 @@ func (StakeholderGroup) Edges() []ent.Edge {
 		edge.From("accounts", Account.Type).
 			Ref("stakeholder_groups"),
 		edge.To("stakeholders", Stakeholder.Type),
+		edge.From("last_words", LastWord.Type).
+			Ref("receiver_groups"),
 	}
 }

@@ -24,6 +24,8 @@ type Tx struct {
 	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserConfig is the client for interacting with the UserConfig builders.
+	UserConfig *UserConfigClient
 
 	// lazily loaded.
 	client     *Client
@@ -161,6 +163,7 @@ func (tx *Tx) init() {
 	tx.Stakeholder = NewStakeholderClient(tx.config)
 	tx.StakeholderGroup = NewStakeholderGroupClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserConfig = NewUserConfigClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

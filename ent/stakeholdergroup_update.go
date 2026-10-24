@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -74,6 +75,21 @@ func (_u *StakeholderGroupUpdate) AddStakeholders(v ...*Stakeholder) *Stakeholde
 	return _u.AddStakeholderIDs(ids...)
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_u *StakeholderGroupUpdate) AddLastWordIDs(ids ...uuid.UUID) *StakeholderGroupUpdate {
+	_u.mutation.AddLastWordIDs(ids...)
+	return _u
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_u *StakeholderGroupUpdate) AddLastWords(v ...*LastWord) *StakeholderGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLastWordIDs(ids...)
+}
+
 // Mutation returns the StakeholderGroupMutation object of the builder.
 func (_u *StakeholderGroupUpdate) Mutation() *StakeholderGroupMutation {
 	return _u.mutation
@@ -119,6 +135,27 @@ func (_u *StakeholderGroupUpdate) RemoveStakeholders(v ...*Stakeholder) *Stakeho
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearLastWords clears all "last_words" edges to the LastWord entity.
+func (_u *StakeholderGroupUpdate) ClearLastWords() *StakeholderGroupUpdate {
+	_u.mutation.ClearLastWords()
+	return _u
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to LastWord entities by IDs.
+func (_u *StakeholderGroupUpdate) RemoveLastWordIDs(ids ...uuid.UUID) *StakeholderGroupUpdate {
+	_u.mutation.RemoveLastWordIDs(ids...)
+	return _u
+}
+
+// RemoveLastWords removes "last_words" edges to LastWord entities.
+func (_u *StakeholderGroupUpdate) RemoveLastWords(v ...*LastWord) *StakeholderGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLastWordIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -266,6 +303,51 @@ func (_u *StakeholderGroupUpdate) sqlSave(ctx context.Context) (_node int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLastWordsIDs(); len(nodes) > 0 && !_u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{stakeholdergroup.Label}
@@ -330,6 +412,21 @@ func (_u *StakeholderGroupUpdateOne) AddStakeholders(v ...*Stakeholder) *Stakeho
 	return _u.AddStakeholderIDs(ids...)
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_u *StakeholderGroupUpdateOne) AddLastWordIDs(ids ...uuid.UUID) *StakeholderGroupUpdateOne {
+	_u.mutation.AddLastWordIDs(ids...)
+	return _u
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_u *StakeholderGroupUpdateOne) AddLastWords(v ...*LastWord) *StakeholderGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLastWordIDs(ids...)
+}
+
 // Mutation returns the StakeholderGroupMutation object of the builder.
 func (_u *StakeholderGroupUpdateOne) Mutation() *StakeholderGroupMutation {
 	return _u.mutation
@@ -375,6 +472,27 @@ func (_u *StakeholderGroupUpdateOne) RemoveStakeholders(v ...*Stakeholder) *Stak
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderIDs(ids...)
+}
+
+// ClearLastWords clears all "last_words" edges to the LastWord entity.
+func (_u *StakeholderGroupUpdateOne) ClearLastWords() *StakeholderGroupUpdateOne {
+	_u.mutation.ClearLastWords()
+	return _u
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to LastWord entities by IDs.
+func (_u *StakeholderGroupUpdateOne) RemoveLastWordIDs(ids ...uuid.UUID) *StakeholderGroupUpdateOne {
+	_u.mutation.RemoveLastWordIDs(ids...)
+	return _u
+}
+
+// RemoveLastWords removes "last_words" edges to LastWord entities.
+func (_u *StakeholderGroupUpdateOne) RemoveLastWords(v ...*LastWord) *StakeholderGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLastWordIDs(ids...)
 }
 
 // Where appends a list predicates to the StakeholderGroupUpdate builder.
@@ -545,6 +663,51 @@ func (_u *StakeholderGroupUpdateOne) sqlSave(ctx context.Context) (_node *Stakeh
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLastWordsIDs(); len(nodes) > 0 && !_u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.LastWordsTable,
+			Columns: stakeholdergroup.LastWordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

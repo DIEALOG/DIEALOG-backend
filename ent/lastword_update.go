@@ -200,10 +200,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ReceiverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -213,10 +213,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.RemovedReceiverIDs(); len(nodes) > 0 && !_u.mutation.ReceiverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -229,10 +229,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.ReceiverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -245,10 +245,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ReceiverGroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
@@ -258,10 +258,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.RemovedReceiverGroupsIDs(); len(nodes) > 0 && !_u.mutation.ReceiverGroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
@@ -274,10 +274,10 @@ func (_u *LastWordUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.ReceiverGroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
@@ -508,10 +508,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if _u.mutation.ReceiverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -521,10 +521,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if nodes := _u.mutation.RemovedReceiverIDs(); len(nodes) > 0 && !_u.mutation.ReceiverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -537,10 +537,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if nodes := _u.mutation.ReceiverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverTable,
-			Columns: []string{lastword.ReceiverColumn},
+			Columns: lastword.ReceiverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
@@ -553,10 +553,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if _u.mutation.ReceiverGroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
@@ -566,10 +566,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if nodes := _u.mutation.RemovedReceiverGroupsIDs(); len(nodes) > 0 && !_u.mutation.ReceiverGroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
@@ -582,10 +582,10 @@ func (_u *LastWordUpdateOne) sqlSave(ctx context.Context) (_node *LastWord, err 
 	}
 	if nodes := _u.mutation.ReceiverGroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   lastword.ReceiverGroupsTable,
-			Columns: []string{lastword.ReceiverGroupsColumn},
+			Columns: lastword.ReceiverGroupsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),

@@ -18,6 +18,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -84,6 +85,7 @@ func checkColumn(t, c string) error {
 			stakeholder.Table:      stakeholder.ValidColumn,
 			stakeholdergroup.Table: stakeholdergroup.ValidColumn,
 			user.Table:             user.ValidColumn,
+			userconfig.Table:       userconfig.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

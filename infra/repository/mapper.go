@@ -152,6 +152,29 @@ func toDomainLastWord(entity *ent.LastWord) *domain.LastWord {
 	return l
 }
 
+func toDomainUserConfig(entity *ent.UserConfig) *domain.UserConfig {
+	config := &domain.UserConfig{
+		ID:                                      entity.ID,
+		LockByFaceID:                            entity.LockByFaceID,
+		CertificationBeforeSensitiveInformation: entity.CertificationBeforeSensitiveInformation,
+		ConversionCriteria:                      domain.ConfigConversionCriteria(entity.ConversionCriteria),
+		SurvivalCheckIntervalDays:               entity.SurvivalCheckIntervalDays,
+	}
+
+	if entity.Edges.User != nil {
+		config.UserID = entity.Edges.User.ID
+	}
+
+	if entity.Edges.Verifier != nil {
+		config.Verifier = make([]domain.Stakeholder, len(entity.Edges.Verifier))
+		for i, s := range entity.Edges.Verifier {
+			config.Verifier[i] = *toDomainStakeholder(s)
+		}
+	}
+
+	return config
+}
+
 func toEntAccountType(t domain.AccountTypeField) account.Type {
 	return account.Type(t)
 }

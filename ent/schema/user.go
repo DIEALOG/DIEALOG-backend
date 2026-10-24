@@ -46,5 +46,7 @@ func (User) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("last_words", LastWord.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("user_config", UserConfig.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
