@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"Google", "Facebook", "Twitter", "Apple", "Discord", "Microsoft", "KakaoTalk", "GitHub", "Telegram", "Instagram", "Other"}},
 		{Name: "type_name", Type: field.TypeString, Nullable: true},
+		{Name: "name", Type: field.TypeString},
 		{Name: "action", Type: field.TypeEnum, Enums: []string{"delete", "remain", "permission-move", "backup-and-delete", "other"}, Default: "remain"},
 		{Name: "action_message", Type: field.TypeString, Nullable: true},
 		{Name: "data_location", Type: field.TypeString, Nullable: true},
@@ -28,7 +29,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "accounts_legacies_accounts",
-				Columns:    []*schema.Column{AccountsColumns[8]},
+				Columns:    []*schema.Column{AccountsColumns[9]},
 				RefColumns: []*schema.Column{LegaciesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

@@ -44,6 +44,7 @@ type AccountMutation struct {
 	id                  *uuid.UUID
 	_type               *account.Type
 	type_name           *string
+	name                *string
 	action              *account.Action
 	action_message      *string
 	data_location       *string
@@ -247,6 +248,42 @@ func (m *AccountMutation) TypeNameCleared() bool {
 func (m *AccountMutation) ResetTypeName() {
 	m.type_name = nil
 	delete(m.clearedFields, account.FieldTypeName)
+}
+
+// SetName sets the "name" field.
+func (m *AccountMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *AccountMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *AccountMutation) ResetName() {
+	m.name = nil
 }
 
 // SetAction sets the "action" field.
@@ -595,12 +632,15 @@ func (m *AccountMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m._type != nil {
 		fields = append(fields, account.FieldType)
 	}
 	if m.type_name != nil {
 		fields = append(fields, account.FieldTypeName)
+	}
+	if m.name != nil {
+		fields = append(fields, account.FieldName)
 	}
 	if m.action != nil {
 		fields = append(fields, account.FieldAction)
@@ -629,6 +669,8 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case account.FieldTypeName:
 		return m.TypeName()
+	case account.FieldName:
+		return m.Name()
 	case account.FieldAction:
 		return m.Action()
 	case account.FieldActionMessage:
@@ -652,6 +694,8 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldType(ctx)
 	case account.FieldTypeName:
 		return m.OldTypeName(ctx)
+	case account.FieldName:
+		return m.OldName(ctx)
 	case account.FieldAction:
 		return m.OldAction(ctx)
 	case account.FieldActionMessage:
@@ -684,6 +728,13 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTypeName(v)
+		return nil
+	case account.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
 		return nil
 	case account.FieldAction:
 		v, ok := value.(account.Action)
@@ -801,6 +852,9 @@ func (m *AccountMutation) ResetField(name string) error {
 		return nil
 	case account.FieldTypeName:
 		m.ResetTypeName()
+		return nil
+	case account.FieldName:
+		m.ResetName()
 		return nil
 	case account.FieldAction:
 		m.ResetAction()

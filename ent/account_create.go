@@ -43,6 +43,12 @@ func (_c *AccountCreate) SetNillableTypeName(v *string) *AccountCreate {
 	return _c
 }
 
+// SetName sets the "name" field.
+func (_c *AccountCreate) SetName(v string) *AccountCreate {
+	_c.mutation.SetName(v)
+	return _c
+}
+
 // SetAction sets the "action" field.
 func (_c *AccountCreate) SetAction(v account.Action) *AccountCreate {
 	_c.mutation.SetAction(v)
@@ -212,6 +218,14 @@ func (_c *AccountCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Account.name"`)}
+	}
+	if v, ok := _c.mutation.Name(); ok {
+		if err := account.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Account.name": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Action(); !ok {
 		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "Account.action"`)}
 	}
@@ -268,6 +282,10 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TypeName(); ok {
 		_spec.SetField(account.FieldTypeName, field.TypeString, value)
 		_node.TypeName = &value
+	}
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(account.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
 	if value, ok := _c.mutation.Action(); ok {
 		_spec.SetField(account.FieldAction, field.TypeEnum, value)

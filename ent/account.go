@@ -23,6 +23,8 @@ type Account struct {
 	Type account.Type `json:"type,omitempty"`
 	// TypeName holds the value of the "type_name" field.
 	TypeName *string `json:"type_name,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// Action holds the value of the "action" field.
 	Action account.Action `json:"action,omitempty"`
 	// ActionMessage holds the value of the "action_message" field.
@@ -76,7 +78,7 @@ func (*Account) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case account.FieldType, account.FieldTypeName, account.FieldAction, account.FieldActionMessage, account.FieldDataLocation, account.FieldAccountID:
+		case account.FieldType, account.FieldTypeName, account.FieldName, account.FieldAction, account.FieldActionMessage, account.FieldDataLocation, account.FieldAccountID:
 			values[i] = new(sql.NullString)
 		case account.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -117,6 +119,12 @@ func (_m *Account) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TypeName = new(string)
 				*_m.TypeName = value.String
+			}
+		case account.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				_m.Name = value.String
 			}
 		case account.FieldAction:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -211,6 +219,9 @@ func (_m *Account) String() string {
 		builder.WriteString("type_name=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("action=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Action))
