@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase) {
+func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase, stakeholderService domain.StakeholderUseCase, stakeholderGroupService domain.StakeholderGroupUseCase) {
 	// protected
 	protected := app.Group("protected")
 	protected.Use(middleware.JwtMiddleware)
@@ -19,7 +19,7 @@ func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase) {
 	protected.Delete("/:id", handler.DeleteLegacy(service))
 
 	// account endpoints under legacy
-	protected.Post("/:id/account", handler.CreateAccount(service))
+	protected.Post("/:id/account", handler.CreateAccount(service, stakeholderService, stakeholderGroupService))
 	protected.Get("/:id/account/:accountId", handler.GetAccount(service))
 	protected.Delete("/:id/account/:accountId", handler.DeleteAccount(service))
 }

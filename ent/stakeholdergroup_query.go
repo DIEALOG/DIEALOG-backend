@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -27,6 +28,7 @@ type StakeholderGroupQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.StakeholderGroup
 	withOwner        *UserQuery
+	withAccounts     *AccountQuery
 	withStakeholders *StakeholderQuery
 	withFKs          bool
 	// intermediate query (i.e. traversal path).
@@ -80,6 +82,28 @@ func (_q *StakeholderGroupQuery) QueryOwner() *UserQuery {
 			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, stakeholdergroup.OwnerTable, stakeholdergroup.OwnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAccounts chains the current query on the "accounts" edge.
+func (_q *StakeholderGroupQuery) QueryAccounts() *AccountQuery {
+	query := (&AccountClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, selector),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholdergroup.AccountsTable, stakeholdergroup.AccountsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (_q *StakeholderGroupQuery) Clone() *StakeholderGroupQuery {
 		inters:           append([]Interceptor{}, _q.inters...),
 		predicates:       append([]predicate.StakeholderGroup{}, _q.predicates...),
 		withOwner:        _q.withOwner.Clone(),
+		withAccounts:     _q.withAccounts.Clone(),
 		withStakeholders: _q.withStakeholders.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -317,6 +342,17 @@ func (_q *StakeholderGroupQuery) WithOwner(opts ...func(*UserQuery)) *Stakeholde
 		opt(query)
 	}
 	_q.withOwner = query
+	return _q
+}
+
+// WithAccounts tells the query-builder to eager-load the nodes that are connected to
+// the "accounts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StakeholderGroupQuery) WithAccounts(opts ...func(*AccountQuery)) *StakeholderGroupQuery {
+	query := (&AccountClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAccounts = query
 	return _q
 }
 
@@ -410,8 +446,9 @@ func (_q *StakeholderGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes       = []*StakeholderGroup{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withOwner != nil,
+			_q.withAccounts != nil,
 			_q.withStakeholders != nil,
 		}
 	)
@@ -442,6 +479,13 @@ func (_q *StakeholderGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if query := _q.withOwner; query != nil {
 		if err := _q.loadOwner(ctx, query, nodes, nil,
 			func(n *StakeholderGroup, e *User) { n.Edges.Owner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAccounts; query != nil {
+		if err := _q.loadAccounts(ctx, query, nodes,
+			func(n *StakeholderGroup) { n.Edges.Accounts = []*Account{} },
+			func(n *StakeholderGroup, e *Account) { n.Edges.Accounts = append(n.Edges.Accounts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -483,6 +527,67 @@ func (_q *StakeholderGroupQuery) loadOwner(ctx context.Context, query *UserQuery
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *StakeholderGroupQuery) loadAccounts(ctx context.Context, query *AccountQuery, nodes []*StakeholderGroup, init func(*StakeholderGroup), assign func(*StakeholderGroup, *Account)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*StakeholderGroup)
+	nids := make(map[uuid.UUID]map[*StakeholderGroup]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(stakeholdergroup.AccountsTable)
+		s.Join(joinT).On(s.C(account.FieldID), joinT.C(stakeholdergroup.AccountsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(stakeholdergroup.AccountsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(stakeholdergroup.AccountsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*StakeholderGroup]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Account](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "accounts" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

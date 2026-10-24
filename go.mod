@@ -1,6 +1,6 @@
 module github.com/DIEALOG/DIEALOG-backend
 
-go 1.27
+go 1.27.0
 
 require (
 	entgo.io/ent v0.14.6
@@ -43,6 +43,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.18.1 // indirect
+	github.com/janghanul090801/collections v0.0.0-20260903124322-7c4af8af4416 // indirect
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect

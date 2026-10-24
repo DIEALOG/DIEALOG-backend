@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -43,6 +44,21 @@ func (_u *StakeholderGroupUpdate) SetNillableName(v *string) *StakeholderGroupUp
 	return _u
 }
 
+// AddAccountIDs adds the "accounts" edge to the Account entity by IDs.
+func (_u *StakeholderGroupUpdate) AddAccountIDs(ids ...uuid.UUID) *StakeholderGroupUpdate {
+	_u.mutation.AddAccountIDs(ids...)
+	return _u
+}
+
+// AddAccounts adds the "accounts" edges to the Account entity.
+func (_u *StakeholderGroupUpdate) AddAccounts(v ...*Account) *StakeholderGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccountIDs(ids...)
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *StakeholderGroupUpdate) AddStakeholderIDs(ids ...uuid.UUID) *StakeholderGroupUpdate {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -61,6 +77,27 @@ func (_u *StakeholderGroupUpdate) AddStakeholders(v ...*Stakeholder) *Stakeholde
 // Mutation returns the StakeholderGroupMutation object of the builder.
 func (_u *StakeholderGroupUpdate) Mutation() *StakeholderGroupMutation {
 	return _u.mutation
+}
+
+// ClearAccounts clears all "accounts" edges to the Account entity.
+func (_u *StakeholderGroupUpdate) ClearAccounts() *StakeholderGroupUpdate {
+	_u.mutation.ClearAccounts()
+	return _u
+}
+
+// RemoveAccountIDs removes the "accounts" edge to Account entities by IDs.
+func (_u *StakeholderGroupUpdate) RemoveAccountIDs(ids ...uuid.UUID) *StakeholderGroupUpdate {
+	_u.mutation.RemoveAccountIDs(ids...)
+	return _u
+}
+
+// RemoveAccounts removes "accounts" edges to Account entities.
+func (_u *StakeholderGroupUpdate) RemoveAccounts(v ...*Account) *StakeholderGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAccountIDs(ids...)
 }
 
 // ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
@@ -138,6 +175,51 @@ func (_u *StakeholderGroupUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(stakeholdergroup.FieldName, field.TypeString, value)
+	}
+	if _u.mutation.AccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAccountsIDs(); len(nodes) > 0 && !_u.mutation.AccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -218,6 +300,21 @@ func (_u *StakeholderGroupUpdateOne) SetNillableName(v *string) *StakeholderGrou
 	return _u
 }
 
+// AddAccountIDs adds the "accounts" edge to the Account entity by IDs.
+func (_u *StakeholderGroupUpdateOne) AddAccountIDs(ids ...uuid.UUID) *StakeholderGroupUpdateOne {
+	_u.mutation.AddAccountIDs(ids...)
+	return _u
+}
+
+// AddAccounts adds the "accounts" edges to the Account entity.
+func (_u *StakeholderGroupUpdateOne) AddAccounts(v ...*Account) *StakeholderGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccountIDs(ids...)
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *StakeholderGroupUpdateOne) AddStakeholderIDs(ids ...uuid.UUID) *StakeholderGroupUpdateOne {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -236,6 +333,27 @@ func (_u *StakeholderGroupUpdateOne) AddStakeholders(v ...*Stakeholder) *Stakeho
 // Mutation returns the StakeholderGroupMutation object of the builder.
 func (_u *StakeholderGroupUpdateOne) Mutation() *StakeholderGroupMutation {
 	return _u.mutation
+}
+
+// ClearAccounts clears all "accounts" edges to the Account entity.
+func (_u *StakeholderGroupUpdateOne) ClearAccounts() *StakeholderGroupUpdateOne {
+	_u.mutation.ClearAccounts()
+	return _u
+}
+
+// RemoveAccountIDs removes the "accounts" edge to Account entities by IDs.
+func (_u *StakeholderGroupUpdateOne) RemoveAccountIDs(ids ...uuid.UUID) *StakeholderGroupUpdateOne {
+	_u.mutation.RemoveAccountIDs(ids...)
+	return _u
+}
+
+// RemoveAccounts removes "accounts" edges to Account entities.
+func (_u *StakeholderGroupUpdateOne) RemoveAccounts(v ...*Account) *StakeholderGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAccountIDs(ids...)
 }
 
 // ClearStakeholders clears all "stakeholders" edges to the Stakeholder entity.
@@ -343,6 +461,51 @@ func (_u *StakeholderGroupUpdateOne) sqlSave(ctx context.Context) (_node *Stakeh
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(stakeholdergroup.FieldName, field.TypeString, value)
+	}
+	if _u.mutation.AccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAccountsIDs(); len(nodes) > 0 && !_u.mutation.AccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   stakeholdergroup.AccountsTable,
+			Columns: stakeholdergroup.AccountsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{

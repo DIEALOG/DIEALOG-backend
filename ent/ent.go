@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -78,6 +79,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			account.Table:          account.ValidColumn,
+			lastword.Table:         lastword.ValidColumn,
 			legacy.Table:           legacy.ValidColumn,
 			stakeholder.Table:      stakeholder.ValidColumn,
 			stakeholdergroup.Table: stakeholdergroup.ValidColumn,

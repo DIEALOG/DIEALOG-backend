@@ -33,9 +33,10 @@ type Stakeholder struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StakeholderQuery when eager-loading is set.
-	Edges             StakeholderEdges `json:"edges"`
-	user_stakeholders *uuid.UUID
-	selectValues      sql.SelectValues
+	Edges              StakeholderEdges `json:"edges"`
+	last_word_receiver *uuid.UUID
+	user_stakeholders  *uuid.UUID
+	selectValues       sql.SelectValues
 }
 
 // StakeholderEdges holds the relations/edges for other nodes in the graph.
@@ -91,7 +92,9 @@ func (*Stakeholder) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case stakeholder.FieldID:
 			values[i] = new(uuid.UUID)
-		case stakeholder.ForeignKeys[0]: // user_stakeholders
+		case stakeholder.ForeignKeys[0]: // last_word_receiver
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case stakeholder.ForeignKeys[1]: // user_stakeholders
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -154,6 +157,13 @@ func (_m *Stakeholder) assignValues(columns []string, values []any) error {
 				_m.CreatedAt = value.Time
 			}
 		case stakeholder.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field last_word_receiver", values[i])
+			} else if value.Valid {
+				_m.last_word_receiver = new(uuid.UUID)
+				*_m.last_word_receiver = *value.S.(*uuid.UUID)
+			}
+		case stakeholder.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_stakeholders", values[i])
 			} else if value.Valid {

@@ -35,6 +35,27 @@ var (
 			},
 		},
 	}
+	// LastWordsColumns holds the columns for the "last_words" table.
+	LastWordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString},
+		{Name: "message", Type: field.TypeString},
+		{Name: "user_last_words", Type: field.TypeUUID},
+	}
+	// LastWordsTable holds the schema information for the "last_words" table.
+	LastWordsTable = &schema.Table{
+		Name:       "last_words",
+		Columns:    LastWordsColumns,
+		PrimaryKey: []*schema.Column{LastWordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "last_words_users_last_words",
+				Columns:    []*schema.Column{LastWordsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// LegaciesColumns holds the columns for the "legacies" table.
 	LegaciesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -65,6 +86,7 @@ var (
 		{Name: "relationship", Type: field.TypeString, Default: ""},
 		{Name: "message", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_word_receiver", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_stakeholders", Type: field.TypeUUID},
 	}
 	// StakeholdersTable holds the schema information for the "stakeholders" table.
@@ -74,8 +96,14 @@ var (
 		PrimaryKey: []*schema.Column{StakeholdersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "stakeholders_users_stakeholders",
+				Symbol:     "stakeholders_last_words_receiver",
 				Columns:    []*schema.Column{StakeholdersColumns[7]},
+				RefColumns: []*schema.Column{LastWordsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "stakeholders_users_stakeholders",
+				Columns:    []*schema.Column{StakeholdersColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -86,6 +114,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_word_receiver_groups", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_stakeholder_groups", Type: field.TypeUUID},
 	}
 	// StakeholderGroupsTable holds the schema information for the "stakeholder_groups" table.
@@ -95,8 +124,14 @@ var (
 		PrimaryKey: []*schema.Column{StakeholderGroupsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "stakeholder_groups_users_stakeholder_groups",
+				Symbol:     "stakeholder_groups_last_words_receiver_groups",
 				Columns:    []*schema.Column{StakeholderGroupsColumns[3]},
+				RefColumns: []*schema.Column{LastWordsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "stakeholder_groups_users_stakeholder_groups",
+				Columns:    []*schema.Column{StakeholderGroupsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -142,6 +177,31 @@ var (
 			},
 		},
 	}
+	// AccountStakeholderGroupsColumns holds the columns for the "account_stakeholder_groups" table.
+	AccountStakeholderGroupsColumns = []*schema.Column{
+		{Name: "account_id", Type: field.TypeUUID},
+		{Name: "stakeholder_group_id", Type: field.TypeUUID},
+	}
+	// AccountStakeholderGroupsTable holds the schema information for the "account_stakeholder_groups" table.
+	AccountStakeholderGroupsTable = &schema.Table{
+		Name:       "account_stakeholder_groups",
+		Columns:    AccountStakeholderGroupsColumns,
+		PrimaryKey: []*schema.Column{AccountStakeholderGroupsColumns[0], AccountStakeholderGroupsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_stakeholder_groups_account_id",
+				Columns:    []*schema.Column{AccountStakeholderGroupsColumns[0]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "account_stakeholder_groups_stakeholder_group_id",
+				Columns:    []*schema.Column{AccountStakeholderGroupsColumns[1]},
+				RefColumns: []*schema.Column{StakeholderGroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// StakeholderGroupStakeholdersColumns holds the columns for the "stakeholder_group_stakeholders" table.
 	StakeholderGroupStakeholdersColumns = []*schema.Column{
 		{Name: "stakeholder_group_id", Type: field.TypeUUID},
@@ -170,22 +230,29 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
+		LastWordsTable,
 		LegaciesTable,
 		StakeholdersTable,
 		StakeholderGroupsTable,
 		UsersTable,
 		AccountStakeholdersTable,
+		AccountStakeholderGroupsTable,
 		StakeholderGroupStakeholdersTable,
 	}
 )
 
 func init() {
 	AccountsTable.ForeignKeys[0].RefTable = LegaciesTable
+	LastWordsTable.ForeignKeys[0].RefTable = UsersTable
 	LegaciesTable.ForeignKeys[0].RefTable = UsersTable
-	StakeholdersTable.ForeignKeys[0].RefTable = UsersTable
-	StakeholderGroupsTable.ForeignKeys[0].RefTable = UsersTable
+	StakeholdersTable.ForeignKeys[0].RefTable = LastWordsTable
+	StakeholdersTable.ForeignKeys[1].RefTable = UsersTable
+	StakeholderGroupsTable.ForeignKeys[0].RefTable = LastWordsTable
+	StakeholderGroupsTable.ForeignKeys[1].RefTable = UsersTable
 	AccountStakeholdersTable.ForeignKeys[0].RefTable = AccountsTable
 	AccountStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
+	AccountStakeholderGroupsTable.ForeignKeys[0].RefTable = AccountsTable
+	AccountStakeholderGroupsTable.ForeignKeys[1].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[0].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
 }

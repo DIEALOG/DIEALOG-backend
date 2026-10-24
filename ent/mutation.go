@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
@@ -30,6 +31,7 @@ const (
 
 	// Node types.
 	TypeAccount          = "Account"
+	TypeLastWord         = "LastWord"
 	TypeLegacy           = "Legacy"
 	TypeStakeholder      = "Stakeholder"
 	TypeStakeholderGroup = "StakeholderGroup"
@@ -39,26 +41,29 @@ const (
 // AccountMutation represents an operation that mutates the Account nodes in the graph.
 type AccountMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	_type               *account.Type
-	type_name           *string
-	name                *string
-	action              *account.Action
-	action_message      *string
-	data_location       *string
-	account_id          *string
-	created_at          *time.Time
-	clearedFields       map[string]struct{}
-	legacy              *uuid.UUID
-	clearedlegacy       bool
-	stakeholders        map[uuid.UUID]struct{}
-	removedstakeholders map[uuid.UUID]struct{}
-	clearedstakeholders bool
-	done                bool
-	oldValue            func(context.Context) (*Account, error)
-	predicates          []predicate.Account
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	_type                     *account.Type
+	type_name                 *string
+	name                      *string
+	action                    *account.Action
+	action_message            *string
+	data_location             *string
+	account_id                *string
+	created_at                *time.Time
+	clearedFields             map[string]struct{}
+	legacy                    *uuid.UUID
+	clearedlegacy             bool
+	stakeholders              map[uuid.UUID]struct{}
+	removedstakeholders       map[uuid.UUID]struct{}
+	clearedstakeholders       bool
+	stakeholder_groups        map[uuid.UUID]struct{}
+	removedstakeholder_groups map[uuid.UUID]struct{}
+	clearedstakeholder_groups bool
+	done                      bool
+	oldValue                  func(context.Context) (*Account, error)
+	predicates                []predicate.Account
 }
 
 var _ ent.Mutation = (*AccountMutation)(nil)
@@ -598,6 +603,60 @@ func (m *AccountMutation) ResetStakeholders() {
 	m.removedstakeholders = nil
 }
 
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by ids.
+func (m *AccountMutation) AddStakeholderGroupIDs(ids ...uuid.UUID) {
+	if m.stakeholder_groups == nil {
+		m.stakeholder_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.stakeholder_groups[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStakeholderGroups clears the "stakeholder_groups" edge to the StakeholderGroup entity.
+func (m *AccountMutation) ClearStakeholderGroups() {
+	m.clearedstakeholder_groups = true
+}
+
+// StakeholderGroupsCleared reports if the "stakeholder_groups" edge to the StakeholderGroup entity was cleared.
+func (m *AccountMutation) StakeholderGroupsCleared() bool {
+	return m.clearedstakeholder_groups
+}
+
+// RemoveStakeholderGroupIDs removes the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (m *AccountMutation) RemoveStakeholderGroupIDs(ids ...uuid.UUID) {
+	if m.removedstakeholder_groups == nil {
+		m.removedstakeholder_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.stakeholder_groups, ids[i])
+		m.removedstakeholder_groups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStakeholderGroups returns the removed IDs of the "stakeholder_groups" edge to the StakeholderGroup entity.
+func (m *AccountMutation) RemovedStakeholderGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.removedstakeholder_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StakeholderGroupsIDs returns the "stakeholder_groups" edge IDs in the mutation.
+func (m *AccountMutation) StakeholderGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.stakeholder_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStakeholderGroups resets all changes to the "stakeholder_groups" edge.
+func (m *AccountMutation) ResetStakeholderGroups() {
+	m.stakeholder_groups = nil
+	m.clearedstakeholder_groups = false
+	m.removedstakeholder_groups = nil
+}
+
 // Where appends a list predicates to the AccountMutation builder.
 func (m *AccountMutation) Where(ps ...predicate.Account) {
 	m.predicates = append(m.predicates, ps...)
@@ -877,12 +936,15 @@ func (m *AccountMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AccountMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.legacy != nil {
 		edges = append(edges, account.EdgeLegacy)
 	}
 	if m.stakeholders != nil {
 		edges = append(edges, account.EdgeStakeholders)
+	}
+	if m.stakeholder_groups != nil {
+		edges = append(edges, account.EdgeStakeholderGroups)
 	}
 	return edges
 }
@@ -901,15 +963,24 @@ func (m *AccountMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case account.EdgeStakeholderGroups:
+		ids := make([]ent.Value, 0, len(m.stakeholder_groups))
+		for id := range m.stakeholder_groups {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AccountMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstakeholders != nil {
 		edges = append(edges, account.EdgeStakeholders)
+	}
+	if m.removedstakeholder_groups != nil {
+		edges = append(edges, account.EdgeStakeholderGroups)
 	}
 	return edges
 }
@@ -924,18 +995,27 @@ func (m *AccountMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case account.EdgeStakeholderGroups:
+		ids := make([]ent.Value, 0, len(m.removedstakeholder_groups))
+		for id := range m.removedstakeholder_groups {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AccountMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedlegacy {
 		edges = append(edges, account.EdgeLegacy)
 	}
 	if m.clearedstakeholders {
 		edges = append(edges, account.EdgeStakeholders)
+	}
+	if m.clearedstakeholder_groups {
+		edges = append(edges, account.EdgeStakeholderGroups)
 	}
 	return edges
 }
@@ -948,6 +1028,8 @@ func (m *AccountMutation) EdgeCleared(name string) bool {
 		return m.clearedlegacy
 	case account.EdgeStakeholders:
 		return m.clearedstakeholders
+	case account.EdgeStakeholderGroups:
+		return m.clearedstakeholder_groups
 	}
 	return false
 }
@@ -973,8 +1055,632 @@ func (m *AccountMutation) ResetEdge(name string) error {
 	case account.EdgeStakeholders:
 		m.ResetStakeholders()
 		return nil
+	case account.EdgeStakeholderGroups:
+		m.ResetStakeholderGroups()
+		return nil
 	}
 	return fmt.Errorf("unknown Account edge %s", name)
+}
+
+// LastWordMutation represents an operation that mutates the LastWord nodes in the graph.
+type LastWordMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	title                  *string
+	message                *string
+	clearedFields          map[string]struct{}
+	receiver               map[uuid.UUID]struct{}
+	removedreceiver        map[uuid.UUID]struct{}
+	clearedreceiver        bool
+	receiver_groups        map[uuid.UUID]struct{}
+	removedreceiver_groups map[uuid.UUID]struct{}
+	clearedreceiver_groups bool
+	owner                  *uuid.UUID
+	clearedowner           bool
+	done                   bool
+	oldValue               func(context.Context) (*LastWord, error)
+	predicates             []predicate.LastWord
+}
+
+var _ ent.Mutation = (*LastWordMutation)(nil)
+
+// lastwordOption allows management of the mutation configuration using functional options.
+type lastwordOption func(*LastWordMutation)
+
+// newLastWordMutation creates new mutation for the LastWord entity.
+func newLastWordMutation(c config, op Op, opts ...lastwordOption) *LastWordMutation {
+	m := &LastWordMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLastWord,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLastWordID sets the ID field of the mutation.
+func withLastWordID(id uuid.UUID) lastwordOption {
+	return func(m *LastWordMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LastWord
+		)
+		m.oldValue = func(ctx context.Context) (*LastWord, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LastWord.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLastWord sets the old LastWord of the mutation.
+func withLastWord(node *LastWord) lastwordOption {
+	return func(m *LastWordMutation) {
+		m.oldValue = func(context.Context) (*LastWord, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LastWordMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LastWordMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LastWord entities.
+func (m *LastWordMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LastWordMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LastWordMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LastWord.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *LastWordMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *LastWordMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the LastWord entity.
+// If the LastWord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LastWordMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *LastWordMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *LastWordMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *LastWordMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the LastWord entity.
+// If the LastWord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LastWordMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *LastWordMutation) ResetMessage() {
+	m.message = nil
+}
+
+// AddReceiverIDs adds the "receiver" edge to the Stakeholder entity by ids.
+func (m *LastWordMutation) AddReceiverIDs(ids ...uuid.UUID) {
+	if m.receiver == nil {
+		m.receiver = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.receiver[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReceiver clears the "receiver" edge to the Stakeholder entity.
+func (m *LastWordMutation) ClearReceiver() {
+	m.clearedreceiver = true
+}
+
+// ReceiverCleared reports if the "receiver" edge to the Stakeholder entity was cleared.
+func (m *LastWordMutation) ReceiverCleared() bool {
+	return m.clearedreceiver
+}
+
+// RemoveReceiverIDs removes the "receiver" edge to the Stakeholder entity by IDs.
+func (m *LastWordMutation) RemoveReceiverIDs(ids ...uuid.UUID) {
+	if m.removedreceiver == nil {
+		m.removedreceiver = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.receiver, ids[i])
+		m.removedreceiver[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReceiver returns the removed IDs of the "receiver" edge to the Stakeholder entity.
+func (m *LastWordMutation) RemovedReceiverIDs() (ids []uuid.UUID) {
+	for id := range m.removedreceiver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReceiverIDs returns the "receiver" edge IDs in the mutation.
+func (m *LastWordMutation) ReceiverIDs() (ids []uuid.UUID) {
+	for id := range m.receiver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReceiver resets all changes to the "receiver" edge.
+func (m *LastWordMutation) ResetReceiver() {
+	m.receiver = nil
+	m.clearedreceiver = false
+	m.removedreceiver = nil
+}
+
+// AddReceiverGroupIDs adds the "receiver_groups" edge to the StakeholderGroup entity by ids.
+func (m *LastWordMutation) AddReceiverGroupIDs(ids ...uuid.UUID) {
+	if m.receiver_groups == nil {
+		m.receiver_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.receiver_groups[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReceiverGroups clears the "receiver_groups" edge to the StakeholderGroup entity.
+func (m *LastWordMutation) ClearReceiverGroups() {
+	m.clearedreceiver_groups = true
+}
+
+// ReceiverGroupsCleared reports if the "receiver_groups" edge to the StakeholderGroup entity was cleared.
+func (m *LastWordMutation) ReceiverGroupsCleared() bool {
+	return m.clearedreceiver_groups
+}
+
+// RemoveReceiverGroupIDs removes the "receiver_groups" edge to the StakeholderGroup entity by IDs.
+func (m *LastWordMutation) RemoveReceiverGroupIDs(ids ...uuid.UUID) {
+	if m.removedreceiver_groups == nil {
+		m.removedreceiver_groups = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.receiver_groups, ids[i])
+		m.removedreceiver_groups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReceiverGroups returns the removed IDs of the "receiver_groups" edge to the StakeholderGroup entity.
+func (m *LastWordMutation) RemovedReceiverGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.removedreceiver_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReceiverGroupsIDs returns the "receiver_groups" edge IDs in the mutation.
+func (m *LastWordMutation) ReceiverGroupsIDs() (ids []uuid.UUID) {
+	for id := range m.receiver_groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReceiverGroups resets all changes to the "receiver_groups" edge.
+func (m *LastWordMutation) ResetReceiverGroups() {
+	m.receiver_groups = nil
+	m.clearedreceiver_groups = false
+	m.removedreceiver_groups = nil
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by id.
+func (m *LastWordMutation) SetOwnerID(id uuid.UUID) {
+	m.owner = &id
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *LastWordMutation) ClearOwner() {
+	m.clearedowner = true
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *LastWordMutation) OwnerCleared() bool {
+	return m.clearedowner
+}
+
+// OwnerID returns the "owner" edge ID in the mutation.
+func (m *LastWordMutation) OwnerID() (id uuid.UUID, exists bool) {
+	if m.owner != nil {
+		return *m.owner, true
+	}
+	return
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *LastWordMutation) OwnerIDs() (ids []uuid.UUID) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *LastWordMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// Where appends a list predicates to the LastWordMutation builder.
+func (m *LastWordMutation) Where(ps ...predicate.LastWord) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LastWordMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LastWordMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LastWord, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LastWordMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LastWordMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LastWord).
+func (m *LastWordMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LastWordMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.title != nil {
+		fields = append(fields, lastword.FieldTitle)
+	}
+	if m.message != nil {
+		fields = append(fields, lastword.FieldMessage)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LastWordMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case lastword.FieldTitle:
+		return m.Title()
+	case lastword.FieldMessage:
+		return m.Message()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LastWordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case lastword.FieldTitle:
+		return m.OldTitle(ctx)
+	case lastword.FieldMessage:
+		return m.OldMessage(ctx)
+	}
+	return nil, fmt.Errorf("unknown LastWord field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LastWordMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case lastword.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case lastword.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LastWord field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LastWordMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LastWordMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LastWordMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown LastWord numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LastWordMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LastWordMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LastWordMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown LastWord nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LastWordMutation) ResetField(name string) error {
+	switch name {
+	case lastword.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case lastword.FieldMessage:
+		m.ResetMessage()
+		return nil
+	}
+	return fmt.Errorf("unknown LastWord field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LastWordMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.receiver != nil {
+		edges = append(edges, lastword.EdgeReceiver)
+	}
+	if m.receiver_groups != nil {
+		edges = append(edges, lastword.EdgeReceiverGroups)
+	}
+	if m.owner != nil {
+		edges = append(edges, lastword.EdgeOwner)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LastWordMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case lastword.EdgeReceiver:
+		ids := make([]ent.Value, 0, len(m.receiver))
+		for id := range m.receiver {
+			ids = append(ids, id)
+		}
+		return ids
+	case lastword.EdgeReceiverGroups:
+		ids := make([]ent.Value, 0, len(m.receiver_groups))
+		for id := range m.receiver_groups {
+			ids = append(ids, id)
+		}
+		return ids
+	case lastword.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LastWordMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedreceiver != nil {
+		edges = append(edges, lastword.EdgeReceiver)
+	}
+	if m.removedreceiver_groups != nil {
+		edges = append(edges, lastword.EdgeReceiverGroups)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LastWordMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case lastword.EdgeReceiver:
+		ids := make([]ent.Value, 0, len(m.removedreceiver))
+		for id := range m.removedreceiver {
+			ids = append(ids, id)
+		}
+		return ids
+	case lastword.EdgeReceiverGroups:
+		ids := make([]ent.Value, 0, len(m.removedreceiver_groups))
+		for id := range m.removedreceiver_groups {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LastWordMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedreceiver {
+		edges = append(edges, lastword.EdgeReceiver)
+	}
+	if m.clearedreceiver_groups {
+		edges = append(edges, lastword.EdgeReceiverGroups)
+	}
+	if m.clearedowner {
+		edges = append(edges, lastword.EdgeOwner)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LastWordMutation) EdgeCleared(name string) bool {
+	switch name {
+	case lastword.EdgeReceiver:
+		return m.clearedreceiver
+	case lastword.EdgeReceiverGroups:
+		return m.clearedreceiver_groups
+	case lastword.EdgeOwner:
+		return m.clearedowner
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LastWordMutation) ClearEdge(name string) error {
+	switch name {
+	case lastword.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown LastWord unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LastWordMutation) ResetEdge(name string) error {
+	switch name {
+	case lastword.EdgeReceiver:
+		m.ResetReceiver()
+		return nil
+	case lastword.EdgeReceiverGroups:
+		m.ResetReceiverGroups()
+		return nil
+	case lastword.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown LastWord edge %s", name)
 }
 
 // LegacyMutation represents an operation that mutates the Legacy nodes in the graph.
@@ -2423,6 +3129,9 @@ type StakeholderGroupMutation struct {
 	clearedFields       map[string]struct{}
 	owner               *uuid.UUID
 	clearedowner        bool
+	accounts            map[uuid.UUID]struct{}
+	removedaccounts     map[uuid.UUID]struct{}
+	clearedaccounts     bool
 	stakeholders        map[uuid.UUID]struct{}
 	removedstakeholders map[uuid.UUID]struct{}
 	clearedstakeholders bool
@@ -2646,6 +3355,60 @@ func (m *StakeholderGroupMutation) ResetOwner() {
 	m.clearedowner = false
 }
 
+// AddAccountIDs adds the "accounts" edge to the Account entity by ids.
+func (m *StakeholderGroupMutation) AddAccountIDs(ids ...uuid.UUID) {
+	if m.accounts == nil {
+		m.accounts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.accounts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAccounts clears the "accounts" edge to the Account entity.
+func (m *StakeholderGroupMutation) ClearAccounts() {
+	m.clearedaccounts = true
+}
+
+// AccountsCleared reports if the "accounts" edge to the Account entity was cleared.
+func (m *StakeholderGroupMutation) AccountsCleared() bool {
+	return m.clearedaccounts
+}
+
+// RemoveAccountIDs removes the "accounts" edge to the Account entity by IDs.
+func (m *StakeholderGroupMutation) RemoveAccountIDs(ids ...uuid.UUID) {
+	if m.removedaccounts == nil {
+		m.removedaccounts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.accounts, ids[i])
+		m.removedaccounts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAccounts returns the removed IDs of the "accounts" edge to the Account entity.
+func (m *StakeholderGroupMutation) RemovedAccountsIDs() (ids []uuid.UUID) {
+	for id := range m.removedaccounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AccountsIDs returns the "accounts" edge IDs in the mutation.
+func (m *StakeholderGroupMutation) AccountsIDs() (ids []uuid.UUID) {
+	for id := range m.accounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAccounts resets all changes to the "accounts" edge.
+func (m *StakeholderGroupMutation) ResetAccounts() {
+	m.accounts = nil
+	m.clearedaccounts = false
+	m.removedaccounts = nil
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by ids.
 func (m *StakeholderGroupMutation) AddStakeholderIDs(ids ...uuid.UUID) {
 	if m.stakeholders == nil {
@@ -2850,9 +3613,12 @@ func (m *StakeholderGroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StakeholderGroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.owner != nil {
 		edges = append(edges, stakeholdergroup.EdgeOwner)
+	}
+	if m.accounts != nil {
+		edges = append(edges, stakeholdergroup.EdgeAccounts)
 	}
 	if m.stakeholders != nil {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
@@ -2868,6 +3634,12 @@ func (m *StakeholderGroupMutation) AddedIDs(name string) []ent.Value {
 		if id := m.owner; id != nil {
 			return []ent.Value{*id}
 		}
+	case stakeholdergroup.EdgeAccounts:
+		ids := make([]ent.Value, 0, len(m.accounts))
+		for id := range m.accounts {
+			ids = append(ids, id)
+		}
+		return ids
 	case stakeholdergroup.EdgeStakeholders:
 		ids := make([]ent.Value, 0, len(m.stakeholders))
 		for id := range m.stakeholders {
@@ -2880,7 +3652,10 @@ func (m *StakeholderGroupMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StakeholderGroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedaccounts != nil {
+		edges = append(edges, stakeholdergroup.EdgeAccounts)
+	}
 	if m.removedstakeholders != nil {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
 	}
@@ -2891,6 +3666,12 @@ func (m *StakeholderGroupMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *StakeholderGroupMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case stakeholdergroup.EdgeAccounts:
+		ids := make([]ent.Value, 0, len(m.removedaccounts))
+		for id := range m.removedaccounts {
+			ids = append(ids, id)
+		}
+		return ids
 	case stakeholdergroup.EdgeStakeholders:
 		ids := make([]ent.Value, 0, len(m.removedstakeholders))
 		for id := range m.removedstakeholders {
@@ -2903,9 +3684,12 @@ func (m *StakeholderGroupMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StakeholderGroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedowner {
 		edges = append(edges, stakeholdergroup.EdgeOwner)
+	}
+	if m.clearedaccounts {
+		edges = append(edges, stakeholdergroup.EdgeAccounts)
 	}
 	if m.clearedstakeholders {
 		edges = append(edges, stakeholdergroup.EdgeStakeholders)
@@ -2919,6 +3703,8 @@ func (m *StakeholderGroupMutation) EdgeCleared(name string) bool {
 	switch name {
 	case stakeholdergroup.EdgeOwner:
 		return m.clearedowner
+	case stakeholdergroup.EdgeAccounts:
+		return m.clearedaccounts
 	case stakeholdergroup.EdgeStakeholders:
 		return m.clearedstakeholders
 	}
@@ -2942,6 +3728,9 @@ func (m *StakeholderGroupMutation) ResetEdge(name string) error {
 	switch name {
 	case stakeholdergroup.EdgeOwner:
 		m.ResetOwner()
+		return nil
+	case stakeholdergroup.EdgeAccounts:
+		m.ResetAccounts()
 		return nil
 	case stakeholdergroup.EdgeStakeholders:
 		m.ResetStakeholders()
@@ -2971,6 +3760,9 @@ type UserMutation struct {
 	legacies                  map[uuid.UUID]struct{}
 	removedlegacies           map[uuid.UUID]struct{}
 	clearedlegacies           bool
+	last_words                map[uuid.UUID]struct{}
+	removedlast_words         map[uuid.UUID]struct{}
+	clearedlast_words         bool
 	done                      bool
 	oldValue                  func(context.Context) (*User, error)
 	predicates                []predicate.User
@@ -3422,6 +4214,60 @@ func (m *UserMutation) ResetLegacies() {
 	m.removedlegacies = nil
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by ids.
+func (m *UserMutation) AddLastWordIDs(ids ...uuid.UUID) {
+	if m.last_words == nil {
+		m.last_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.last_words[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLastWords clears the "last_words" edge to the LastWord entity.
+func (m *UserMutation) ClearLastWords() {
+	m.clearedlast_words = true
+}
+
+// LastWordsCleared reports if the "last_words" edge to the LastWord entity was cleared.
+func (m *UserMutation) LastWordsCleared() bool {
+	return m.clearedlast_words
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to the LastWord entity by IDs.
+func (m *UserMutation) RemoveLastWordIDs(ids ...uuid.UUID) {
+	if m.removedlast_words == nil {
+		m.removedlast_words = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.last_words, ids[i])
+		m.removedlast_words[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLastWords returns the removed IDs of the "last_words" edge to the LastWord entity.
+func (m *UserMutation) RemovedLastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.removedlast_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LastWordsIDs returns the "last_words" edge IDs in the mutation.
+func (m *UserMutation) LastWordsIDs() (ids []uuid.UUID) {
+	for id := range m.last_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLastWords resets all changes to the "last_words" edge.
+func (m *UserMutation) ResetLastWords() {
+	m.last_words = nil
+	m.clearedlast_words = false
+	m.removedlast_words = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -3623,7 +4469,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.stakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -3632,6 +4478,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.legacies != nil {
 		edges = append(edges, user.EdgeLegacies)
+	}
+	if m.last_words != nil {
+		edges = append(edges, user.EdgeLastWords)
 	}
 	return edges
 }
@@ -3658,13 +4507,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.last_words))
+		for id := range m.last_words {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedstakeholders != nil {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -3673,6 +4528,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedlegacies != nil {
 		edges = append(edges, user.EdgeLegacies)
+	}
+	if m.removedlast_words != nil {
+		edges = append(edges, user.EdgeLastWords)
 	}
 	return edges
 }
@@ -3699,13 +4557,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeLastWords:
+		ids := make([]ent.Value, 0, len(m.removedlast_words))
+		for id := range m.removedlast_words {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedstakeholders {
 		edges = append(edges, user.EdgeStakeholders)
 	}
@@ -3714,6 +4578,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedlegacies {
 		edges = append(edges, user.EdgeLegacies)
+	}
+	if m.clearedlast_words {
+		edges = append(edges, user.EdgeLastWords)
 	}
 	return edges
 }
@@ -3728,6 +4595,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedstakeholder_groups
 	case user.EdgeLegacies:
 		return m.clearedlegacies
+	case user.EdgeLastWords:
+		return m.clearedlast_words
 	}
 	return false
 }
@@ -3752,6 +4621,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeLegacies:
 		m.ResetLegacies()
+		return nil
+	case user.EdgeLastWords:
+		m.ResetLastWords()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

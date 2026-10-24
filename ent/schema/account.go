@@ -68,5 +68,6 @@ func (Account) Edges() []ent.Edge {
 			Required().
 			Immutable(),
 		edge.To("stakeholders", Stakeholder.Type),
+		edge.To("stakeholder_groups", StakeholderGroup.Type),
 	}
 }

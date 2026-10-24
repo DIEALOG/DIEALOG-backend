@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/schema"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
@@ -32,6 +33,20 @@ func init() {
 	accountDescID := accountFields[0].Descriptor()
 	// account.DefaultID holds the default value on creation for the id field.
 	account.DefaultID = accountDescID.Default.(func() uuid.UUID)
+	lastwordFields := schema.LastWord{}.Fields()
+	_ = lastwordFields
+	// lastwordDescTitle is the schema descriptor for title field.
+	lastwordDescTitle := lastwordFields[1].Descriptor()
+	// lastword.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	lastword.TitleValidator = lastwordDescTitle.Validators[0].(func(string) error)
+	// lastwordDescMessage is the schema descriptor for message field.
+	lastwordDescMessage := lastwordFields[2].Descriptor()
+	// lastword.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	lastword.MessageValidator = lastwordDescMessage.Validators[0].(func(string) error)
+	// lastwordDescID is the schema descriptor for id field.
+	lastwordDescID := lastwordFields[0].Descriptor()
+	// lastword.DefaultID holds the default value on creation for the id field.
+	lastword.DefaultID = lastwordDescID.Default.(func() uuid.UUID)
 	legacyFields := schema.Legacy{}.Fields()
 	_ = legacyFields
 	// legacyDescName is the schema descriptor for name field.

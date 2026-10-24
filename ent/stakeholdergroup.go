@@ -25,20 +25,23 @@ type StakeholderGroup struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StakeholderGroupQuery when eager-loading is set.
-	Edges                   StakeholderGroupEdges `json:"edges"`
-	user_stakeholder_groups *uuid.UUID
-	selectValues            sql.SelectValues
+	Edges                     StakeholderGroupEdges `json:"edges"`
+	last_word_receiver_groups *uuid.UUID
+	user_stakeholder_groups   *uuid.UUID
+	selectValues              sql.SelectValues
 }
 
 // StakeholderGroupEdges holds the relations/edges for other nodes in the graph.
 type StakeholderGroupEdges struct {
 	// Owner holds the value of the owner edge.
 	Owner *User `json:"owner,omitempty"`
+	// Accounts holds the value of the accounts edge.
+	Accounts []*Account `json:"accounts,omitempty"`
 	// Stakeholders holds the value of the stakeholders edge.
 	Stakeholders []*Stakeholder `json:"stakeholders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -52,10 +55,19 @@ func (e StakeholderGroupEdges) OwnerOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner"}
 }
 
+// AccountsOrErr returns the Accounts value or an error if the edge
+// was not loaded in eager-loading.
+func (e StakeholderGroupEdges) AccountsOrErr() ([]*Account, error) {
+	if e.loadedTypes[1] {
+		return e.Accounts, nil
+	}
+	return nil, &NotLoadedError{edge: "accounts"}
+}
+
 // StakeholdersOrErr returns the Stakeholders value or an error if the edge
 // was not loaded in eager-loading.
 func (e StakeholderGroupEdges) StakeholdersOrErr() ([]*Stakeholder, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Stakeholders, nil
 	}
 	return nil, &NotLoadedError{edge: "stakeholders"}
@@ -72,7 +84,9 @@ func (*StakeholderGroup) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case stakeholdergroup.FieldID:
 			values[i] = new(uuid.UUID)
-		case stakeholdergroup.ForeignKeys[0]: // user_stakeholder_groups
+		case stakeholdergroup.ForeignKeys[0]: // last_word_receiver_groups
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case stakeholdergroup.ForeignKeys[1]: // user_stakeholder_groups
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -109,6 +123,13 @@ func (_m *StakeholderGroup) assignValues(columns []string, values []any) error {
 			}
 		case stakeholdergroup.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field last_word_receiver_groups", values[i])
+			} else if value.Valid {
+				_m.last_word_receiver_groups = new(uuid.UUID)
+				*_m.last_word_receiver_groups = *value.S.(*uuid.UUID)
+			}
+		case stakeholdergroup.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_stakeholder_groups", values[i])
 			} else if value.Valid {
 				_m.user_stakeholder_groups = new(uuid.UUID)
@@ -130,6 +151,11 @@ func (_m *StakeholderGroup) Value(name string) (ent.Value, error) {
 // QueryOwner queries the "owner" edge of the StakeholderGroup entity.
 func (_m *StakeholderGroup) QueryOwner() *UserQuery {
 	return NewStakeholderGroupClient(_m.config).QueryOwner(_m)
+}
+
+// QueryAccounts queries the "accounts" edge of the StakeholderGroup entity.
+func (_m *StakeholderGroup) QueryAccounts() *AccountQuery {
+	return NewStakeholderGroupClient(_m.config).QueryAccounts(_m)
 }
 
 // QueryStakeholders queries the "stakeholders" edge of the StakeholderGroup entity.

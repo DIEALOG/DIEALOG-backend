@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// LastWord is the client for interacting with the LastWord builders.
+	LastWord *LastWordClient
 	// Legacy is the client for interacting with the Legacy builders.
 	Legacy *LegacyClient
 	// Stakeholder is the client for interacting with the Stakeholder builders.
@@ -154,6 +156,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Account = NewAccountClient(tx.config)
+	tx.LastWord = NewLastWordClient(tx.config)
 	tx.Legacy = NewLegacyClient(tx.config)
 	tx.Stakeholder = NewStakeholderClient(tx.config)
 	tx.StakeholderGroup = NewStakeholderGroupClient(tx.config)

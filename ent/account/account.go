@@ -36,6 +36,8 @@ const (
 	EdgeLegacy = "legacy"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
 	EdgeStakeholders = "stakeholders"
+	// EdgeStakeholderGroups holds the string denoting the stakeholder_groups edge name in mutations.
+	EdgeStakeholderGroups = "stakeholder_groups"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// LegacyTable is the table that holds the legacy relation/edge.
@@ -50,6 +52,11 @@ const (
 	// StakeholdersInverseTable is the table name for the Stakeholder entity.
 	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
 	StakeholdersInverseTable = "stakeholders"
+	// StakeholderGroupsTable is the table that holds the stakeholder_groups relation/edge. The primary key declared below.
+	StakeholderGroupsTable = "account_stakeholder_groups"
+	// StakeholderGroupsInverseTable is the table name for the StakeholderGroup entity.
+	// It exists in this package in order to avoid circular dependency with the "stakeholdergroup" package.
+	StakeholderGroupsInverseTable = "stakeholder_groups"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -75,6 +82,9 @@ var (
 	// StakeholdersPrimaryKey and StakeholdersColumn2 are the table columns denoting the
 	// primary key for the stakeholders relation (M2M).
 	StakeholdersPrimaryKey = []string{"account_id", "stakeholder_id"}
+	// StakeholderGroupsPrimaryKey and StakeholderGroupsColumn2 are the table columns denoting the
+	// primary key for the stakeholder_groups relation (M2M).
+	StakeholderGroupsPrimaryKey = []string{"account_id", "stakeholder_group_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -230,6 +240,20 @@ func ByStakeholders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newStakeholdersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByStakeholderGroupsCount orders the results by stakeholder_groups count.
+func ByStakeholderGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStakeholderGroupsStep(), opts...)
+	}
+}
+
+// ByStakeholderGroups orders the results by stakeholder_groups terms.
+func ByStakeholderGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStakeholderGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newLegacyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -242,5 +266,12 @@ func newStakeholdersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StakeholdersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, StakeholdersTable, StakeholdersPrimaryKey...),
+	)
+}
+func newStakeholderGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StakeholderGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, StakeholderGroupsTable, StakeholderGroupsPrimaryKey...),
 	)
 }

@@ -97,3 +97,15 @@ func (gu *stakeholderGroupUseCase) Delete(c context.Context, id *domain.ID, user
 
 	return nil
 }
+
+func (gu *stakeholderGroupUseCase) ListByIDs(c context.Context, ids []domain.ID, userID *domain.ID) ([]*domain.StakeholderGroup, error) {
+	ctx, cancel := context.WithTimeout(c, gu.contextTimeout)
+	defer cancel()
+
+	stakeholderGroups, err := gu.groupRepository.FindAllByIDs(ctx, ids, userID)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	return stakeholderGroups, nil
+}

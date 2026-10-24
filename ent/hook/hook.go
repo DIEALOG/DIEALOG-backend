@@ -21,6 +21,18 @@ func (f AccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountMutation", m)
 }
 
+// The LastWordFunc type is an adapter to allow the use of ordinary
+// function as LastWord mutator.
+type LastWordFunc func(context.Context, *ent.LastWordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LastWordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LastWordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LastWordMutation", m)
+}
+
 // The LegacyFunc type is an adapter to allow the use of ordinary
 // function as Legacy mutator.
 type LegacyFunc func(context.Context, *ent.LegacyMutation) (ent.Value, error)

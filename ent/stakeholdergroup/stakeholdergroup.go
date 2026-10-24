@@ -21,6 +21,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
+	// EdgeAccounts holds the string denoting the accounts edge name in mutations.
+	EdgeAccounts = "accounts"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
 	EdgeStakeholders = "stakeholders"
 	// Table holds the table name of the stakeholdergroup in the database.
@@ -32,6 +34,11 @@ const (
 	OwnerInverseTable = "users"
 	// OwnerColumn is the table column denoting the owner relation/edge.
 	OwnerColumn = "user_stakeholder_groups"
+	// AccountsTable is the table that holds the accounts relation/edge. The primary key declared below.
+	AccountsTable = "account_stakeholder_groups"
+	// AccountsInverseTable is the table name for the Account entity.
+	// It exists in this package in order to avoid circular dependency with the "account" package.
+	AccountsInverseTable = "accounts"
 	// StakeholdersTable is the table that holds the stakeholders relation/edge. The primary key declared below.
 	StakeholdersTable = "stakeholder_group_stakeholders"
 	// StakeholdersInverseTable is the table name for the Stakeholder entity.
@@ -49,10 +56,14 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "stakeholder_groups"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"last_word_receiver_groups",
 	"user_stakeholder_groups",
 }
 
 var (
+	// AccountsPrimaryKey and AccountsColumn2 are the table columns denoting the
+	// primary key for the accounts relation (M2M).
+	AccountsPrimaryKey = []string{"account_id", "stakeholder_group_id"}
 	// StakeholdersPrimaryKey and StakeholdersColumn2 are the table columns denoting the
 	// primary key for the stakeholders relation (M2M).
 	StakeholdersPrimaryKey = []string{"stakeholder_group_id", "stakeholder_id"}
@@ -107,6 +118,20 @@ func ByOwnerField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByAccountsCount orders the results by accounts count.
+func ByAccountsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAccountsStep(), opts...)
+	}
+}
+
+// ByAccounts orders the results by accounts terms.
+func ByAccounts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAccountsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByStakeholdersCount orders the results by stakeholders count.
 func ByStakeholdersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -125,6 +150,13 @@ func newOwnerStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnerInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+	)
+}
+func newAccountsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AccountsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, AccountsTable, AccountsPrimaryKey...),
 	)
 }
 func newStakeholdersStep() *sqlgraph.Step {

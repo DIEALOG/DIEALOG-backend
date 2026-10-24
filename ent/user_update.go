@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
@@ -132,6 +133,21 @@ func (_u *UserUpdate) AddLegacies(v ...*Legacy) *UserUpdate {
 	return _u.AddLegacyIDs(ids...)
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_u *UserUpdate) AddLastWordIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddLastWordIDs(ids...)
+	return _u
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_u *UserUpdate) AddLastWords(v ...*LastWord) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLastWordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -198,6 +214,27 @@ func (_u *UserUpdate) RemoveLegacies(v ...*Legacy) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLegacyIDs(ids...)
+}
+
+// ClearLastWords clears all "last_words" edges to the LastWord entity.
+func (_u *UserUpdate) ClearLastWords() *UserUpdate {
+	_u.mutation.ClearLastWords()
+	return _u
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to LastWord entities by IDs.
+func (_u *UserUpdate) RemoveLastWordIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveLastWordIDs(ids...)
+	return _u
+}
+
+// RemoveLastWords removes "last_words" edges to LastWord entities.
+func (_u *UserUpdate) RemoveLastWords(v ...*LastWord) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLastWordIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -406,6 +443,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLastWordsIDs(); len(nodes) > 0 && !_u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -527,6 +609,21 @@ func (_u *UserUpdateOne) AddLegacies(v ...*Legacy) *UserUpdateOne {
 	return _u.AddLegacyIDs(ids...)
 }
 
+// AddLastWordIDs adds the "last_words" edge to the LastWord entity by IDs.
+func (_u *UserUpdateOne) AddLastWordIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddLastWordIDs(ids...)
+	return _u
+}
+
+// AddLastWords adds the "last_words" edges to the LastWord entity.
+func (_u *UserUpdateOne) AddLastWords(v ...*LastWord) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLastWordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -593,6 +690,27 @@ func (_u *UserUpdateOne) RemoveLegacies(v ...*Legacy) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLegacyIDs(ids...)
+}
+
+// ClearLastWords clears all "last_words" edges to the LastWord entity.
+func (_u *UserUpdateOne) ClearLastWords() *UserUpdateOne {
+	_u.mutation.ClearLastWords()
+	return _u
+}
+
+// RemoveLastWordIDs removes the "last_words" edge to LastWord entities by IDs.
+func (_u *UserUpdateOne) RemoveLastWordIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveLastWordIDs(ids...)
+	return _u
+}
+
+// RemoveLastWords removes "last_words" edges to LastWord entities.
+func (_u *UserUpdateOne) RemoveLastWords(v ...*LastWord) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLastWordIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -824,6 +942,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(legacy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLastWordsIDs(); len(nodes) > 0 && !_u.mutation.LastWordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LastWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LastWordsTable,
+			Columns: []string{user.LastWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(lastword.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

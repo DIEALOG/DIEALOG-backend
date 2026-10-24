@@ -9,6 +9,9 @@ import (
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
 
+// LastWord is the predicate function for lastword builders.
+type LastWord func(*sql.Selector)
+
 // Legacy is the predicate function for legacy builders.
 type Legacy func(*sql.Selector)
 

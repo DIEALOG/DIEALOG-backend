@@ -7,6 +7,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/janghanul090801/collections"
 )
 
 type stakeholderRepository struct {
@@ -174,4 +175,23 @@ func (r *stakeholderRepository) Delete(c context.Context, id *domain.ID, userID 
 	}
 
 	return nil
+}
+
+func (r *stakeholderRepository) FindAllByIDs(c context.Context, ids []domain.ID, userID *domain.ID) ([]*domain.Stakeholder, error) {
+	stakeholders, err := r.client.Stakeholder.Query().
+		Where(
+			stakeholder.IDIn(ids...),
+			stakeholder.HasOwnerWith(
+				user.IDEQ(*userID),
+			),
+		).
+		WithOwner().
+		WithAccounts().
+		WithGroups().
+		All(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return collections.ToIterable(stakeholders).Map(toDomainStakeholder), nil
 }

@@ -16,6 +16,29 @@ type User struct {
 	CreatedAt         time.Time          `json:"created_at"`
 }
 
+type CreateLastWordRequest struct {
+	Title            string `json:"title"`
+	Message          string `json:"message"`
+	ReceiverIDs      []ID   `json:"receiver_ids"`
+	ReceiverGroupIDs []ID   `json:"receiver_group_ids"`
+}
+
+type UpdateLastWordRequest struct {
+	Title            string `json:"title"`
+	Message          string `json:"message"`
+	ReceiverIDs      []ID   `json:"receiver_ids"`
+	ReceiverGroupIDs []ID   `json:"receiver_group_ids"`
+}
+
+type LastWord struct {
+	ID             ID                 `json:"id"`
+	UserID         ID                 `json:"user_id"`
+	Receiver       []Stakeholder      `json:"receiver"`
+	ReceiverGroups []StakeholderGroup `json:"receiver_groups"`
+	Title          string             `json:"title"`
+	Message        string             `json:"message"`
+}
+
 type Stakeholder struct {
 	ID           ID                 `json:"id"`
 	UserID       ID                 `json:"user_id"`
@@ -56,6 +79,7 @@ type StakeholderRepository interface {
 	FindByID(c context.Context, id *ID, userID *ID) (*Stakeholder, error)
 	Update(c context.Context, id *ID, stakeholder *Stakeholder, userID *ID) (*Stakeholder, error)
 	Delete(c context.Context, id *ID, userID *ID) error
+	FindAllByIDs(c context.Context, ids []ID, userID *ID) ([]*Stakeholder, error)
 }
 
 type StakeholderUseCase interface {
@@ -64,6 +88,7 @@ type StakeholderUseCase interface {
 	GetByID(c context.Context, id *ID, userID *ID) (*Stakeholder, error)
 	Update(c context.Context, id *ID, stakeholder *Stakeholder, userID *ID) (*Stakeholder, error)
 	Delete(c context.Context, id *ID, userID *ID) error
+	ListByIDs(c context.Context, ids []ID, userID *ID) ([]*Stakeholder, error)
 }
 
 type StakeholderGroupRepository interface {
@@ -72,6 +97,7 @@ type StakeholderGroupRepository interface {
 	FindByID(c context.Context, id *ID, userID *ID) (*StakeholderGroup, error)
 	Update(c context.Context, id *ID, group *StakeholderGroup, userID *ID) (*StakeholderGroup, error)
 	Delete(c context.Context, id *ID, userID *ID) error
+	FindAllByIDs(c context.Context, ids []ID, userID *ID) ([]*StakeholderGroup, error)
 }
 
 type StakeholderGroupUseCase interface {
@@ -79,5 +105,22 @@ type StakeholderGroupUseCase interface {
 	ListByUserID(c context.Context, userID *ID) ([]*StakeholderGroup, error)
 	GetByID(c context.Context, id *ID, userID *ID) (*StakeholderGroup, error)
 	Update(c context.Context, id *ID, group *StakeholderGroup, userID *ID) (*StakeholderGroup, error)
+	Delete(c context.Context, id *ID, userID *ID) error
+	ListByIDs(c context.Context, ids []ID, userID *ID) ([]*StakeholderGroup, error)
+}
+
+type LastWordRepository interface {
+	Create(c context.Context, lastWord *LastWord) (*LastWord, error)
+	FindAllByUserID(c context.Context, userID *ID) ([]*LastWord, error)
+	FindByID(c context.Context, id *ID, userID *ID) (*LastWord, error)
+	Update(c context.Context, id *ID, lastWord *LastWord, userID *ID) (*LastWord, error)
+	Delete(c context.Context, id *ID, userID *ID) error
+}
+
+type LastWordUseCase interface {
+	Create(c context.Context, lastWord *LastWord) (*LastWord, error)
+	ListByUserID(c context.Context, userID *ID) ([]*LastWord, error)
+	GetByID(c context.Context, id *ID, userID *ID) (*LastWord, error)
+	Update(c context.Context, id *ID, lastWord *LastWord, userID *ID) (*LastWord, error)
 	Delete(c context.Context, id *ID, userID *ID) error
 }

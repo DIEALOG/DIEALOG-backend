@@ -96,6 +96,7 @@ func main() {
 	legacyRepository := repository.NewLegacyRepository(client)
 	stakeholderRepository := repository.NewStakeholderRepository(client)
 	stakeholderGroupRepository := repository.NewStakeholderGroupRepository(client)
+	lastWordRepository := repository.NewLastWordRepository(client)
 
 	// usecase
 	profileUseCase := usecase.NewProfileUseCase(userRepository, timeout)
@@ -104,13 +105,15 @@ func main() {
 	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, timeout)
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
 	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
+	lastWordUseCase := usecase.NewLastWordUseCase(lastWordRepository, timeout)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
 	route.NewProfileRouter(api.Group("/profile"), profileUseCase)
 	route.NewRefreshTokenRouter(api.Group("/refresh"), authUseCase)
 	route.NewSignupRouter(api.Group("/signup"), authUseCase)
-	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase)
+	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase, stakeholderUseCase, stakeholderGroupUseCase)
+	route.NewLastWordRouter(api.Group("/last-word"), lastWordUseCase, stakeholderUseCase, stakeholderGroupUseCase)
 	route.NewStakeholderRouter(api.Group("/stakeholder"), stakeholderUseCase, stakeholderGroupUseCase)
 
 	app.All("*", func(c fiber.Ctx) error {

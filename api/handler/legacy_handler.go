@@ -5,6 +5,7 @@ import (
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/gofiber/fiber/v3"
+	"github.com/janghanul090801/collections"
 )
 
 type UpdateLegacyRequest struct {
@@ -203,7 +204,7 @@ func DeleteLegacy(service domain.LegacyUseCase) fiber.Handler {
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
 // @Router       /legacy/protected/{id}/account [post]
-func CreateAccount(service domain.LegacyUseCase) fiber.Handler {
+func CreateAccount(service domain.LegacyUseCase, stakeholderService domain.StakeholderUseCase, stakeholderGroupService domain.StakeholderGroupUseCase) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		ctx := c.RequestCtx()
 		userID := c.Locals("id").(*domain.ID)
@@ -220,13 +221,28 @@ func CreateAccount(service domain.LegacyUseCase) fiber.Handler {
 			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
 		}
 
+		stakeholders, err := stakeholderService.ListByIDs(ctx, req.StakeholderIDs, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		stakeholderGroups, err := stakeholderGroupService.ListByIDs(ctx, req.StakeholderGroupIDs, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
 		created, err := service.CreateAccount(ctx, &domain.Account{
-			Type:           req.Type,
-			Name:           req.Name,
-			AccountID:      req.AccountID,
-			DataLocation:   req.DataLocation,
-			StakeholderIDs: req.StakeholderIDs,
-			Action:         req.Action,
+			Type:         req.Type,
+			Name:         req.Name,
+			AccountID:    req.AccountID,
+			DataLocation: req.DataLocation,
+			Stakeholders: collections.ToIterable(stakeholders).Map(func(s *domain.Stakeholder) domain.Stakeholder {
+				return *s
+			}),
+			StakeholderGroups: collections.ToIterable(stakeholderGroups).Map(func(s *domain.StakeholderGroup) domain.StakeholderGroup {
+				return *s
+			}),
+			Action: req.Action,
 		}, req.AccountPassword, &legacyID, userID)
 		if err != nil {
 			return RespondError(c, err)

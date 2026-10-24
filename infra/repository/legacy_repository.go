@@ -8,6 +8,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/janghanul090801/collections"
 )
 
 type legacyRepository struct {
@@ -121,6 +122,14 @@ func (r *legacyRepository) Delete(c context.Context, id *domain.ID, userID *doma
 }
 
 func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
+	stakeholderIDs := collections.ToIterable(acc.Stakeholders).Map(func(s domain.Stakeholder) domain.ID {
+		return s.ID
+	})
+
+	stakeholderGroupIDs := collections.ToIterable(acc.StakeholderGroups).Map(func(s domain.StakeholderGroup) domain.ID {
+		return s.ID
+	})
+
 	exists, err := r.client.Legacy.Query().
 		Where(
 			legacy.IDEQ(*legacyID),
@@ -151,8 +160,11 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	if acc.AccountID != nil {
 		builder.SetAccountID(*acc.AccountID)
 	}
-	if len(acc.StakeholderIDs) > 0 {
-		builder.AddStakeholderIDs(acc.StakeholderIDs...)
+	if len(stakeholderIDs) > 0 {
+		builder.AddStakeholderIDs(stakeholderIDs...)
+	}
+	if len(stakeholderGroupIDs) > 0 {
+		builder.AddStakeholderIDs(stakeholderGroupIDs...)
 	}
 
 	entity, err := builder.Save(c)

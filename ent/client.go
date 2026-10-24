@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -30,6 +31,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// LastWord is the client for interacting with the LastWord builders.
+	LastWord *LastWordClient
 	// Legacy is the client for interacting with the Legacy builders.
 	Legacy *LegacyClient
 	// Stakeholder is the client for interacting with the Stakeholder builders.
@@ -50,6 +53,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Account = NewAccountClient(c.config)
+	c.LastWord = NewLastWordClient(c.config)
 	c.Legacy = NewLegacyClient(c.config)
 	c.Stakeholder = NewStakeholderClient(c.config)
 	c.StakeholderGroup = NewStakeholderGroupClient(c.config)
@@ -147,6 +151,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:              ctx,
 		config:           cfg,
 		Account:          NewAccountClient(cfg),
+		LastWord:         NewLastWordClient(cfg),
 		Legacy:           NewLegacyClient(cfg),
 		Stakeholder:      NewStakeholderClient(cfg),
 		StakeholderGroup: NewStakeholderGroupClient(cfg),
@@ -171,6 +176,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:              ctx,
 		config:           cfg,
 		Account:          NewAccountClient(cfg),
+		LastWord:         NewLastWordClient(cfg),
 		Legacy:           NewLegacyClient(cfg),
 		Stakeholder:      NewStakeholderClient(cfg),
 		StakeholderGroup: NewStakeholderGroupClient(cfg),
@@ -203,21 +209,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Account.Use(hooks...)
-	c.Legacy.Use(hooks...)
-	c.Stakeholder.Use(hooks...)
-	c.StakeholderGroup.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Account.Intercept(interceptors...)
-	c.Legacy.Intercept(interceptors...)
-	c.Stakeholder.Intercept(interceptors...)
-	c.StakeholderGroup.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -225,6 +231,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AccountMutation:
 		return c.Account.mutate(ctx, m)
+	case *LastWordMutation:
+		return c.LastWord.mutate(ctx, m)
 	case *LegacyMutation:
 		return c.Legacy.mutate(ctx, m)
 	case *StakeholderMutation:
@@ -378,6 +386,22 @@ func (c *AccountClient) QueryStakeholders(_m *Account) *StakeholderQuery {
 	return query
 }
 
+// QueryStakeholderGroups queries the stakeholder_groups edge of a Account.
+func (c *AccountClient) QueryStakeholderGroups(_m *Account) *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, id),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, account.StakeholderGroupsTable, account.StakeholderGroupsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AccountClient) Hooks() []Hook {
 	return c.hooks.Account
@@ -400,6 +424,187 @@ func (c *AccountClient) mutate(ctx context.Context, m *AccountMutation) (Value, 
 		return (&AccountDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Account mutation op: %q", m.Op())
+	}
+}
+
+// LastWordClient is a client for the LastWord schema.
+type LastWordClient struct {
+	config
+}
+
+// NewLastWordClient returns a client for the LastWord from the given config.
+func NewLastWordClient(c config) *LastWordClient {
+	return &LastWordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `lastword.Hooks(f(g(h())))`.
+func (c *LastWordClient) Use(hooks ...Hook) {
+	c.hooks.LastWord = append(c.hooks.LastWord, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `lastword.Intercept(f(g(h())))`.
+func (c *LastWordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LastWord = append(c.inters.LastWord, interceptors...)
+}
+
+// Create returns a builder for creating a LastWord entity.
+func (c *LastWordClient) Create() *LastWordCreate {
+	mutation := newLastWordMutation(c.config, OpCreate)
+	return &LastWordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LastWord entities.
+func (c *LastWordClient) CreateBulk(builders ...*LastWordCreate) *LastWordCreateBulk {
+	return &LastWordCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LastWordClient) MapCreateBulk(slice any, setFunc func(*LastWordCreate, int)) *LastWordCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LastWordCreateBulk{err: fmt.Errorf("calling to LastWordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LastWordCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LastWordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LastWord.
+func (c *LastWordClient) Update() *LastWordUpdate {
+	mutation := newLastWordMutation(c.config, OpUpdate)
+	return &LastWordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LastWordClient) UpdateOne(_m *LastWord) *LastWordUpdateOne {
+	mutation := newLastWordMutation(c.config, OpUpdateOne, withLastWord(_m))
+	return &LastWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LastWordClient) UpdateOneID(id uuid.UUID) *LastWordUpdateOne {
+	mutation := newLastWordMutation(c.config, OpUpdateOne, withLastWordID(id))
+	return &LastWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LastWord.
+func (c *LastWordClient) Delete() *LastWordDelete {
+	mutation := newLastWordMutation(c.config, OpDelete)
+	return &LastWordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LastWordClient) DeleteOne(_m *LastWord) *LastWordDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LastWordClient) DeleteOneID(id uuid.UUID) *LastWordDeleteOne {
+	builder := c.Delete().Where(lastword.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LastWordDeleteOne{builder}
+}
+
+// Query returns a query builder for LastWord.
+func (c *LastWordClient) Query() *LastWordQuery {
+	return &LastWordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLastWord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LastWord entity by its id.
+func (c *LastWordClient) Get(ctx context.Context, id uuid.UUID) (*LastWord, error) {
+	return c.Query().Where(lastword.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LastWordClient) GetX(ctx context.Context, id uuid.UUID) *LastWord {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryReceiver queries the receiver edge of a LastWord.
+func (c *LastWordClient) QueryReceiver(_m *LastWord) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(lastword.Table, lastword.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverTable, lastword.ReceiverColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReceiverGroups queries the receiver_groups edge of a LastWord.
+func (c *LastWordClient) QueryReceiverGroups(_m *LastWord) *StakeholderGroupQuery {
+	query := (&StakeholderGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(lastword.Table, lastword.FieldID, id),
+			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, lastword.ReceiverGroupsTable, lastword.ReceiverGroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOwner queries the owner edge of a LastWord.
+func (c *LastWordClient) QueryOwner(_m *LastWord) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(lastword.Table, lastword.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, lastword.OwnerTable, lastword.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LastWordClient) Hooks() []Hook {
+	return c.hooks.LastWord
+}
+
+// Interceptors returns the client interceptors.
+func (c *LastWordClient) Interceptors() []Interceptor {
+	return c.inters.LastWord
+}
+
+func (c *LastWordClient) mutate(ctx context.Context, m *LastWordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LastWordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LastWordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LastWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LastWordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LastWord mutation op: %q", m.Op())
 	}
 }
 
@@ -873,6 +1078,22 @@ func (c *StakeholderGroupClient) QueryOwner(_m *StakeholderGroup) *UserQuery {
 	return query
 }
 
+// QueryAccounts queries the accounts edge of a StakeholderGroup.
+func (c *StakeholderGroupClient) QueryAccounts(_m *StakeholderGroup) *AccountQuery {
+	query := (&AccountClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stakeholdergroup.Table, stakeholdergroup.FieldID, id),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, stakeholdergroup.AccountsTable, stakeholdergroup.AccountsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryStakeholders queries the stakeholders edge of a StakeholderGroup.
 func (c *StakeholderGroupClient) QueryStakeholders(_m *StakeholderGroup) *StakeholderQuery {
 	query := (&StakeholderClient{config: c.config}).Query()
@@ -1070,6 +1291,22 @@ func (c *UserClient) QueryLegacies(_m *User) *LegacyQuery {
 	return query
 }
 
+// QueryLastWords queries the last_words edge of a User.
+func (c *UserClient) QueryLastWords(_m *User) *LastWordQuery {
+	query := (&LastWordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(lastword.Table, lastword.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LastWordsTable, user.LastWordsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1098,9 +1335,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, Legacy, Stakeholder, StakeholderGroup, User []ent.Hook
+		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User []ent.Hook
 	}
 	inters struct {
-		Account, Legacy, Stakeholder, StakeholderGroup, User []ent.Interceptor
+		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User []ent.Interceptor
 	}
 )

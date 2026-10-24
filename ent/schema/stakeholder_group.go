@@ -32,6 +32,8 @@ func (StakeholderGroup) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Immutable(),
+		edge.From("accounts", Account.Type).
+			Ref("stakeholder_groups"),
 		edge.To("stakeholders", Stakeholder.Type),
 	}
 }

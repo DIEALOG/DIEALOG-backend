@@ -450,6 +450,29 @@ func HasLegaciesWith(preds ...predicate.Legacy) predicate.User {
 	})
 }
 
+// HasLastWords applies the HasEdge predicate on the "last_words" edge.
+func HasLastWords() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LastWordsTable, LastWordsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLastWordsWith applies the HasEdge predicate on the "last_words" edge with a given conditions (other predicates).
+func HasLastWordsWith(preds ...predicate.LastWord) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newLastWordsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

@@ -31,6 +31,8 @@ const (
 	EdgeStakeholderGroups = "stakeholder_groups"
 	// EdgeLegacies holds the string denoting the legacies edge name in mutations.
 	EdgeLegacies = "legacies"
+	// EdgeLastWords holds the string denoting the last_words edge name in mutations.
+	EdgeLastWords = "last_words"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// StakeholdersTable is the table that holds the stakeholders relation/edge.
@@ -54,6 +56,13 @@ const (
 	LegaciesInverseTable = "legacies"
 	// LegaciesColumn is the table column denoting the legacies relation/edge.
 	LegaciesColumn = "user_legacies"
+	// LastWordsTable is the table that holds the last_words relation/edge.
+	LastWordsTable = "last_words"
+	// LastWordsInverseTable is the table name for the LastWord entity.
+	// It exists in this package in order to avoid circular dependency with the "lastword" package.
+	LastWordsInverseTable = "last_words"
+	// LastWordsColumn is the table column denoting the last_words relation/edge.
+	LastWordsColumn = "user_last_words"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -165,6 +174,20 @@ func ByLegacies(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLegaciesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLastWordsCount orders the results by last_words count.
+func ByLastWordsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLastWordsStep(), opts...)
+	}
+}
+
+// ByLastWords orders the results by last_words terms.
+func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLastWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStakeholdersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -184,5 +207,12 @@ func newLegaciesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LegaciesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LegaciesTable, LegaciesColumn),
+	)
+}
+func newLastWordsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LastWordsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LastWordsTable, LastWordsColumn),
 	)
 }

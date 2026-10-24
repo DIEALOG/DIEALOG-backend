@@ -42,9 +42,11 @@ type UserEdges struct {
 	StakeholderGroups []*StakeholderGroup `json:"stakeholder_groups,omitempty"`
 	// Legacies holds the value of the legacies edge.
 	Legacies []*Legacy `json:"legacies,omitempty"`
+	// LastWords holds the value of the last_words edge.
+	LastWords []*LastWord `json:"last_words,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // StakeholdersOrErr returns the Stakeholders value or an error if the edge
@@ -72,6 +74,15 @@ func (e UserEdges) LegaciesOrErr() ([]*Legacy, error) {
 		return e.Legacies, nil
 	}
 	return nil, &NotLoadedError{edge: "legacies"}
+}
+
+// LastWordsOrErr returns the LastWords value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LastWordsOrErr() ([]*LastWord, error) {
+	if e.loadedTypes[3] {
+		return e.LastWords, nil
+	}
+	return nil, &NotLoadedError{edge: "last_words"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -162,6 +173,11 @@ func (_m *User) QueryStakeholderGroups() *StakeholderGroupQuery {
 // QueryLegacies queries the "legacies" edge of the User entity.
 func (_m *User) QueryLegacies() *LegacyQuery {
 	return NewUserClient(_m.config).QueryLegacies(_m)
+}
+
+// QueryLastWords queries the "last_words" edge of the User entity.
+func (_m *User) QueryLastWords() *LastWordQuery {
+	return NewUserClient(_m.config).QueryLastWords(_m)
 }
 
 // Update returns a builder for updating this User.

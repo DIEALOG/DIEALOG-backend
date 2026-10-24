@@ -117,13 +117,39 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 	}
 	if entity.Edges.Stakeholders != nil {
 		a.Stakeholders = make([]domain.Stakeholder, len(entity.Edges.Stakeholders))
-		a.StakeholderIDs = make([]domain.ID, len(entity.Edges.Stakeholders))
 		for i, s := range entity.Edges.Stakeholders {
 			a.Stakeholders[i] = *toDomainStakeholder(s)
-			a.StakeholderIDs[i] = s.ID
 		}
 	}
 	return a
+}
+
+func toDomainLastWord(entity *ent.LastWord) *domain.LastWord {
+	l := &domain.LastWord{
+		ID:      entity.ID,
+		Title:   entity.Title,
+		Message: entity.Message,
+	}
+
+	if entity.Edges.Receiver != nil {
+		l.Receiver = make([]domain.Stakeholder, len(entity.Edges.Receiver))
+		for i, s := range entity.Edges.Receiver {
+			l.Receiver[i] = *toDomainStakeholder(s)
+		}
+	}
+
+	if entity.Edges.ReceiverGroups != nil {
+		l.ReceiverGroups = make([]domain.StakeholderGroup, len(entity.Edges.ReceiverGroups))
+		for i, g := range entity.Edges.ReceiverGroups {
+			l.ReceiverGroups[i] = *toDomainStakeholderGroup(g)
+		}
+	}
+
+	if entity.Edges.Owner != nil {
+		l.UserID = entity.Edges.Owner.ID
+	}
+
+	return l
 }
 
 func toEntAccountType(t domain.AccountTypeField) account.Type {

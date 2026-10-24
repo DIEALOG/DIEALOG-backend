@@ -13,6 +13,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/google/uuid"
 )
 
@@ -157,6 +158,21 @@ func (_c *AccountCreate) AddStakeholders(v ...*Stakeholder) *AccountCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddStakeholderIDs(ids...)
+}
+
+// AddStakeholderGroupIDs adds the "stakeholder_groups" edge to the StakeholderGroup entity by IDs.
+func (_c *AccountCreate) AddStakeholderGroupIDs(ids ...uuid.UUID) *AccountCreate {
+	_c.mutation.AddStakeholderGroupIDs(ids...)
+	return _c
+}
+
+// AddStakeholderGroups adds the "stakeholder_groups" edges to the StakeholderGroup entity.
+func (_c *AccountCreate) AddStakeholderGroups(v ...*StakeholderGroup) *AccountCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStakeholderGroupIDs(ids...)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -333,6 +349,22 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StakeholderGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   account.StakeholderGroupsTable,
+			Columns: account.StakeholderGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
