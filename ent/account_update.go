@@ -10,10 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/google/uuid"
 )
 
 // AccountUpdate is the builder for updating Account entities.
@@ -134,26 +134,6 @@ func (_u *AccountUpdate) SetNillableAccountID(v *string) *AccountUpdate {
 // ClearAccountID clears the value of the "account_id" field.
 func (_u *AccountUpdate) ClearAccountID() *AccountUpdate {
 	_u.mutation.ClearAccountID()
-	return _u
-}
-
-// SetAccountPassword sets the "account_password" field.
-func (_u *AccountUpdate) SetAccountPassword(v string) *AccountUpdate {
-	_u.mutation.SetAccountPassword(v)
-	return _u
-}
-
-// SetNillableAccountPassword sets the "account_password" field if the given value is not nil.
-func (_u *AccountUpdate) SetNillableAccountPassword(v *string) *AccountUpdate {
-	if v != nil {
-		_u.SetAccountPassword(*v)
-	}
-	return _u
-}
-
-// ClearAccountPassword clears the value of the "account_password" field.
-func (_u *AccountUpdate) ClearAccountPassword() *AccountUpdate {
-	_u.mutation.ClearAccountPassword()
 	return _u
 }
 
@@ -284,12 +264,6 @@ func (_u *AccountUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.AccountIDCleared() {
 		_spec.ClearField(account.FieldAccountID, field.TypeString)
-	}
-	if value, ok := _u.mutation.AccountPassword(); ok {
-		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
-	}
-	if _u.mutation.AccountPasswordCleared() {
-		_spec.ClearField(account.FieldAccountPassword, field.TypeString)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -464,26 +438,6 @@ func (_u *AccountUpdateOne) ClearAccountID() *AccountUpdateOne {
 	return _u
 }
 
-// SetAccountPassword sets the "account_password" field.
-func (_u *AccountUpdateOne) SetAccountPassword(v string) *AccountUpdateOne {
-	_u.mutation.SetAccountPassword(v)
-	return _u
-}
-
-// SetNillableAccountPassword sets the "account_password" field if the given value is not nil.
-func (_u *AccountUpdateOne) SetNillableAccountPassword(v *string) *AccountUpdateOne {
-	if v != nil {
-		_u.SetAccountPassword(*v)
-	}
-	return _u
-}
-
-// ClearAccountPassword clears the value of the "account_password" field.
-func (_u *AccountUpdateOne) ClearAccountPassword() *AccountUpdateOne {
-	_u.mutation.ClearAccountPassword()
-	return _u
-}
-
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *AccountUpdateOne) AddStakeholderIDs(ids ...uuid.UUID) *AccountUpdateOne {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -641,12 +595,6 @@ func (_u *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err er
 	}
 	if _u.mutation.AccountIDCleared() {
 		_spec.ClearField(account.FieldAccountID, field.TypeString)
-	}
-	if value, ok := _u.mutation.AccountPassword(); ok {
-		_spec.SetField(account.FieldAccountPassword, field.TypeString, value)
-	}
-	if _u.mutation.AccountPasswordCleared() {
-		_spec.ClearField(account.FieldAccountPassword, field.TypeString)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{

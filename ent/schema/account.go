@@ -35,6 +35,8 @@ func (Account) Fields() []ent.Field {
 		field.String("type_name").
 			Optional().
 			Nillable(),
+		field.String("name").
+			NotEmpty(),
 		field.Enum("action").
 			Values(
 				"delete",
@@ -51,9 +53,6 @@ func (Account) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.String("account_id").
-			Optional().
-			Nillable(),
-		field.String("account_password").
 			Optional().
 			Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),

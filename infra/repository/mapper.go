@@ -103,9 +103,8 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 			Type: domain.AccountTypeField(entity.Type),
 			Name: entity.TypeName,
 		},
-		AccountID:       entity.AccountID,
-		AccountPassword: entity.AccountPassword,
-		DataLocation:    entity.DataLocation,
+		AccountID:    entity.AccountID,
+		DataLocation: entity.DataLocation,
 		Action: domain.AccountAction{
 			ID:      entity.ID,
 			Action:  domain.AccountActionField(entity.Action),

@@ -7,8 +7,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
@@ -74,11 +74,6 @@ func DataLocation(v string) predicate.Account {
 // AccountID applies equality check predicate on the "account_id" field. It's identical to AccountIDEQ.
 func AccountID(v string) predicate.Account {
 	return predicate.Account(sql.FieldEQ(FieldAccountID, v))
-}
-
-// AccountPassword applies equality check predicate on the "account_password" field. It's identical to AccountPasswordEQ.
-func AccountPassword(v string) predicate.Account {
-	return predicate.Account(sql.FieldEQ(FieldAccountPassword, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -424,81 +419,6 @@ func AccountIDEqualFold(v string) predicate.Account {
 // AccountIDContainsFold applies the ContainsFold predicate on the "account_id" field.
 func AccountIDContainsFold(v string) predicate.Account {
 	return predicate.Account(sql.FieldContainsFold(FieldAccountID, v))
-}
-
-// AccountPasswordEQ applies the EQ predicate on the "account_password" field.
-func AccountPasswordEQ(v string) predicate.Account {
-	return predicate.Account(sql.FieldEQ(FieldAccountPassword, v))
-}
-
-// AccountPasswordNEQ applies the NEQ predicate on the "account_password" field.
-func AccountPasswordNEQ(v string) predicate.Account {
-	return predicate.Account(sql.FieldNEQ(FieldAccountPassword, v))
-}
-
-// AccountPasswordIn applies the In predicate on the "account_password" field.
-func AccountPasswordIn(vs ...string) predicate.Account {
-	return predicate.Account(sql.FieldIn(FieldAccountPassword, vs...))
-}
-
-// AccountPasswordNotIn applies the NotIn predicate on the "account_password" field.
-func AccountPasswordNotIn(vs ...string) predicate.Account {
-	return predicate.Account(sql.FieldNotIn(FieldAccountPassword, vs...))
-}
-
-// AccountPasswordGT applies the GT predicate on the "account_password" field.
-func AccountPasswordGT(v string) predicate.Account {
-	return predicate.Account(sql.FieldGT(FieldAccountPassword, v))
-}
-
-// AccountPasswordGTE applies the GTE predicate on the "account_password" field.
-func AccountPasswordGTE(v string) predicate.Account {
-	return predicate.Account(sql.FieldGTE(FieldAccountPassword, v))
-}
-
-// AccountPasswordLT applies the LT predicate on the "account_password" field.
-func AccountPasswordLT(v string) predicate.Account {
-	return predicate.Account(sql.FieldLT(FieldAccountPassword, v))
-}
-
-// AccountPasswordLTE applies the LTE predicate on the "account_password" field.
-func AccountPasswordLTE(v string) predicate.Account {
-	return predicate.Account(sql.FieldLTE(FieldAccountPassword, v))
-}
-
-// AccountPasswordContains applies the Contains predicate on the "account_password" field.
-func AccountPasswordContains(v string) predicate.Account {
-	return predicate.Account(sql.FieldContains(FieldAccountPassword, v))
-}
-
-// AccountPasswordHasPrefix applies the HasPrefix predicate on the "account_password" field.
-func AccountPasswordHasPrefix(v string) predicate.Account {
-	return predicate.Account(sql.FieldHasPrefix(FieldAccountPassword, v))
-}
-
-// AccountPasswordHasSuffix applies the HasSuffix predicate on the "account_password" field.
-func AccountPasswordHasSuffix(v string) predicate.Account {
-	return predicate.Account(sql.FieldHasSuffix(FieldAccountPassword, v))
-}
-
-// AccountPasswordIsNil applies the IsNil predicate on the "account_password" field.
-func AccountPasswordIsNil() predicate.Account {
-	return predicate.Account(sql.FieldIsNull(FieldAccountPassword))
-}
-
-// AccountPasswordNotNil applies the NotNil predicate on the "account_password" field.
-func AccountPasswordNotNil() predicate.Account {
-	return predicate.Account(sql.FieldNotNull(FieldAccountPassword))
-}
-
-// AccountPasswordEqualFold applies the EqualFold predicate on the "account_password" field.
-func AccountPasswordEqualFold(v string) predicate.Account {
-	return predicate.Account(sql.FieldEqualFold(FieldAccountPassword, v))
-}
-
-// AccountPasswordContainsFold applies the ContainsFold predicate on the "account_password" field.
-func AccountPasswordContainsFold(v string) predicate.Account {
-	return predicate.Account(sql.FieldContainsFold(FieldAccountPassword, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

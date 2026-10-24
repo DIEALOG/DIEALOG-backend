@@ -28,8 +28,6 @@ const (
 	FieldDataLocation = "data_location"
 	// FieldAccountID holds the string denoting the account_id field in the database.
 	FieldAccountID = "account_id"
-	// FieldAccountPassword holds the string denoting the account_password field in the database.
-	FieldAccountPassword = "account_password"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeLegacy holds the string denoting the legacy edge name in mutations.
@@ -61,7 +59,6 @@ var Columns = []string{
 	FieldActionMessage,
 	FieldDataLocation,
 	FieldAccountID,
-	FieldAccountPassword,
 	FieldCreatedAt,
 }
 
@@ -196,11 +193,6 @@ func ByDataLocation(opts ...sql.OrderTermOption) OrderOption {
 // ByAccountID orders the results by the account_id field.
 func ByAccountID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAccountID, opts...).ToFunc()
-}
-
-// ByAccountPassword orders the results by the account_password field.
-func ByAccountPassword(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAccountPassword, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

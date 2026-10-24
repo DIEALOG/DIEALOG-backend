@@ -5,13 +5,13 @@ package ent
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/schema"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -21,7 +21,7 @@ func init() {
 	accountFields := schema.Account{}.Fields()
 	_ = accountFields
 	// accountDescCreatedAt is the schema descriptor for created_at field.
-	accountDescCreatedAt := accountFields[8].Descriptor()
+	accountDescCreatedAt := accountFields[7].Descriptor()
 	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
 	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
 	// accountDescID is the schema descriptor for id field.

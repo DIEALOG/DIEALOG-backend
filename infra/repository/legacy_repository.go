@@ -158,9 +158,6 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	if acc.AccountID != nil {
 		builder.SetAccountID(*acc.AccountID)
 	}
-	if acc.AccountPassword != nil {
-		builder.SetAccountPassword(*acc.AccountPassword)
-	}
 	if len(acc.StakeholderIDs) > 0 {
 		builder.AddStakeholderIDs(acc.StakeholderIDs...)
 	}

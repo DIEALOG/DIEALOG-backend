@@ -11,13 +11,13 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/google/uuid"
 )
 
 const (
@@ -48,7 +48,6 @@ type AccountMutation struct {
 	action_message      *string
 	data_location       *string
 	account_id          *string
-	account_password    *string
 	created_at          *time.Time
 	clearedFields       map[string]struct{}
 	legacy              *uuid.UUID
@@ -433,55 +432,6 @@ func (m *AccountMutation) ResetAccountID() {
 	delete(m.clearedFields, account.FieldAccountID)
 }
 
-// SetAccountPassword sets the "account_password" field.
-func (m *AccountMutation) SetAccountPassword(s string) {
-	m.account_password = &s
-}
-
-// AccountPassword returns the value of the "account_password" field in the mutation.
-func (m *AccountMutation) AccountPassword() (r string, exists bool) {
-	v := m.account_password
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAccountPassword returns the old "account_password" field's value of the Account entity.
-// If the Account object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldAccountPassword(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAccountPassword is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAccountPassword requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAccountPassword: %w", err)
-	}
-	return oldValue.AccountPassword, nil
-}
-
-// ClearAccountPassword clears the value of the "account_password" field.
-func (m *AccountMutation) ClearAccountPassword() {
-	m.account_password = nil
-	m.clearedFields[account.FieldAccountPassword] = struct{}{}
-}
-
-// AccountPasswordCleared returns if the "account_password" field was cleared in this mutation.
-func (m *AccountMutation) AccountPasswordCleared() bool {
-	_, ok := m.clearedFields[account.FieldAccountPassword]
-	return ok
-}
-
-// ResetAccountPassword resets all changes to the "account_password" field.
-func (m *AccountMutation) ResetAccountPassword() {
-	m.account_password = nil
-	delete(m.clearedFields, account.FieldAccountPassword)
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *AccountMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -645,7 +595,7 @@ func (m *AccountMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m._type != nil {
 		fields = append(fields, account.FieldType)
 	}
@@ -663,9 +613,6 @@ func (m *AccountMutation) Fields() []string {
 	}
 	if m.account_id != nil {
 		fields = append(fields, account.FieldAccountID)
-	}
-	if m.account_password != nil {
-		fields = append(fields, account.FieldAccountPassword)
 	}
 	if m.created_at != nil {
 		fields = append(fields, account.FieldCreatedAt)
@@ -690,8 +637,6 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 		return m.DataLocation()
 	case account.FieldAccountID:
 		return m.AccountID()
-	case account.FieldAccountPassword:
-		return m.AccountPassword()
 	case account.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -715,8 +660,6 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDataLocation(ctx)
 	case account.FieldAccountID:
 		return m.OldAccountID(ctx)
-	case account.FieldAccountPassword:
-		return m.OldAccountPassword(ctx)
 	case account.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -770,13 +713,6 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAccountID(v)
 		return nil
-	case account.FieldAccountPassword:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAccountPassword(v)
-		return nil
 	case account.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -826,9 +762,6 @@ func (m *AccountMutation) ClearedFields() []string {
 	if m.FieldCleared(account.FieldAccountID) {
 		fields = append(fields, account.FieldAccountID)
 	}
-	if m.FieldCleared(account.FieldAccountPassword) {
-		fields = append(fields, account.FieldAccountPassword)
-	}
 	return fields
 }
 
@@ -855,9 +788,6 @@ func (m *AccountMutation) ClearField(name string) error {
 	case account.FieldAccountID:
 		m.ClearAccountID()
 		return nil
-	case account.FieldAccountPassword:
-		m.ClearAccountPassword()
-		return nil
 	}
 	return fmt.Errorf("unknown Account nullable field %s", name)
 }
@@ -883,9 +813,6 @@ func (m *AccountMutation) ResetField(name string) error {
 		return nil
 	case account.FieldAccountID:
 		m.ResetAccountID()
-		return nil
-	case account.FieldAccountPassword:
-		m.ResetAccountPassword()
 		return nil
 	case account.FieldCreatedAt:
 		m.ResetCreatedAt()

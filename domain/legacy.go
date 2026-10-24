@@ -13,17 +13,37 @@ type Legacy struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type CreateAccountRequest struct {
+	Type            AccountType   `json:"type" validate:"required"`
+	Name            string        `json:"name" validate:"required"`
+	AccountID       *string       `json:"account_id,omitempty"`
+	AccountPassword *string       `json:"account_password,omitempty"`
+	DataLocation    *string       `json:"data_location,omitempty"`
+	StakeholderIDs  []ID          `json:"stakeholder_ids,omitempty"`
+	Action          AccountAction `json:"action" validate:"required"`
+}
+
+type UpdateAccountRequest struct {
+	Type            AccountType   `json:"type" validate:"required"`
+	Name            string        `json:"name" validate:"required"`
+	AccountID       *string       `json:"account_id,omitempty"`
+	AccountPassword *string       `json:"account_password,omitempty"`
+	DataLocation    *string       `json:"data_location,omitempty"`
+	StakeholderIDs  []ID          `json:"stakeholder_ids,omitempty"`
+	Action          AccountAction `json:"action" validate:"required"`
+}
+
 type Account struct {
-	ID              ID            `json:"id"`
-	LegacyID        ID            `json:"legacy_id"`
-	Type            AccountType   `json:"type"`
-	AccountID       *string       `form:"account_id" json:"account_id,omitempty"`
-	AccountPassword *string       `form:"account_password" json:"account_password,omitempty"`
-	DataLocation    *string       `form:"data_location" json:"data_location,omitempty"`
-	StakeholderIDs  []ID          `form:"stakeholder_ids" json:"stakeholder_ids,omitempty"`
-	Stakeholders    []Stakeholder `json:"stakeholders,omitempty"`
-	Action          AccountAction `json:"action"`
-	CreatedAt       time.Time     `json:"created_at"`
+	ID             ID            `json:"id"`
+	LegacyID       ID            `json:"legacy_id"`
+	Type           AccountType   `json:"type"`
+	Name           string        `json:"name"`
+	AccountID      *string       `json:"account_id,omitempty"`
+	DataLocation   *string       `json:"data_location,omitempty"`
+	StakeholderIDs []ID          `json:"stakeholder_ids,omitempty"`
+	Stakeholders   []Stakeholder `json:"stakeholders,omitempty"`
+	Action         AccountAction `json:"action"`
+	CreatedAt      time.Time     `json:"created_at"`
 }
 
 func (a Account) IsValid() bool {
@@ -58,10 +78,11 @@ type AccountAction struct {
 
 func (a AccountAction) IsValid() bool {
 	switch a.Action {
-	case AccountActionDelete, AccountActionRemain, AccountActionPermissionMove,
-		AccountActionBackupAndDelete, AccountActionOther:
-		return true
-	case "":
+	case AccountActionDelete,
+		AccountActionRemain,
+		AccountActionPermissionMove,
+		AccountActionBackupAndDelete,
+		AccountActionOther:
 		return true
 	default:
 		return false
@@ -110,6 +131,6 @@ type LegacyUseCase interface {
 	GetByID(c context.Context, id *ID, userID *ID) (*Legacy, error)
 	Update(c context.Context, id *ID, name string, userID *ID) (*Legacy, error)
 	Delete(c context.Context, id *ID, userID *ID) error
-	CreateAccount(c context.Context, account *Account, legacyID *ID, userID *ID) (*Account, error)
+	CreateAccount(c context.Context, account *Account, password string, legacyID *ID, userID *ID) (*Account, error)
 	DeleteAccount(c context.Context, accountID *ID, legacyID *ID, userID *ID) error
 }

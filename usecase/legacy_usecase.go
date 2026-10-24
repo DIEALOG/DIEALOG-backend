@@ -10,14 +10,16 @@ import (
 )
 
 type legacyUseCase struct {
-	legacyRepository domain.LegacyRepository
-	contextTimeout   time.Duration
+	legacyRepository  domain.LegacyRepository
+	credentialUseCase domain.CredentialUseCase
+	contextTimeout    time.Duration
 }
 
-func NewLegacyUseCase(legacyRepository domain.LegacyRepository, timeout time.Duration) domain.LegacyUseCase {
+func NewLegacyUseCase(legacyRepository domain.LegacyRepository, credentialUseCase domain.CredentialUseCase, timeout time.Duration) domain.LegacyUseCase {
 	return &legacyUseCase{
-		legacyRepository: legacyRepository,
-		contextTimeout:   timeout,
+		legacyRepository:  legacyRepository,
+		credentialUseCase: credentialUseCase,
+		contextTimeout:    timeout,
 	}
 }
 
@@ -95,13 +97,15 @@ func (lu *legacyUseCase) Delete(c context.Context, id *domain.ID, userID *domain
 	return nil
 }
 
-func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Account, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
+func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Account, password string, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
 	if !account.IsValid() {
 		return nil, domain.NewBadRequestError(errors.New("invalid account: type or action is invalid"))
 	}
 
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
+
+	err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, password)
 
 	acc, err := lu.legacyRepository.CreateAccount(ctx, account, legacyID, userID)
 	if err != nil {
@@ -112,6 +116,18 @@ func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Accoun
 	}
 
 	return acc, nil
+}
+
+func (lu *legacyUseCase) GetAccountPassword(c context.Context, userID *domain.ID, account *domain.Account) (string, error) {
+	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
+	defer cancel()
+
+	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, account.Name)
+	if err != nil {
+		return "", domain.NewInternalServerError(err)
+	}
+
+	return pwd, nil
 }
 
 func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, legacyID *domain.ID, userID *domain.ID) error {

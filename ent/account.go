@@ -9,9 +9,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/google/uuid"
 )
 
 // Account is the model entity for the Account schema.
@@ -31,8 +31,6 @@ type Account struct {
 	DataLocation *string `json:"data_location,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID *string `json:"account_id,omitempty"`
-	// AccountPassword holds the value of the "account_password" field.
-	AccountPassword *string `json:"account_password,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -78,7 +76,7 @@ func (*Account) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case account.FieldType, account.FieldTypeName, account.FieldAction, account.FieldActionMessage, account.FieldDataLocation, account.FieldAccountID, account.FieldAccountPassword:
+		case account.FieldType, account.FieldTypeName, account.FieldAction, account.FieldActionMessage, account.FieldDataLocation, account.FieldAccountID:
 			values[i] = new(sql.NullString)
 		case account.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -146,13 +144,6 @@ func (_m *Account) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AccountID = new(string)
 				*_m.AccountID = value.String
-			}
-		case account.FieldAccountPassword:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field account_password", values[i])
-			} else if value.Valid {
-				_m.AccountPassword = new(string)
-				*_m.AccountPassword = value.String
 			}
 		case account.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -236,11 +227,6 @@ func (_m *Account) String() string {
 	builder.WriteString(", ")
 	if v := _m.AccountID; v != nil {
 		builder.WriteString("account_id=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.AccountPassword; v != nil {
-		builder.WriteString("account_password=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
