@@ -3747,8 +3747,8 @@ type UserMutation struct {
 	id                        *uuid.UUID
 	name                      *string
 	email                     *string
+	phone_number              *string
 	password                  *string
-	testament                 *string
 	created_at                *time.Time
 	clearedFields             map[string]struct{}
 	stakeholders              map[uuid.UUID]struct{}
@@ -3944,6 +3944,42 @@ func (m *UserMutation) ResetEmail() {
 	m.email = nil
 }
 
+// SetPhoneNumber sets the "phone_number" field.
+func (m *UserMutation) SetPhoneNumber(s string) {
+	m.phone_number = &s
+}
+
+// PhoneNumber returns the value of the "phone_number" field in the mutation.
+func (m *UserMutation) PhoneNumber() (r string, exists bool) {
+	v := m.phone_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhoneNumber returns the old "phone_number" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldPhoneNumber(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhoneNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhoneNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhoneNumber: %w", err)
+	}
+	return oldValue.PhoneNumber, nil
+}
+
+// ResetPhoneNumber resets all changes to the "phone_number" field.
+func (m *UserMutation) ResetPhoneNumber() {
+	m.phone_number = nil
+}
+
 // SetPassword sets the "password" field.
 func (m *UserMutation) SetPassword(s string) {
 	m.password = &s
@@ -3978,42 +4014,6 @@ func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
 // ResetPassword resets all changes to the "password" field.
 func (m *UserMutation) ResetPassword() {
 	m.password = nil
-}
-
-// SetTestament sets the "testament" field.
-func (m *UserMutation) SetTestament(s string) {
-	m.testament = &s
-}
-
-// Testament returns the value of the "testament" field in the mutation.
-func (m *UserMutation) Testament() (r string, exists bool) {
-	v := m.testament
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTestament returns the old "testament" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldTestament(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTestament is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTestament requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTestament: %w", err)
-	}
-	return oldValue.Testament, nil
-}
-
-// ResetTestament resets all changes to the "testament" field.
-func (m *UserMutation) ResetTestament() {
-	m.testament = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4309,11 +4309,11 @@ func (m *UserMutation) Fields() []string {
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
+	if m.phone_number != nil {
+		fields = append(fields, user.FieldPhoneNumber)
+	}
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
-	}
-	if m.testament != nil {
-		fields = append(fields, user.FieldTestament)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -4330,10 +4330,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case user.FieldEmail:
 		return m.Email()
+	case user.FieldPhoneNumber:
+		return m.PhoneNumber()
 	case user.FieldPassword:
 		return m.Password()
-	case user.FieldTestament:
-		return m.Testament()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -4349,10 +4349,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldName(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
+	case user.FieldPhoneNumber:
+		return m.OldPhoneNumber(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
-	case user.FieldTestament:
-		return m.OldTestament(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -4378,19 +4378,19 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEmail(v)
 		return nil
+	case user.FieldPhoneNumber:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhoneNumber(v)
+		return nil
 	case user.FieldPassword:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPassword(v)
-		return nil
-	case user.FieldTestament:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTestament(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4454,11 +4454,11 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldEmail:
 		m.ResetEmail()
 		return nil
+	case user.FieldPhoneNumber:
+		m.ResetPhoneNumber()
+		return nil
 	case user.FieldPassword:
 		m.ResetPassword()
-		return nil
-	case user.FieldTestament:
-		m.ResetTestament()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

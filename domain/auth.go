@@ -8,9 +8,10 @@ type LoginRequest struct {
 }
 
 type SignupRequest struct {
-	Name     string `form:"name" binding:"required"`
-	Email    string `form:"email" binding:"required,email"`
-	Password string `form:"password" binding:"required"`
+	Name        string `form:"name" binding:"required"`
+	Email       string `form:"email" binding:"required,email"`
+	Password    string `form:"password" binding:"required"`
+	PhoneNumber string `form:"phone_number" binding:"required,phone_number"`
 }
 
 type RefreshTokenRequest struct {
@@ -23,7 +24,7 @@ type AuthResponse struct {
 }
 
 type AuthUseCase interface {
-	Register(c context.Context, name, email, password string) (*User, error)
+	Register(c context.Context, name, email, password, phoneNumber string) (*User, error)
 	Login(c context.Context, email, password string) (*User, error)
 	CreateAccessAndRefreshToken(c context.Context, user *User) (string, string, error)
 	ExtractUserFromRefreshToken(c context.Context, requestToken string) (*User, error)

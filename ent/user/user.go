@@ -19,10 +19,10 @@ const (
 	FieldName = "name"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldPhoneNumber holds the string denoting the phone_number field in the database.
+	FieldPhoneNumber = "phone_number"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
-	// FieldTestament holds the string denoting the testament field in the database.
-	FieldTestament = "testament"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
@@ -70,8 +70,8 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldEmail,
+	FieldPhoneNumber,
 	FieldPassword,
-	FieldTestament,
 	FieldCreatedAt,
 }
 
@@ -90,10 +90,10 @@ var (
 	NameValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
+	// PhoneNumberValidator is a validator for the "phone_number" field. It is called by the builders before save.
+	PhoneNumberValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
-	// DefaultTestament holds the default value on creation for the "testament" field.
-	DefaultTestament string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -118,14 +118,14 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
 }
 
+// ByPhoneNumber orders the results by the phone_number field.
+func ByPhoneNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneNumber, opts...).ToFunc()
+}
+
 // ByPassword orders the results by the password field.
 func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
-}
-
-// ByTestament orders the results by the testament field.
-func ByTestament(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTestament, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

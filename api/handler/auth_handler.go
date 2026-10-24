@@ -120,7 +120,7 @@ func Signup(service domain.AuthUseCase) fiber.Handler {
 			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
 		}
 
-		user, err := service.Register(ctx, request.Name, request.Email, request.Password)
+		user, err := service.Register(ctx, request.Name, request.Email, request.Password, request.PhoneNumber)
 		if err != nil {
 			return RespondError(c, err)
 		}

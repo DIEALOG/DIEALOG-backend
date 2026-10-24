@@ -19,9 +19,10 @@ func TestCreate(t *testing.T) {
 	repo := repository.NewUserRepository(client)
 
 	user, err := repo.Create(context.Background(), &domain.User{
-		Name:     "hanul",
-		Email:    "hanul@gmail.com",
-		Password: "123456",
+		Name:        "hanul",
+		Email:       "hanul@gmail.com",
+		Password:    "123456",
+		PhoneNumber: "123456789",
 	})
 
 	assert.NoError(t, err)

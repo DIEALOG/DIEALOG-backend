@@ -37,23 +37,15 @@ func (_c *UserCreate) SetEmail(v string) *UserCreate {
 	return _c
 }
 
+// SetPhoneNumber sets the "phone_number" field.
+func (_c *UserCreate) SetPhoneNumber(v string) *UserCreate {
+	_c.mutation.SetPhoneNumber(v)
+	return _c
+}
+
 // SetPassword sets the "password" field.
 func (_c *UserCreate) SetPassword(v string) *UserCreate {
 	_c.mutation.SetPassword(v)
-	return _c
-}
-
-// SetTestament sets the "testament" field.
-func (_c *UserCreate) SetTestament(v string) *UserCreate {
-	_c.mutation.SetTestament(v)
-	return _c
-}
-
-// SetNillableTestament sets the "testament" field if the given value is not nil.
-func (_c *UserCreate) SetNillableTestament(v *string) *UserCreate {
-	if v != nil {
-		_c.SetTestament(*v)
-	}
 	return _c
 }
 
@@ -180,10 +172,6 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
-	if _, ok := _c.mutation.Testament(); !ok {
-		v := user.DefaultTestament
-		_c.mutation.SetTestament(v)
-	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -212,6 +200,14 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.PhoneNumber(); !ok {
+		return &ValidationError{Name: "phone_number", err: errors.New(`ent: missing required field "User.phone_number"`)}
+	}
+	if v, ok := _c.mutation.PhoneNumber(); ok {
+		if err := user.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`ent: validator failed for field "User.phone_number": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
 	}
@@ -219,9 +215,6 @@ func (_c *UserCreate) check() error {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.Testament(); !ok {
-		return &ValidationError{Name: "testament", err: errors.New(`ent: missing required field "User.testament"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -269,13 +262,13 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
 	}
+	if value, ok := _c.mutation.PhoneNumber(); ok {
+		_spec.SetField(user.FieldPhoneNumber, field.TypeString, value)
+		_node.PhoneNumber = value
+	}
 	if value, ok := _c.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 		_node.Password = value
-	}
-	if value, ok := _c.mutation.Testament(); ok {
-		_spec.SetField(user.FieldTestament, field.TypeString, value)
-		_node.Testament = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

@@ -142,8 +142,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
-		{Name: "testament", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.

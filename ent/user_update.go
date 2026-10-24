@@ -60,6 +60,20 @@ func (_u *UserUpdate) SetNillableEmail(v *string) *UserUpdate {
 	return _u
 }
 
+// SetPhoneNumber sets the "phone_number" field.
+func (_u *UserUpdate) SetPhoneNumber(v string) *UserUpdate {
+	_u.mutation.SetPhoneNumber(v)
+	return _u
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (_u *UserUpdate) SetNillablePhoneNumber(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetPhoneNumber(*v)
+	}
+	return _u
+}
+
 // SetPassword sets the "password" field.
 func (_u *UserUpdate) SetPassword(v string) *UserUpdate {
 	_u.mutation.SetPassword(v)
@@ -70,20 +84,6 @@ func (_u *UserUpdate) SetPassword(v string) *UserUpdate {
 func (_u *UserUpdate) SetNillablePassword(v *string) *UserUpdate {
 	if v != nil {
 		_u.SetPassword(*v)
-	}
-	return _u
-}
-
-// SetTestament sets the "testament" field.
-func (_u *UserUpdate) SetTestament(v string) *UserUpdate {
-	_u.mutation.SetTestament(v)
-	return _u
-}
-
-// SetNillableTestament sets the "testament" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableTestament(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetTestament(*v)
 	}
 	return _u
 }
@@ -276,6 +276,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.PhoneNumber(); ok {
+		if err := user.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`ent: validator failed for field "User.phone_number": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
@@ -302,11 +307,11 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.PhoneNumber(); ok {
+		_spec.SetField(user.FieldPhoneNumber, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Testament(); ok {
-		_spec.SetField(user.FieldTestament, field.TypeString, value)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -536,6 +541,20 @@ func (_u *UserUpdateOne) SetNillableEmail(v *string) *UserUpdateOne {
 	return _u
 }
 
+// SetPhoneNumber sets the "phone_number" field.
+func (_u *UserUpdateOne) SetPhoneNumber(v string) *UserUpdateOne {
+	_u.mutation.SetPhoneNumber(v)
+	return _u
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillablePhoneNumber(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetPhoneNumber(*v)
+	}
+	return _u
+}
+
 // SetPassword sets the "password" field.
 func (_u *UserUpdateOne) SetPassword(v string) *UserUpdateOne {
 	_u.mutation.SetPassword(v)
@@ -546,20 +565,6 @@ func (_u *UserUpdateOne) SetPassword(v string) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillablePassword(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetPassword(*v)
-	}
-	return _u
-}
-
-// SetTestament sets the "testament" field.
-func (_u *UserUpdateOne) SetTestament(v string) *UserUpdateOne {
-	_u.mutation.SetTestament(v)
-	return _u
-}
-
-// SetNillableTestament sets the "testament" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableTestament(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetTestament(*v)
 	}
 	return _u
 }
@@ -765,6 +770,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.PhoneNumber(); ok {
+		if err := user.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`ent: validator failed for field "User.phone_number": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
@@ -808,11 +818,11 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.PhoneNumber(); ok {
+		_spec.SetField(user.FieldPhoneNumber, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Testament(); ok {
-		_spec.SetField(user.FieldTestament, field.TypeString, value)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{

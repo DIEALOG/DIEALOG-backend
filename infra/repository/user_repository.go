@@ -22,11 +22,8 @@ func (r *userRepository) Create(c context.Context, u *domain.User) (*domain.User
 	create := r.client.User.Create().
 		SetName(u.Name).
 		SetEmail(u.Email).
-		SetPassword(u.Password)
-
-	if u.Testament != "" {
-		create.SetTestament(u.Testament)
-	}
+		SetPassword(u.Password).
+		SetPhoneNumber(u.PhoneNumber)
 
 	saved, err := create.Save(c)
 	if err != nil {
@@ -70,10 +67,4 @@ func (r *userRepository) FindByID(c context.Context, id *domain.ID) (*domain.Use
 	}
 
 	return toDomainUser(u), err
-}
-
-func (r *userRepository) UpdateTestament(c context.Context, id *domain.ID, testament string) error {
-	return r.client.User.UpdateOneID(*id).
-		SetTestament(testament).
-		Exec(c)
 }

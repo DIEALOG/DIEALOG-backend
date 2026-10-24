@@ -103,14 +103,14 @@ func init() {
 	userDescEmail := userFields[2].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	// userDescPhoneNumber is the schema descriptor for phone_number field.
+	userDescPhoneNumber := userFields[3].Descriptor()
+	// user.PhoneNumberValidator is a validator for the "phone_number" field. It is called by the builders before save.
+	user.PhoneNumberValidator = userDescPhoneNumber.Validators[0].(func(string) error)
 	// userDescPassword is the schema descriptor for password field.
-	userDescPassword := userFields[3].Descriptor()
+	userDescPassword := userFields[4].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
-	// userDescTestament is the schema descriptor for testament field.
-	userDescTestament := userFields[4].Descriptor()
-	// user.DefaultTestament holds the default value on creation for the testament field.
-	user.DefaultTestament = userDescTestament.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.

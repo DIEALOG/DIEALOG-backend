@@ -66,14 +66,14 @@ func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
 }
 
+// PhoneNumber applies equality check predicate on the "phone_number" field. It's identical to PhoneNumberEQ.
+func PhoneNumber(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPhoneNumber, v))
+}
+
 // Password applies equality check predicate on the "password" field. It's identical to PasswordEQ.
 func Password(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPassword, v))
-}
-
-// Testament applies equality check predicate on the "testament" field. It's identical to TestamentEQ.
-func Testament(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTestament, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -211,6 +211,71 @@ func EmailContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldEmail, v))
 }
 
+// PhoneNumberEQ applies the EQ predicate on the "phone_number" field.
+func PhoneNumberEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPhoneNumber, v))
+}
+
+// PhoneNumberNEQ applies the NEQ predicate on the "phone_number" field.
+func PhoneNumberNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPhoneNumber, v))
+}
+
+// PhoneNumberIn applies the In predicate on the "phone_number" field.
+func PhoneNumberIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPhoneNumber, vs...))
+}
+
+// PhoneNumberNotIn applies the NotIn predicate on the "phone_number" field.
+func PhoneNumberNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPhoneNumber, vs...))
+}
+
+// PhoneNumberGT applies the GT predicate on the "phone_number" field.
+func PhoneNumberGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPhoneNumber, v))
+}
+
+// PhoneNumberGTE applies the GTE predicate on the "phone_number" field.
+func PhoneNumberGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPhoneNumber, v))
+}
+
+// PhoneNumberLT applies the LT predicate on the "phone_number" field.
+func PhoneNumberLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPhoneNumber, v))
+}
+
+// PhoneNumberLTE applies the LTE predicate on the "phone_number" field.
+func PhoneNumberLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPhoneNumber, v))
+}
+
+// PhoneNumberContains applies the Contains predicate on the "phone_number" field.
+func PhoneNumberContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldPhoneNumber, v))
+}
+
+// PhoneNumberHasPrefix applies the HasPrefix predicate on the "phone_number" field.
+func PhoneNumberHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldPhoneNumber, v))
+}
+
+// PhoneNumberHasSuffix applies the HasSuffix predicate on the "phone_number" field.
+func PhoneNumberHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldPhoneNumber, v))
+}
+
+// PhoneNumberEqualFold applies the EqualFold predicate on the "phone_number" field.
+func PhoneNumberEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldPhoneNumber, v))
+}
+
+// PhoneNumberContainsFold applies the ContainsFold predicate on the "phone_number" field.
+func PhoneNumberContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldPhoneNumber, v))
+}
+
 // PasswordEQ applies the EQ predicate on the "password" field.
 func PasswordEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPassword, v))
@@ -274,71 +339,6 @@ func PasswordEqualFold(v string) predicate.User {
 // PasswordContainsFold applies the ContainsFold predicate on the "password" field.
 func PasswordContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldPassword, v))
-}
-
-// TestamentEQ applies the EQ predicate on the "testament" field.
-func TestamentEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTestament, v))
-}
-
-// TestamentNEQ applies the NEQ predicate on the "testament" field.
-func TestamentNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldTestament, v))
-}
-
-// TestamentIn applies the In predicate on the "testament" field.
-func TestamentIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldTestament, vs...))
-}
-
-// TestamentNotIn applies the NotIn predicate on the "testament" field.
-func TestamentNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldTestament, vs...))
-}
-
-// TestamentGT applies the GT predicate on the "testament" field.
-func TestamentGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldTestament, v))
-}
-
-// TestamentGTE applies the GTE predicate on the "testament" field.
-func TestamentGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldTestament, v))
-}
-
-// TestamentLT applies the LT predicate on the "testament" field.
-func TestamentLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldTestament, v))
-}
-
-// TestamentLTE applies the LTE predicate on the "testament" field.
-func TestamentLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldTestament, v))
-}
-
-// TestamentContains applies the Contains predicate on the "testament" field.
-func TestamentContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldTestament, v))
-}
-
-// TestamentHasPrefix applies the HasPrefix predicate on the "testament" field.
-func TestamentHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldTestament, v))
-}
-
-// TestamentHasSuffix applies the HasSuffix predicate on the "testament" field.
-func TestamentHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldTestament, v))
-}
-
-// TestamentEqualFold applies the EqualFold predicate on the "testament" field.
-func TestamentEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldTestament, v))
-}
-
-// TestamentContainsFold applies the ContainsFold predicate on the "testament" field.
-func TestamentContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldTestament, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

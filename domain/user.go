@@ -10,6 +10,7 @@ type User struct {
 	Name              string             `json:"name"`
 	Email             string             `json:"email"`
 	Password          string             `json:"-"`
+	PhoneNumber       string             `json:"phone_number"`
 	Stakeholders      []Stakeholder      `json:"stakeholders,omitempty"`
 	StakeholderGroups []StakeholderGroup `json:"stakeholder_groups,omitempty"`
 	Testament         string             `json:"testament"`
@@ -70,7 +71,6 @@ type UserRepository interface {
 	FindAll(c context.Context) ([]*User, error)
 	FindByEmail(c context.Context, email string) (*User, error)
 	FindByID(c context.Context, id *ID) (*User, error)
-	UpdateTestament(c context.Context, id *ID, testament string) error
 }
 
 type StakeholderRepository interface {

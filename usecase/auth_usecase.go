@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"regexp"
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/config"
@@ -23,15 +24,20 @@ func NewAuthUseCase(userRepository domain.UserRepository, timeout time.Duration)
 	}
 }
 
-func (u *authUseCase) Register(c context.Context, name, email, password string) (*domain.User, error) {
+func (u *authUseCase) Register(c context.Context, name, email, password, phoneNumber string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
+
+	var phoneRegex = regexp.MustCompile(`^01[016789]-?\d{3,4}-?\d{4}$`)
 
 	if name == "" {
 		return nil, domain.NewBadRequestError(errors.New("name is required"))
 	}
 	if email == "" {
 		return nil, domain.NewBadRequestError(errors.New("email is required"))
+	}
+	if phoneNumber == "" || !phoneRegex.MatchString(phoneNumber) {
+		return nil, domain.NewBadRequestError(errors.New("invalid phone number"))
 	}
 	if password == "" {
 		return nil, domain.NewBadRequestError(errors.New("password is required"))
@@ -51,9 +57,10 @@ func (u *authUseCase) Register(c context.Context, name, email, password string) 
 	}
 
 	user, err := u.userRepository.Create(ctx, &domain.User{
-		Name:     name,
-		Email:    email,
-		Password: string(encrypted),
+		Name:        name,
+		Email:       email,
+		Password:    string(encrypted),
+		PhoneNumber: phoneNumber,
 	})
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)

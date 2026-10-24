@@ -22,10 +22,10 @@ type User struct {
 	Name string `json:"name,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// PhoneNumber holds the value of the "phone_number" field.
+	PhoneNumber string `json:"phone_number,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
-	// Testament holds the value of the "testament" field.
-	Testament string `json:"testament,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -90,7 +90,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldTestament:
+		case user.FieldName, user.FieldEmail, user.FieldPhoneNumber, user.FieldPassword:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -129,17 +129,17 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Email = value.String
 			}
+		case user.FieldPhoneNumber:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_number", values[i])
+			} else if value.Valid {
+				_m.PhoneNumber = value.String
+			}
 		case user.FieldPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
 			} else if value.Valid {
 				_m.Password = value.String
-			}
-		case user.FieldTestament:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field testament", values[i])
-			} else if value.Valid {
-				_m.Testament = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -209,11 +209,11 @@ func (_m *User) String() string {
 	builder.WriteString("email=")
 	builder.WriteString(_m.Email)
 	builder.WriteString(", ")
+	builder.WriteString("phone_number=")
+	builder.WriteString(_m.PhoneNumber)
+	builder.WriteString(", ")
 	builder.WriteString("password=")
 	builder.WriteString(_m.Password)
-	builder.WriteString(", ")
-	builder.WriteString("testament=")
-	builder.WriteString(_m.Testament)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

@@ -24,10 +24,11 @@ func (User) Fields() []ent.Field {
 		field.String("email").
 			Unique().
 			NotEmpty(),
+		field.String("phone_number").
+			Unique().
+			NotEmpty(),
 		field.String("password").
 			NotEmpty(),
-		field.String("testament").
-			Default(""),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
