@@ -1,0 +1,44 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy to server
+    runs-on: [ self-hosted, Linux, X64 ]
+
+    env:
+      DEPLOY_DIR: /home/hello/deploy/diealog-backend
+      COMPOSE_PROJECT_NAME: diealog-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and restart containers
+        run: |
+          docker compose \
+            -f docker-compose.yaml \
+            -f "$DEPLOY_DIR/docker-compose.override.yaml" \
+            up -d --build --remove-orphans
+
+      - name: Wait for the API to respond
+        run: |
+          for i in $(seq 1 45); do
+            code=$(curl -s -o /dev/null -m 3 -w '%{http_code}' http://127.0.0.1:8080/api/ || true)
+            if [ -n "$code" ] && [ "$code" != "000" ]; then
+              echo "API responded with HTTP $code"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not respond within 90s"
+          docker compose -p "$COMPOSE_PROJECT_NAME" logs --tail 80 api
+          exit 1
