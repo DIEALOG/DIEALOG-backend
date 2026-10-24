@@ -27,6 +27,10 @@ func (lu *legacyUseCase) Create(c context.Context, legacy *domain.Legacy, userID
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
+	if legacy.Name == "" {
+		return nil, domain.NewBadRequestError(errors.New("name is required"))
+	}
+
 	l, err := lu.legacyRepository.Create(ctx, legacy, userID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
@@ -95,6 +99,10 @@ func (lu *legacyUseCase) Delete(c context.Context, id *domain.ID, userID *domain
 func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Account, password *string, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
 	if !account.IsValid() {
 		return nil, domain.NewBadRequestError(errors.New("invalid account: type or action is invalid"))
+	}
+
+	if account.Name == "" {
+		return nil, domain.NewBadRequestError(errors.New("invalid account: name is required"))
 	}
 
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)

@@ -27,6 +27,16 @@ func (u *authUseCase) Register(c context.Context, name, email, password string) 
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
+	if name == "" {
+		return nil, domain.NewBadRequestError(errors.New("name is required"))
+	}
+	if email == "" {
+		return nil, domain.NewBadRequestError(errors.New("email is required"))
+	}
+	if password == "" {
+		return nil, domain.NewBadRequestError(errors.New("password is required"))
+	}
+
 	_, err := u.userRepository.FindByEmail(ctx, email)
 	if err == nil {
 		return nil, domain.NewBadRequestError(err)
