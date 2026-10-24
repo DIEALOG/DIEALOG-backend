@@ -116,7 +116,7 @@ func (pu *profileUseCase) UpdateProfileImage(c context.Context, userID *domain.I
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	imagePath := fmt.Sprintf("/static/profiles/%s", filename)
+	imagePath := fmt.Sprintf("/public/profiles/%s", filename)
 
 	user, err := pu.userRepository.FindByID(c, userID)
 	if err != nil {
