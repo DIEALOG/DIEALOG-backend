@@ -12,7 +12,6 @@ func toDomainUser(entity *ent.User) *domain.User {
 		Name:      entity.Name,
 		Email:     entity.Email,
 		Password:  entity.Password,
-		Testament: entity.Testament,
 		CreatedAt: entity.CreatedAt,
 	}
 
