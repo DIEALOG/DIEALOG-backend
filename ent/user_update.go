@@ -88,6 +88,20 @@ func (_u *UserUpdate) SetNillablePassword(v *string) *UserUpdate {
 	return _u
 }
 
+// SetProfileImagePath sets the "profile_image_path" field.
+func (_u *UserUpdate) SetProfileImagePath(v string) *UserUpdate {
+	_u.mutation.SetProfileImagePath(v)
+	return _u
+}
+
+// SetNillableProfileImagePath sets the "profile_image_path" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableProfileImagePath(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetProfileImagePath(*v)
+	}
+	return _u
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *UserUpdate) AddStakeholderIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -312,6 +326,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ProfileImagePath(); ok {
+		_spec.SetField(user.FieldProfileImagePath, field.TypeString, value)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -565,6 +582,20 @@ func (_u *UserUpdateOne) SetPassword(v string) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillablePassword(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetPassword(*v)
+	}
+	return _u
+}
+
+// SetProfileImagePath sets the "profile_image_path" field.
+func (_u *UserUpdateOne) SetProfileImagePath(v string) *UserUpdateOne {
+	_u.mutation.SetProfileImagePath(v)
+	return _u
+}
+
+// SetNillableProfileImagePath sets the "profile_image_path" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableProfileImagePath(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetProfileImagePath(*v)
 	}
 	return _u
 }
@@ -823,6 +854,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ProfileImagePath(); ok {
+		_spec.SetField(user.FieldProfileImagePath, field.TypeString, value)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{

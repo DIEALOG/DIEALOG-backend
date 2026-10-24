@@ -12,4 +12,5 @@ func NewProfileRouter(app fiber.Router, service domain.ProfileUseCase) {
 	protected := app.Group("protected")
 	protected.Use(middleware.JwtMiddleware)
 	protected.Get("/", handler.FetchProfile(service))
+	protected.Put("/image", handler.UpdateProfileImage(service))
 }

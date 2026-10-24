@@ -8,11 +8,12 @@ import (
 
 func toDomainUser(entity *ent.User) *domain.User {
 	u := &domain.User{
-		ID:        entity.ID,
-		Name:      entity.Name,
-		Email:     entity.Email,
-		Password:  entity.Password,
-		CreatedAt: entity.CreatedAt,
+		ID:               entity.ID,
+		Name:             entity.Name,
+		Email:            entity.Email,
+		Password:         entity.Password,
+		ProfileImagePath: entity.ProfileImagePath,
+		CreatedAt:        entity.CreatedAt,
 	}
 
 	if entity.Edges.Stakeholders != nil {

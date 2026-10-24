@@ -49,6 +49,12 @@ func (_c *UserCreate) SetPassword(v string) *UserCreate {
 	return _c
 }
 
+// SetProfileImagePath sets the "profile_image_path" field.
+func (_c *UserCreate) SetProfileImagePath(v string) *UserCreate {
+	_c.mutation.SetProfileImagePath(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -216,6 +222,9 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.ProfileImagePath(); !ok {
+		return &ValidationError{Name: "profile_image_path", err: errors.New(`ent: missing required field "User.profile_image_path"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
 	}
@@ -269,6 +278,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 		_node.Password = value
+	}
+	if value, ok := _c.mutation.ProfileImagePath(); ok {
+		_spec.SetField(user.FieldProfileImagePath, field.TypeString, value)
+		_node.ProfileImagePath = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

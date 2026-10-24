@@ -23,6 +23,8 @@ const (
 	FieldPhoneNumber = "phone_number"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldProfileImagePath holds the string denoting the profile_image_path field in the database.
+	FieldProfileImagePath = "profile_image_path"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeStakeholders holds the string denoting the stakeholders edge name in mutations.
@@ -72,6 +74,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPhoneNumber,
 	FieldPassword,
+	FieldProfileImagePath,
 	FieldCreatedAt,
 }
 
@@ -126,6 +129,11 @@ func ByPhoneNumber(opts ...sql.OrderTermOption) OrderOption {
 // ByPassword orders the results by the password field.
 func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
+}
+
+// ByProfileImagePath orders the results by the profile_image_path field.
+func ByProfileImagePath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProfileImagePath, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

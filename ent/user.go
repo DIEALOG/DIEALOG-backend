@@ -26,6 +26,8 @@ type User struct {
 	PhoneNumber string `json:"phone_number,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
+	// ProfileImagePath holds the value of the "profile_image_path" field.
+	ProfileImagePath *string `json:"profile_image_path,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -90,7 +92,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldName, user.FieldEmail, user.FieldPhoneNumber, user.FieldPassword:
+		case user.FieldName, user.FieldEmail, user.FieldPhoneNumber, user.FieldPassword, user.FieldProfileImagePath:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -140,6 +142,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
 			} else if value.Valid {
 				_m.Password = value.String
+			}
+		case user.FieldProfileImagePath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field profile_image_path", values[i])
+			} else if value.Valid {
+				_m.ProfileImagePath = new(string)
+				*_m.ProfileImagePath = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -214,6 +223,11 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("password=")
 	builder.WriteString(_m.Password)
+	builder.WriteString(", ")
+	if v := _m.ProfileImagePath; v != nil {
+		builder.WriteString("profile_image_path=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

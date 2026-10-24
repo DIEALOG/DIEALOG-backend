@@ -3749,6 +3749,7 @@ type UserMutation struct {
 	email                     *string
 	phone_number              *string
 	password                  *string
+	profile_image_path        *string
 	created_at                *time.Time
 	clearedFields             map[string]struct{}
 	stakeholders              map[uuid.UUID]struct{}
@@ -4014,6 +4015,42 @@ func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
 // ResetPassword resets all changes to the "password" field.
 func (m *UserMutation) ResetPassword() {
 	m.password = nil
+}
+
+// SetProfileImagePath sets the "profile_image_path" field.
+func (m *UserMutation) SetProfileImagePath(s string) {
+	m.profile_image_path = &s
+}
+
+// ProfileImagePath returns the value of the "profile_image_path" field in the mutation.
+func (m *UserMutation) ProfileImagePath() (r string, exists bool) {
+	v := m.profile_image_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfileImagePath returns the old "profile_image_path" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldProfileImagePath(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProfileImagePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProfileImagePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfileImagePath: %w", err)
+	}
+	return oldValue.ProfileImagePath, nil
+}
+
+// ResetProfileImagePath resets all changes to the "profile_image_path" field.
+func (m *UserMutation) ResetProfileImagePath() {
+	m.profile_image_path = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4302,7 +4339,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
@@ -4314,6 +4351,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
+	}
+	if m.profile_image_path != nil {
+		fields = append(fields, user.FieldProfileImagePath)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -4334,6 +4374,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PhoneNumber()
 	case user.FieldPassword:
 		return m.Password()
+	case user.FieldProfileImagePath:
+		return m.ProfileImagePath()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -4353,6 +4395,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPhoneNumber(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
+	case user.FieldProfileImagePath:
+		return m.OldProfileImagePath(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -4391,6 +4435,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPassword(v)
+		return nil
+	case user.FieldProfileImagePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProfileImagePath(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4459,6 +4510,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldPassword:
 		m.ResetPassword()
+		return nil
+	case user.FieldProfileImagePath:
+		m.ResetProfileImagePath()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

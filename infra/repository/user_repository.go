@@ -68,3 +68,28 @@ func (r *userRepository) FindByID(c context.Context, id *domain.ID) (*domain.Use
 
 	return toDomainUser(u), err
 }
+
+func (r *userRepository) Update(c context.Context, u *domain.User) (*domain.User, error) {
+	exist, err := r.client.User.Query().Where(
+		user.IDEQ(u.ID),
+	).Exist(c)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, &ent.NotFoundError{}
+	}
+
+	updated, err := r.client.User.UpdateOneID(u.ID).
+		SetName(u.Name).
+		SetEmail(u.Email).
+		SetPassword(u.Password).
+		SetPhoneNumber(u.PhoneNumber).
+		SetNillableProfileImagePath(u.ProfileImagePath).
+		Save(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainUser(updated), nil
+}

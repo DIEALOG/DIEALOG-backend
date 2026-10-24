@@ -25,6 +25,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
+	"github.com/gofiber/fiber/v3/middleware/static"
 )
 
 // @title          DIEALOG Backend API
@@ -127,6 +128,8 @@ func main() {
 			"error":  notFoundErr.Error(),
 		})
 	})
+
+	app.Get("/*", static.New("./public"))
 
 	log.Fatal(app.Listen(config.E.ServerAddress))
 }
