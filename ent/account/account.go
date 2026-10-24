@@ -20,6 +20,8 @@ const (
 	FieldType = "type"
 	// FieldTypeName holds the string denoting the type_name field in the database.
 	FieldTypeName = "type_name"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldAction holds the string denoting the action field in the database.
 	FieldAction = "action"
 	// FieldActionMessage holds the string denoting the action_message field in the database.
@@ -55,6 +57,7 @@ var Columns = []string{
 	FieldID,
 	FieldType,
 	FieldTypeName,
+	FieldName,
 	FieldAction,
 	FieldActionMessage,
 	FieldDataLocation,
@@ -90,6 +93,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -173,6 +178,11 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByTypeName orders the results by the type_name field.
 func ByTypeName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeName, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByAction orders the results by the action field.

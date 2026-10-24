@@ -20,8 +20,12 @@ import (
 func init() {
 	accountFields := schema.Account{}.Fields()
 	_ = accountFields
+	// accountDescName is the schema descriptor for name field.
+	accountDescName := accountFields[3].Descriptor()
+	// account.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	account.NameValidator = accountDescName.Validators[0].(func(string) error)
 	// accountDescCreatedAt is the schema descriptor for created_at field.
-	accountDescCreatedAt := accountFields[7].Descriptor()
+	accountDescCreatedAt := accountFields[8].Descriptor()
 	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
 	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
 	// accountDescID is the schema descriptor for id field.

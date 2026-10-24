@@ -63,6 +63,20 @@ func (_u *AccountUpdate) ClearTypeName() *AccountUpdate {
 	return _u
 }
 
+// SetName sets the "name" field.
+func (_u *AccountUpdate) SetName(v string) *AccountUpdate {
+	_u.mutation.SetName(v)
+	return _u
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableName(v *string) *AccountUpdate {
+	if v != nil {
+		_u.SetName(*v)
+	}
+	return _u
+}
+
 // SetAction sets the "action" field.
 func (_u *AccountUpdate) SetAction(v account.Action) *AccountUpdate {
 	_u.mutation.SetAction(v)
@@ -212,6 +226,11 @@ func (_u *AccountUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := account.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Account.name": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Action(); ok {
 		if err := account.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Account.action": %w`, err)}
@@ -243,6 +262,9 @@ func (_u *AccountUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TypeNameCleared() {
 		_spec.ClearField(account.FieldTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(account.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(account.FieldAction, field.TypeEnum, value)
@@ -361,6 +383,20 @@ func (_u *AccountUpdateOne) SetNillableTypeName(v *string) *AccountUpdateOne {
 // ClearTypeName clears the value of the "type_name" field.
 func (_u *AccountUpdateOne) ClearTypeName() *AccountUpdateOne {
 	_u.mutation.ClearTypeName()
+	return _u
+}
+
+// SetName sets the "name" field.
+func (_u *AccountUpdateOne) SetName(v string) *AccountUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableName(v *string) *AccountUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
+	}
 	return _u
 }
 
@@ -526,6 +562,11 @@ func (_u *AccountUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := account.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Account.name": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Action(); ok {
 		if err := account.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Account.action": %w`, err)}
@@ -574,6 +615,9 @@ func (_u *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err er
 	}
 	if _u.mutation.TypeNameCleared() {
 		_spec.ClearField(account.FieldTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(account.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(account.FieldAction, field.TypeEnum, value)
