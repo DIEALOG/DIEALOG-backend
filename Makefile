@@ -3,6 +3,7 @@ export APP_ENV := test
 # Variables
 BINARY_NAME=main
 BINARY_PATH=./cmd/main.go
+MOCKERY_VERSION=v2.53.8
 
 ifeq ($(OS),Windows_NT)
     BINARY_OUT=$(BINARY_NAME).exe
@@ -51,11 +52,11 @@ docker-push: ## Push docker image
 
 compose-up: ## Up docker-compose
 	@echo Upping docker compose...
-	docker-compose up -d
+	docker compose up -d
 
 mock: ## Run Mockery
 	@echo Mocking interface...
-	mockery --dir=domain --output=domain/mocks --outpkg=mocks --all
+	go run github.com/vektra/mockery/v2@$(MOCKERY_VERSION) --dir=domain --output=domain/mocks --outpkg=mocks --all
 
 ent-new: ## Create new ent schema (make ent-new name=User)
 	@echo Creating new ent schema

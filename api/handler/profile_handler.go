@@ -70,7 +70,7 @@ func UpdateProfileImage(service domain.ProfileUseCase) fiber.Handler {
 // @Tags         Profile
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body domain.Legacy true "생성할 레거시 정보"
+// @Param        request body domain.UserConfig true "수정할 설정 정보"
 // @Success      200 {object} domain.UserConfig  "설정 수정 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 요청 또는 이미지 누락"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"

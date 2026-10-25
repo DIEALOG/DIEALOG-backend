@@ -30,6 +30,7 @@ func (User) Fields() []ent.Field {
 		field.String("password").
 			NotEmpty(),
 		field.String("profile_image_path").
+			Optional().
 			Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}

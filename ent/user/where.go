@@ -401,6 +401,16 @@ func ProfileImagePathHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldProfileImagePath, v))
 }
 
+// ProfileImagePathIsNil applies the IsNil predicate on the "profile_image_path" field.
+func ProfileImagePathIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldProfileImagePath))
+}
+
+// ProfileImagePathNotNil applies the NotNil predicate on the "profile_image_path" field.
+func ProfileImagePathNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldProfileImagePath))
+}
+
 // ProfileImagePathEqualFold applies the EqualFold predicate on the "profile_image_path" field.
 func ProfileImagePathEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldProfileImagePath, v))

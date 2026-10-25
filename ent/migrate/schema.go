@@ -130,7 +130,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
-		{Name: "profile_image_path", Type: field.TypeString},
+		{Name: "profile_image_path", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -144,7 +144,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "lock_by_face_id", Type: field.TypeBool, Default: true},
 		{Name: "certification_before_sensitive_information", Type: field.TypeBool, Default: true},
-		{Name: "conversion_criteria", Type: field.TypeString},
+		{Name: "conversion_criteria", Type: field.TypeString, Default: "tmp"},
 		{Name: "survival_check_interval_days", Type: field.TypeInt, Default: 90},
 		{Name: "user_user_config", Type: field.TypeUUID},
 	}

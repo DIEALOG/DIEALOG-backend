@@ -132,6 +132,8 @@ func init() {
 	userconfig.DefaultCertificationBeforeSensitiveInformation = userconfigDescCertificationBeforeSensitiveInformation.Default.(bool)
 	// userconfigDescConversionCriteria is the schema descriptor for conversion_criteria field.
 	userconfigDescConversionCriteria := userconfigFields[3].Descriptor()
+	// userconfig.DefaultConversionCriteria holds the default value on creation for the conversion_criteria field.
+	userconfig.DefaultConversionCriteria = userconfigDescConversionCriteria.Default.(string)
 	// userconfig.ConversionCriteriaValidator is a validator for the "conversion_criteria" field. It is called by the builders before save.
 	userconfig.ConversionCriteriaValidator = userconfigDescConversionCriteria.Validators[0].(func(string) error)
 	// userconfigDescSurvivalCheckIntervalDays is the schema descriptor for survival_check_interval_days field.

@@ -16,6 +16,7 @@ import (
 
 func TestFetchLegacyByUserID(t *testing.T) {
 	mockLegacyRepository := new(mocks.LegacyRepository)
+	mockCredentialUseCase := new(mocks.CredentialUseCase)
 	userID := domain.NewID()
 
 	t.Run("success", func(t *testing.T) {
@@ -25,39 +26,34 @@ func TestFetchLegacyByUserID(t *testing.T) {
 			UserID: userID,
 		}
 
-		mockListLegacy := make([]*domain.Legacy, 0)
-		mockListLegacy = append(mockListLegacy, &mockLegacy)
+		mockListLegacy := []*domain.Legacy{&mockLegacy}
 
-		limit := 10
-		offset := 0
+		mockLegacyRepository.
+			On("FindAllByUserID", mock.Anything, &userID).
+			Return(mockListLegacy, nil).
+			Once()
 
-		mockPaginatedResult := &domain.PaginatedResult[*domain.Legacy]{
-			Items:  mockListLegacy,
-			Total:  1,
-			Limit:  limit,
-			Offset: offset,
-		}
+		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, time.Second*2)
 
-		mockLegacyRepository.On("FindAllByUserID", mock.Anything, &userID, offset, limit).Return(mockListLegacy, 1, nil).Once()
-
-		u := usecase.NewLegacyUseCase(mockLegacyRepository, time.Second*2)
-
-		result, err := u.ListByUserID(context.Background(), &userID, 0, 10)
+		result, err := u.ListByUserID(context.Background(), &userID)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Len(t, result.Items, len(mockListLegacy))
-		assert.Equal(t, mockPaginatedResult, result)
+		assert.Len(t, result, len(mockListLegacy))
+		assert.Equal(t, mockListLegacy, result)
 
 		mockLegacyRepository.AssertExpectations(t)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockLegacyRepository.On("FindAllByUserID", mock.Anything, &userID, 0, 10).Return(nil, 0, errors.New("unexpected")).Once()
+		mockLegacyRepository.
+			On("FindAllByUserID", mock.Anything, &userID).
+			Return(nil, errors.New("unexpected")).
+			Once()
 
-		u := usecase.NewLegacyUseCase(mockLegacyRepository, time.Second*2)
+		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, time.Second*2)
 
-		list, err := u.ListByUserID(context.Background(), &userID, 0, 10)
+		list, err := u.ListByUserID(context.Background(), &userID)
 
 		assert.Error(t, err)
 		assert.Nil(t, list)

@@ -56,6 +56,14 @@ func (_c *UserCreate) SetProfileImagePath(v string) *UserCreate {
 	return _c
 }
 
+// SetNillableProfileImagePath sets the "profile_image_path" field if the given value is not nil.
+func (_c *UserCreate) SetNillableProfileImagePath(v *string) *UserCreate {
+	if v != nil {
+		_c.SetProfileImagePath(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -237,9 +245,6 @@ func (_c *UserCreate) check() error {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.ProfileImagePath(); !ok {
-		return &ValidationError{Name: "profile_image_path", err: errors.New(`ent: missing required field "User.profile_image_path"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}

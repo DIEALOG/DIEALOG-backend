@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -25,16 +26,44 @@ type Env struct {
 	InternalCryptoUrl      string `mapstructure:"INTERNAL_CRYPTO_URL"`
 }
 
+var envKeys = []string{
+	"APP_ENV",
+	"SERVER_ADDRESS",
+	"CONTEXT_TIMEOUT",
+	"DB_HOST",
+	"DB_PORT",
+	"DB_USER",
+	"DB_PASS",
+	"DB_NAME",
+	"ACCESS_TOKEN_EXPIRY_HOUR",
+	"REFRESH_TOKEN_EXPIRY_HOUR",
+	"ACCESS_TOKEN_SECRET",
+	"REFRESH_TOKEN_SECRET",
+	"INTERNAL_SECRET_KEY",
+	"INTERNAL_CRYPTO_URL",
+}
+
 func NewEnv() {
+	viper.Reset()
 	viper.SetConfigFile(".env")
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal("Can't find the file .env : ", err)
+	if _, err := os.Stat(".env"); err == nil {
+		if err := viper.ReadInConfig(); err != nil {
+			log.Fatal("Environment can't be loaded from .env: ", err)
+		}
+	} else if !os.IsNotExist(err) {
+		log.Fatal("Can't access .env: ", err)
 	}
 
-	err = viper.Unmarshal(&E)
-	if err != nil {
+	// Environment variables take precedence over values from .env, so the same
+	// binary works locally (.env) and in containers (environment variables).
+	for _, key := range envKeys {
+		if err := viper.BindEnv(key); err != nil {
+			log.Fatal("Environment can't bind ", key, ": ", err)
+		}
+	}
+
+	if err := viper.Unmarshal(&E); err != nil {
 		log.Fatal("Environment can't be loaded: ", err)
 	}
 

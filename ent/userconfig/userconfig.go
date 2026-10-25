@@ -82,6 +82,8 @@ var (
 	DefaultLockByFaceID bool
 	// DefaultCertificationBeforeSensitiveInformation holds the default value on creation for the "certification_before_sensitive_information" field.
 	DefaultCertificationBeforeSensitiveInformation bool
+	// DefaultConversionCriteria holds the default value on creation for the "conversion_criteria" field.
+	DefaultConversionCriteria string
 	// ConversionCriteriaValidator is a validator for the "conversion_criteria" field. It is called by the builders before save.
 	ConversionCriteriaValidator func(string) error
 	// DefaultSurvivalCheckIntervalDays holds the default value on creation for the "survival_check_interval_days" field.

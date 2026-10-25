@@ -1,241 +1,133 @@
-# Go Backend Clean Architecture
+# DIEALOG Backend
 
-> PR 은 언제나 환영합니다
+Go backend for DIEALOG's digital legacy management service. Users register the accounts and digital assets they want to pass on, designate stakeholders and groups, configure post-mortem actions, and write last-word messages.
 
-## Framework / Library
-- **Fiber**
-- **Ent**
-- **testify**
-- **mockery**
-- **viper**
-- **PostgreSQL**
-- **bcrypt**
-- Check more packages in `go.mod`.
+## Stack
 
-## How to Run
+- Go 1.27
+- [Fiber v3](https://gofiber.io/) HTTP framework
+- [Ent](https://entgo.io/) ORM with PostgreSQL
+- [Viper](https://github.com/spf13/viper) configuration
+- JWT (`golang-jwt/jwt/v4`), bcrypt
+- testify + mockery
+- Swagger via swaggo
 
-- clone 
+Account passwords are not stored in PostgreSQL. They are delegated to the DIEALOG crypto service configured by `INTERNAL_CRYPTO_URL`.
 
-```bash
-cd your-workspace
+## Requirements
 
-git clone https://github.com/DIEALOG/DIEALOG-backend.git
+- Go 1.27+
+- PostgreSQL 17, or Docker
+- CGO/gcc if you run the SQLite-backed repository tests
 
-cd go-backend-clean-architecture-fiber
-```
-- run
-```bash
-make run 
-```
-
-### Run Test
+## Setup
 
 ```bash
-make test
+cp .env.example .env
+docker compose up -d postgres
 ```
 
+Set `INTERNAL_SECRET_KEY` and `INTERNAL_CRYPTO_URL` in `.env` to match your crypto service. The example uses `http://crypto:8080`, which is the container-network address used by the deployment stack; for a locally running crypto service use its reachable host/port instead.
 
-### The Complete Project Folder Structure
+Then start the API:
 
-```
-.
-├── api/
-│   ├── handler/
-│   │   ├── auth_handler.go
-│   │   ├── profile_handler.go
-│   │   ├── profile_handler_test.go
-│   │   └── task_handler.go
-│   ├── middleware/
-│   │   └── jwt_auth_middleware.go
-│   └── route/
-│       ├── login_route.go
-│       ├── profile_route.go
-│       ├── refresh_token_route.go
-│       ├── signup_route.go
-│       └── task_route.go
-├── cmd/
-│   └── main.go
-├── config/
-│   └── env.go
-├── domain/
-│   ├── mocks/
-│   │   ├── AuthUseCase.go
-│   │   ├── ProfileUseCase.go
-│   │   ├── TaskRepository.go
-│   │   ├── TaskUseCase.go
-│   │   └── UserRepository.go
-│   ├── auth.go
-│   ├── domain.go
-│   ├── error_response.go
-│   ├── error.go
-│   ├── jwt_custom.go
-│   ├── pagination.go
-│   ├── profile.go
-│   ├── success_response.go
-│   ├── task.go
-│   └── user.go
-├── ent/
-│   ├── schema/
-│   │   ├── task.go
-│   │   └── user.go
-│   └── ... (generated files)
-├── infra/
-│   ├── database/
-│   │   └── database.go
-│   └── repository/
-│       ├── mapper.go
-│       ├── task_repository.go
-│       ├── user_repository_test.go
-│       └── user_repository.go
-├── internal/
-│   ├── fakeutil/
-│   │   └── fakeutil.go
-│   └── token/
-│       └── token.go
-├── usecase/
-│   ├── auth_usecase.go
-│   ├── profile_usecase.go
-│   ├── task_usecase_test.go
-│   └── task_usecase.go
-├── .env.example
-├── .gitignore
-├── docker-compose.yaml
-├── Dockerfile
-├── go.mod
-├── go.sum
-├── help.ps1
-├── LICENSE
-├── Makefile
-└── README.md
+```bash
+make run
 ```
 
-### API Request & Response
+Notes:
 
-- signup
+- `config.NewEnv()` loads `.env` when present and also binds every key as an environment variable. Environment variables take precedence, so the same binary works locally and in containers. `.env` itself is optional.
+- PostgreSQL is exposed on host port **5433** (container port 5432), matching `.env.example`.
+- Ent runs `Schema.Create` on startup, so schema changes are applied automatically.
+- The API listens on `SERVER_ADDRESS` (for example `:8080`). `PORT` in `.env.example` is not read by the app.
 
-  - request
+### Environment variables
 
-  ```
-  curl --location --request POST 'http://localhost:8080/api/signup' \
-  --data-urlencode 'email=test@gmail.com' \
-  --data-urlencode 'password=test' \
-  --data-urlencode 'name=Test Name'
-  ```
+| Variable | Description |
+| --- | --- |
+| `APP_ENV` | Environment name (`development` enables extra logging) |
+| `SERVER_ADDRESS` | Fiber listen address, e.g. `:8080` |
+| `CONTEXT_TIMEOUT` | Use-case timeout in seconds |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME` | PostgreSQL connection |
+| `ACCESS_TOKEN_EXPIRY_HOUR` | Access-token lifetime in hours |
+| `REFRESH_TOKEN_EXPIRY_HOUR` | Refresh-token lifetime in hours |
+| `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET` | JWT signing secrets |
+| `INTERNAL_SECRET_KEY` | Secret sent to the crypto service as `X-Internal-Secret-Key` |
+| `INTERNAL_CRYPTO_URL` | Base URL of the DIEALOG crypto service |
 
-  - response
+## API
 
-  ```json
-  {
-    "accessToken": "access_token",
-    "refreshToken": "refresh_token"
-  }
-  ```
+All routes are under `/api`. Protected routes require:
 
-- login
+```http
+Authorization: Bearer <accessToken>
+```
 
-  - request
+| Resource | Endpoint | Methods |
+| --- | --- | --- |
+| Auth | `/api/signup`, `/api/login`, `/api/refresh` | `POST` |
+| Profile | `/api/profile/protected` | `GET` |
+| Profile | `/api/profile/protected/image` | `PUT` (multipart field `profile_image`) |
+| Profile | `/api/profile/protected/config` | `PUT` |
+| Legacy | `/api/legacy/protected` | `POST`, `GET` |
+| Legacy | `/api/legacy/protected/{id}` | `GET`, `PUT`, `DELETE` |
+| Legacy account | `/api/legacy/protected/{id}/account` | `POST` |
+| Legacy account | `/api/legacy/protected/{id}/account/{accountId}` | `GET`, `DELETE` |
+| Last word | `/api/last-word/protected` | `POST`, `GET` |
+| Last word | `/api/last-word/protected/{id}` | `PUT`, `DELETE` |
+| Stakeholder | `/api/stakeholder/protected` | `POST`, `GET` |
+| Stakeholder | `/api/stakeholder/protected/{id}` | `GET`, `PUT`, `DELETE` |
+| Stakeholder group | `/api/stakeholder/protected/group` | `POST`, `GET` |
+| Stakeholder group | `/api/stakeholder/protected/group/{id}` | `GET`, `PUT`, `DELETE` |
 
-  ```
-  curl --location --request POST 'http://localhost:8080/api/login' \
-  --data-urlencode 'email=test@gmail.com' \
-  --data-urlencode 'password=test'
-  ```
+Interactive documentation:
 
-  - response
+- `/swagger` or `/docs` — Swagger UI
+- `docs/swagger.json`, `docs/swagger.yaml` — generated specification
 
-  ```json
-  {
-    "accessToken": "access_token",
-    "refreshToken": "refresh_token"
-  }
-  ```
+Uploaded profile images are served from `./public` at `/public/...` (for example `/public/profiles/<file>`).
 
-- profile
+## Development
 
-  - request
+```bash
+make help            # list targets
+make run             # go run ./cmd/main.go
+go build ./...       # compile all packages
+make test            # go test ./...
+make ent-generate    # regenerate committed Ent code after editing ent/schema/*.go
+make mock            # regenerate domain/mocks from domain interfaces
+make swag            # regenerate docs/ from handler annotations
+```
 
-  ```
-  curl --location --request GET 'http://localhost:8080/api/profile/protected' \
-  --header 'Authorization: Bearer access_token'
-  ```
+Code generation:
 
-  - response
+- Edit `ent/schema/*.go`, then run `make ent-generate`. Files under `ent/` are generated and committed; do not hand-edit them.
+- Run `make mock` after changing interfaces in `domain/`.
+- Swagger annotations live on handlers in `api/handler/`. Run `make swag` after changing them.
 
-  ```json
-  {
-    "name": "Test Name",
-    "email": "test@gmail.com"
-  }
-  ```
+`go test ./...` runs the full suite, including SQLite-backed repository tests (CGO/gcc required).
 
-- task create
+## Project layout
 
-  - request
+```
+api/         HTTP handlers, routes, JWT middleware
+usecase/     business logic and validation
+domain/      interfaces, DTOs, response mappers, errors
+infra/       Ent repositories, database setup, crypto-service client
+ent/         Ent schemas and generated ORM code
+cmd/main.go  composition root
+docs/        generated Swagger specification
+```
 
-  ```
-  curl --location --request POST 'http://localhost:8080/api/task/protected' \
-  --header 'Authorization: Bearer access_token' \
-  --header 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'title=Test Task'
-  ```
+Dependencies point inward: `api -> usecase -> domain`, with `infra` implementing `domain` interfaces. `cmd/main.go` wires concrete implementations manually.
 
-  - response
+## Docker
 
-  ```json
-  {
-    "message": "Task created successfully"
-  }
-  ```
+`docker compose up -d postgres` starts only the database, which is the recommended local setup.
 
-- task fetch
+`docker compose up -d --build` runs the full stack. Compose reads `.env` for interpolation and injects the configuration into the `api` container, overriding `DB_HOST` to `postgres` and `DB_PORT` to `5432`. The container does not need a `.env` file because the app also reads environment variables.
 
-  - request
+## Deployment
 
-  ```
-  curl --location --request GET 'http://localhost:8080/api/task/protected?page=1&limit=10' \
-  --header 'Authorization: Bearer access_token'
-  ```
-
-  - response
-
-  ```json
-  {
-    "items": [
-      {
-       "id": "626afac0-5e0d-493a-a97b-1827b485f521",
-        "title": "Test Task",
-        "user_id": "b10e63ff-6ab2-4714-8f90-c33a99e7b476",
-        "created_at": "2026-02-11T16:36:01.839759Z"
-      },
-      {
-        "id": "f46834d6-649c-4a28-b779-bcd74aad0a06",
-        "title": "Test Task",
-        "user_id": "b10e63ff-6ab2-4714-8f90-c33a99e7b476",
-        "created_at": "2026-02-11T16:34:46.026427Z"
-      }
-    ],
-    "total": 2,
-    "limit": 5,
-    "offset": 0
-  }
-  ```
-
-- refresh token
-
-  - request
-
-  ```
-  curl --location --request POST 'http://localhost:8080/api/refresh' \
-  --header 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'refreshToken=refresh_token'
-  ```
-
-  - response
-
-  ```json
-  {
-    "accessToken": "access_token",
-    "refreshToken": "refresh_token"
-  }
-  ```
-
+Pushes to `main` trigger a self-hosted deployment through the umbrella repository's submodules. CI builds `cmd/main.go` but does not run tests.

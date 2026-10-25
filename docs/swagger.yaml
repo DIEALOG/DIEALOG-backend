@@ -16,9 +16,9 @@ definitions:
         type: string
       name:
         type: string
-      stakeholder_ids:
+      stakeholder_groups:
         items:
-          type: string
+          $ref: '#/definitions/domain.StakeholderGroup'
         type: array
       stakeholders:
         items:
@@ -68,6 +68,10 @@ definitions:
         type: string
       name:
         type: string
+      stakeholder_group_ids:
+        items:
+          $ref: '#/definitions/domain.StakeholderGroup'
+        type: array
       stakeholders:
         items:
           $ref: '#/definitions/domain.Stakeholder'
@@ -87,6 +91,10 @@ definitions:
         type: string
       name:
         type: string
+      stakeholder_group_ids:
+        items:
+          type: string
+        type: array
       stakeholder_ids:
         items:
           type: string
@@ -136,9 +144,43 @@ definitions:
       refreshToken:
         type: string
     type: object
+  domain.CreateLastWordRequest:
+    properties:
+      message:
+        type: string
+      receiver_group_ids:
+        items:
+          type: string
+        type: array
+      receiver_ids:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
   domain.ErrorResponse:
     properties:
       message:
+        type: string
+    type: object
+  domain.LastWord:
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+      receiver:
+        items:
+          $ref: '#/definitions/domain.Stakeholder'
+        type: array
+      receiver_groups:
+        items:
+          $ref: '#/definitions/domain.StakeholderGroup'
+        type: array
+      title:
+        type: string
+      user_id:
         type: string
     type: object
   domain.Legacy:
@@ -187,14 +229,22 @@ definitions:
     properties:
       email:
         type: string
+      id:
+        type: string
       name:
         type: string
+      phone_number:
+        type: string
+      profile_image_path:
+        type: string
+      stakeholder_groups:
+        items:
+          $ref: '#/definitions/domain.StakeholderGroup'
+        type: array
       stakeholders:
         items:
           $ref: '#/definitions/domain.Stakeholder'
         type: array
-      testament:
-        type: string
     type: object
   domain.RefreshTokenRequest:
     properties:
@@ -211,10 +261,13 @@ definitions:
         type: string
       password:
         type: string
+      phone_number:
+        type: string
     required:
     - email
     - name
     - password
+    - phone_number
     type: object
   domain.Stakeholder:
     properties:
@@ -271,12 +324,39 @@ definitions:
       message:
         type: string
     type: object
-  domain.UpdateTestamentRequest:
+  domain.UpdateLastWordRequest:
     properties:
-      testament:
+      message:
         type: string
-    required:
-    - testament
+      receiver_group_ids:
+        items:
+          type: string
+        type: array
+      receiver_ids:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  domain.UserConfig:
+    properties:
+      certification_before_sensitive_information:
+        type: boolean
+      conversion_criteria:
+        type: string
+      id:
+        type: string
+      lock_by_face_id:
+        type: boolean
+      survival_check_interval_days:
+        type: integer
+      user_id:
+        type: string
+      verifier:
+        items:
+          $ref: '#/definitions/domain.Stakeholder'
+        type: array
     type: object
   handler.UpdateLegacyRequest:
     properties:
@@ -292,6 +372,183 @@ info:
   title: DIEALOG Backend API
   version: "1.0"
 paths:
+  /last-word/protected:
+    get:
+      description: 현재 사용자가 생성한 유언 메시지 목록을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 유언 메시지 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.LastWord'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 유언 메시지 목록 조회
+      tags:
+      - LastWord
+    post:
+      consumes:
+      - application/json
+      description: 새로운 유언 메시지를 생성하고 수신자 및 수신자 그룹을 지정합니다.
+      parameters:
+      - description: 생성할 유언 메시지 정보
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateLastWordRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 유언 메시지 생성 성공
+          schema:
+            $ref: '#/definitions/domain.LastWord'
+        "400":
+          description: 잘못된 요청 파라미터
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 유언 메시지 생성
+      tags:
+      - LastWord
+  /last-word/protected/{id}:
+    delete:
+      description: 특정 유언 메시지를 삭제합니다.
+      parameters:
+      - description: 유언 메시지 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 유언 메시지 삭제 성공
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: 잘못된 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 유언 메시지를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 유언 메시지 삭제
+      tags:
+      - LastWord
+    get:
+      description: ID에 해당하는 유언 메시지의 상세 정보를 조회합니다.
+      parameters:
+      - description: 유언 메시지 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 유언 메시지 조회 성공
+          schema:
+            $ref: '#/definitions/domain.LastWord'
+        "400":
+          description: 잘못된 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 유언 메시지를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 유언 메시지 상세 조회
+      tags:
+      - LastWord
+    put:
+      consumes:
+      - application/json
+      description: 특정 유언 메시지의 제목, 내용, 수신자 및 수신자 그룹을 수정합니다.
+      parameters:
+      - description: 유언 메시지 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 수정할 유언 메시지 정보
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateLastWordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 유언 메시지 수정 성공
+          schema:
+            $ref: '#/definitions/domain.LastWord'
+        "400":
+          description: 잘못된 요청 파라미터 또는 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 유언 메시지를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 유언 메시지 수정
+      tags:
+      - LastWord
   /legacy/protected:
     get:
       description: 현재 사용자의 레거시 목록을 조회합니다.
@@ -636,27 +893,25 @@ paths:
       summary: 내 프로필 조회
       tags:
       - Profile
-  /profile/protected/testament:
+  /profile/protected/config:
     put:
-      consumes:
-      - application/json
-      description: 사용자의 유언장(Testament) 내용을 등록 또는 수정합니다.
+      description: 현재 로그인된 사용자의 정보를 수정합니다.
       parameters:
-      - description: 수정할 유언장 내용
+      - description: 수정할 설정 정보
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/domain.UpdateTestamentRequest'
+          $ref: '#/definitions/domain.UserConfig'
       produces:
       - application/json
       responses:
         "200":
-          description: 유언장 수정 성공
+          description: 설정 수정 성공
           schema:
-            $ref: '#/definitions/domain.SuccessResponse'
+            $ref: '#/definitions/domain.UserConfig'
         "400":
-          description: 잘못된 요청 파라미터
+          description: 잘못된 요청 또는 이미지 누락
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "401":
@@ -669,7 +924,42 @@ paths:
             $ref: '#/definitions/domain.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: 유언장 내용 수정
+      summary: 내 설정 정보 수정
+      tags:
+      - Profile
+  /profile/protected/image:
+    put:
+      consumes:
+      - multipart/form-data
+      description: 현재 로그인된 사용자의 프로필 이미지를 업로드하고 수정합니다.
+      parameters:
+      - description: 프로필 이미지 파일
+        in: formData
+        name: profile_image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 프로필 이미지 수정 성공
+          schema:
+            $ref: '#/definitions/domain.Profile'
+        "400":
+          description: 잘못된 요청 또는 이미지 누락
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 내 프로필 이미지 수정
       tags:
       - Profile
   /refresh:

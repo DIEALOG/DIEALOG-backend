@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
@@ -32,24 +31,18 @@ func Login(service domain.AuthUseCase) fiber.Handler {
 
 		user, err := service.Login(ctx, request.Email, request.Password)
 		if err != nil {
-			if errInfo, ok := errors.AsType[domain.Error](err); ok {
-				return c.Status(errInfo.StatusCode).JSON(domain.ErrorResponse{Message: err.Error()})
-			}
+			return RespondError(c, err)
 		}
 
 		accessToken, refreshToken, err := service.CreateAccessAndRefreshToken(ctx, user)
 		if err != nil {
-			if errInfo, ok := errors.AsType[domain.Error](err); ok {
-				return c.Status(errInfo.StatusCode).JSON(domain.ErrorResponse{Message: err.Error()})
-			}
+			return RespondError(c, err)
 		}
 
-		response := domain.AuthResponse{
+		return c.Status(http.StatusOK).JSON(domain.AuthResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-		}
-
-		return c.Status(http.StatusOK).JSON(response)
+		})
 	}
 }
 
@@ -77,24 +70,18 @@ func RefreshToken(service domain.AuthUseCase) fiber.Handler {
 
 		user, err := service.ExtractUserFromRefreshToken(ctx, request.RefreshToken)
 		if err != nil {
-			if errInfo, ok := errors.AsType[domain.Error](err); ok {
-				return c.Status(errInfo.StatusCode).JSON(domain.ErrorResponse{Message: err.Error()})
-			}
+			return RespondError(c, err)
 		}
 
 		accessToken, refreshToken, err := service.CreateAccessAndRefreshToken(ctx, user)
 		if err != nil {
-			if errInfo, ok := errors.AsType[domain.Error](err); ok {
-				return c.Status(errInfo.StatusCode).JSON(domain.ErrorResponse{Message: err.Error()})
-			}
+			return RespondError(c, err)
 		}
 
-		response := domain.AuthResponse{
+		return c.Status(http.StatusOK).JSON(domain.AuthResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-		}
-
-		return c.Status(http.StatusOK).JSON(response)
+		})
 	}
 }
 

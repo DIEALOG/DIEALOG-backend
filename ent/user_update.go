@@ -103,6 +103,12 @@ func (_u *UserUpdate) SetNillableProfileImagePath(v *string) *UserUpdate {
 	return _u
 }
 
+// ClearProfileImagePath clears the value of the "profile_image_path" field.
+func (_u *UserUpdate) ClearProfileImagePath() *UserUpdate {
+	_u.mutation.ClearProfileImagePath()
+	return _u
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *UserUpdate) AddStakeholderIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -366,6 +372,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.ProfileImagePath(); ok {
 		_spec.SetField(user.FieldProfileImagePath, field.TypeString, value)
+	}
+	if _u.mutation.ProfileImagePathCleared() {
+		_spec.ClearField(user.FieldProfileImagePath, field.TypeString)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -682,6 +691,12 @@ func (_u *UserUpdateOne) SetNillableProfileImagePath(v *string) *UserUpdateOne {
 	return _u
 }
 
+// ClearProfileImagePath clears the value of the "profile_image_path" field.
+func (_u *UserUpdateOne) ClearProfileImagePath() *UserUpdateOne {
+	_u.mutation.ClearProfileImagePath()
+	return _u
+}
+
 // AddStakeholderIDs adds the "stakeholders" edge to the Stakeholder entity by IDs.
 func (_u *UserUpdateOne) AddStakeholderIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddStakeholderIDs(ids...)
@@ -975,6 +990,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.ProfileImagePath(); ok {
 		_spec.SetField(user.FieldProfileImagePath, field.TypeString, value)
+	}
+	if _u.mutation.ProfileImagePathCleared() {
+		_spec.ClearField(user.FieldProfileImagePath, field.TypeString)
 	}
 	if _u.mutation.StakeholdersCleared() {
 		edge := &sqlgraph.EdgeSpec{

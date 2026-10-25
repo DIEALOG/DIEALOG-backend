@@ -14,6 +14,6 @@ func NewLastWordRouter(app fiber.Router, service domain.LastWordUseCase, stakeho
 	protected.Post("/", handler.CreateLastWord(service, stakeholderService, stakeholderGroupService))
 	protected.Get("/", handler.FetchMyLastWords(service))
 	protected.Get("/:id", handler.GetLastWord(service))
-	protected.Put("/", handler.UpdateLastWord(service, stakeholderService, stakeholderGroupService))
+	protected.Put("/:id", handler.UpdateLastWord(service, stakeholderService, stakeholderGroupService))
 	protected.Delete("/:id", handler.DeleteLastWord(service))
 }

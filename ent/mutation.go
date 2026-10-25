@@ -4302,9 +4302,22 @@ func (m *UserMutation) OldProfileImagePath(ctx context.Context) (v *string, err 
 	return oldValue.ProfileImagePath, nil
 }
 
+// ClearProfileImagePath clears the value of the "profile_image_path" field.
+func (m *UserMutation) ClearProfileImagePath() {
+	m.profile_image_path = nil
+	m.clearedFields[user.FieldProfileImagePath] = struct{}{}
+}
+
+// ProfileImagePathCleared returns if the "profile_image_path" field was cleared in this mutation.
+func (m *UserMutation) ProfileImagePathCleared() bool {
+	_, ok := m.clearedFields[user.FieldProfileImagePath]
+	return ok
+}
+
 // ResetProfileImagePath resets all changes to the "profile_image_path" field.
 func (m *UserMutation) ResetProfileImagePath() {
 	m.profile_image_path = nil
+	delete(m.clearedFields, user.FieldProfileImagePath)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4787,7 +4800,11 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(user.FieldProfileImagePath) {
+		fields = append(fields, user.FieldProfileImagePath)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4800,6 +4817,11 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
+	switch name {
+	case user.FieldProfileImagePath:
+		m.ClearProfileImagePath()
+		return nil
+	}
 	return fmt.Errorf("unknown User nullable field %s", name)
 }
 

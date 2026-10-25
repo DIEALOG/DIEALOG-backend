@@ -144,6 +144,7 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	}
 
 	builder := r.client.Account.Create().
+		SetName(acc.Name).
 		SetType(toEntAccountType(acc.Type.Type)).
 		SetAction(toEntAccountAction(acc.Action.Action)).
 		SetLegacyID(*legacyID)
@@ -164,7 +165,7 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 		builder.AddStakeholderIDs(stakeholderIDs...)
 	}
 	if len(stakeholderGroupIDs) > 0 {
-		builder.AddStakeholderIDs(stakeholderGroupIDs...)
+		builder.AddStakeholderGroupIDs(stakeholderGroupIDs...)
 	}
 
 	entity, err := builder.Save(c)

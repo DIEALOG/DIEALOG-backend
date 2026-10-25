@@ -8,6 +8,7 @@ import (
 
 	"github.com/DIEALOG/DIEALOG-backend/config"
 	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/internal/token"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -47,7 +48,10 @@ func (u *authUseCase) Register(c context.Context, name, email, password, phoneNu
 
 	_, err := u.userRepository.FindByEmail(ctx, email)
 	if err == nil {
-		return nil, domain.NewBadRequestError(err)
+		return nil, domain.NewBadRequestError(errors.New("email already exists"))
+	}
+	if !ent.IsNotFound(err) {
+		return nil, domain.NewInternalServerError(err)
 	}
 
 	encrypted, err := bcrypt.GenerateFromPassword(

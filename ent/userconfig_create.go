@@ -56,6 +56,14 @@ func (_c *UserConfigCreate) SetConversionCriteria(v string) *UserConfigCreate {
 	return _c
 }
 
+// SetNillableConversionCriteria sets the "conversion_criteria" field if the given value is not nil.
+func (_c *UserConfigCreate) SetNillableConversionCriteria(v *string) *UserConfigCreate {
+	if v != nil {
+		_c.SetConversionCriteria(*v)
+	}
+	return _c
+}
+
 // SetSurvivalCheckIntervalDays sets the "survival_check_interval_days" field.
 func (_c *UserConfigCreate) SetSurvivalCheckIntervalDays(v int) *UserConfigCreate {
 	_c.mutation.SetSurvivalCheckIntervalDays(v)
@@ -152,6 +160,10 @@ func (_c *UserConfigCreate) defaults() {
 	if _, ok := _c.mutation.CertificationBeforeSensitiveInformation(); !ok {
 		v := userconfig.DefaultCertificationBeforeSensitiveInformation
 		_c.mutation.SetCertificationBeforeSensitiveInformation(v)
+	}
+	if _, ok := _c.mutation.ConversionCriteria(); !ok {
+		v := userconfig.DefaultConversionCriteria
+		_c.mutation.SetConversionCriteria(v)
 	}
 	if _, ok := _c.mutation.SurvivalCheckIntervalDays(); !ok {
 		v := userconfig.DefaultSurvivalCheckIntervalDays

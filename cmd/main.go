@@ -118,6 +118,9 @@ func main() {
 	route.NewLastWordRouter(api.Group("/last-word"), lastWordUseCase, stakeholderUseCase, stakeholderGroupUseCase)
 	route.NewStakeholderRouter(api.Group("/stakeholder"), stakeholderUseCase, stakeholderGroupUseCase)
 
+	// Static files must be registered before the catch-all 404 route.
+	app.Get("/public/*", static.New("./public"))
+
 	app.All("*", func(c fiber.Ctx) error {
 		notFoundErr := fmt.Errorf(
 			"route '%s' does not exist in this API",
@@ -129,8 +132,6 @@ func main() {
 			"error":  notFoundErr.Error(),
 		})
 	})
-
-	app.Get("/*", static.New("./public"))
 
 	log.Fatal(app.Listen(config.E.ServerAddress))
 }
