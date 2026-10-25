@@ -13,12 +13,20 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingevent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmation"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -79,13 +87,21 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			account.Table:          account.ValidColumn,
-			lastword.Table:         lastword.ValidColumn,
-			legacy.Table:           legacy.ValidColumn,
-			stakeholder.Table:      stakeholder.ValidColumn,
-			stakeholdergroup.Table: stakeholdergroup.ValidColumn,
-			user.Table:             user.ValidColumn,
-			userconfig.Table:       userconfig.ValidColumn,
+			account.Table:                     account.ValidColumn,
+			accounthandlingevent.Table:        accounthandlingevent.ValidColumn,
+			accounthandlingtask.Table:         accounthandlingtask.ValidColumn,
+			accounthandlingtaskassignee.Table: accounthandlingtaskassignee.ValidColumn,
+			lastword.Table:                    lastword.ValidColumn,
+			legacy.Table:                      legacy.ValidColumn,
+			stakeholder.Table:                 stakeholder.ValidColumn,
+			stakeholdergroup.Table:            stakeholdergroup.ValidColumn,
+			user.Table:                        user.ValidColumn,
+			useralivecheck.Table:              useralivecheck.ValidColumn,
+			userconfig.Table:                  userconfig.ValidColumn,
+			usertransitioncase.Table:          usertransitioncase.ValidColumn,
+			usertransitionconfirmation.Table:  usertransitionconfirmation.ValidColumn,
+			usertransitionconfirmer.Table:     usertransitionconfirmer.ValidColumn,
+			usertransitionpolicy.Table:        usertransitionpolicy.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

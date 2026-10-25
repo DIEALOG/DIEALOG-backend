@@ -16,7 +16,11 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
 
@@ -184,6 +188,70 @@ func (_u *UserUpdate) AddUserConfig(v ...*UserConfig) *UserUpdate {
 	return _u.AddUserConfigIDs(ids...)
 }
 
+// SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
+func (_u *UserUpdate) SetTransitionPolicyID(id uuid.UUID) *UserUpdate {
+	_u.mutation.SetTransitionPolicyID(id)
+	return _u
+}
+
+// SetNillableTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID if the given value is not nil.
+func (_u *UserUpdate) SetNillableTransitionPolicyID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		_u = _u.SetTransitionPolicyID(*id)
+	}
+	return _u
+}
+
+// SetTransitionPolicy sets the "transition_policy" edge to the UserTransitionPolicy entity.
+func (_u *UserUpdate) SetTransitionPolicy(v *UserTransitionPolicy) *UserUpdate {
+	return _u.SetTransitionPolicyID(v.ID)
+}
+
+// AddTransitionConfirmerIDs adds the "transition_confirmers" edge to the UserTransitionConfirmer entity by IDs.
+func (_u *UserUpdate) AddTransitionConfirmerIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddTransitionConfirmerIDs(ids...)
+	return _u
+}
+
+// AddTransitionConfirmers adds the "transition_confirmers" edges to the UserTransitionConfirmer entity.
+func (_u *UserUpdate) AddTransitionConfirmers(v ...*UserTransitionConfirmer) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitionConfirmerIDs(ids...)
+}
+
+// AddAliveCheckIDs adds the "alive_checks" edge to the UserAliveCheck entity by IDs.
+func (_u *UserUpdate) AddAliveCheckIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddAliveCheckIDs(ids...)
+	return _u
+}
+
+// AddAliveChecks adds the "alive_checks" edges to the UserAliveCheck entity.
+func (_u *UserUpdate) AddAliveChecks(v ...*UserAliveCheck) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAliveCheckIDs(ids...)
+}
+
+// AddTransitionCaseIDs adds the "transition_cases" edge to the UserTransitionCase entity by IDs.
+func (_u *UserUpdate) AddTransitionCaseIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddTransitionCaseIDs(ids...)
+	return _u
+}
+
+// AddTransitionCases adds the "transition_cases" edges to the UserTransitionCase entity.
+func (_u *UserUpdate) AddTransitionCases(v ...*UserTransitionCase) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitionCaseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -292,6 +360,75 @@ func (_u *UserUpdate) RemoveUserConfig(v ...*UserConfig) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserConfigIDs(ids...)
+}
+
+// ClearTransitionPolicy clears the "transition_policy" edge to the UserTransitionPolicy entity.
+func (_u *UserUpdate) ClearTransitionPolicy() *UserUpdate {
+	_u.mutation.ClearTransitionPolicy()
+	return _u
+}
+
+// ClearTransitionConfirmers clears all "transition_confirmers" edges to the UserTransitionConfirmer entity.
+func (_u *UserUpdate) ClearTransitionConfirmers() *UserUpdate {
+	_u.mutation.ClearTransitionConfirmers()
+	return _u
+}
+
+// RemoveTransitionConfirmerIDs removes the "transition_confirmers" edge to UserTransitionConfirmer entities by IDs.
+func (_u *UserUpdate) RemoveTransitionConfirmerIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveTransitionConfirmerIDs(ids...)
+	return _u
+}
+
+// RemoveTransitionConfirmers removes "transition_confirmers" edges to UserTransitionConfirmer entities.
+func (_u *UserUpdate) RemoveTransitionConfirmers(v ...*UserTransitionConfirmer) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitionConfirmerIDs(ids...)
+}
+
+// ClearAliveChecks clears all "alive_checks" edges to the UserAliveCheck entity.
+func (_u *UserUpdate) ClearAliveChecks() *UserUpdate {
+	_u.mutation.ClearAliveChecks()
+	return _u
+}
+
+// RemoveAliveCheckIDs removes the "alive_checks" edge to UserAliveCheck entities by IDs.
+func (_u *UserUpdate) RemoveAliveCheckIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveAliveCheckIDs(ids...)
+	return _u
+}
+
+// RemoveAliveChecks removes "alive_checks" edges to UserAliveCheck entities.
+func (_u *UserUpdate) RemoveAliveChecks(v ...*UserAliveCheck) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAliveCheckIDs(ids...)
+}
+
+// ClearTransitionCases clears all "transition_cases" edges to the UserTransitionCase entity.
+func (_u *UserUpdate) ClearTransitionCases() *UserUpdate {
+	_u.mutation.ClearTransitionCases()
+	return _u
+}
+
+// RemoveTransitionCaseIDs removes the "transition_cases" edge to UserTransitionCase entities by IDs.
+func (_u *UserUpdate) RemoveTransitionCaseIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveTransitionCaseIDs(ids...)
+	return _u
+}
+
+// RemoveTransitionCases removes "transition_cases" edges to UserTransitionCase entities.
+func (_u *UserUpdate) RemoveTransitionCases(v ...*UserTransitionCase) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitionCaseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -601,6 +738,170 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.TransitionPolicyCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TransitionPolicyTable,
+			Columns: []string{user.TransitionPolicyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionpolicy.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionPolicyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TransitionPolicyTable,
+			Columns: []string{user.TransitionPolicyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionpolicy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitionConfirmersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitionConfirmersIDs(); len(nodes) > 0 && !_u.mutation.TransitionConfirmersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionConfirmersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AliveChecksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAliveChecksIDs(); len(nodes) > 0 && !_u.mutation.AliveChecksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AliveChecksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitionCasesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitionCasesIDs(); len(nodes) > 0 && !_u.mutation.TransitionCasesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionCasesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -772,6 +1073,70 @@ func (_u *UserUpdateOne) AddUserConfig(v ...*UserConfig) *UserUpdateOne {
 	return _u.AddUserConfigIDs(ids...)
 }
 
+// SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
+func (_u *UserUpdateOne) SetTransitionPolicyID(id uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetTransitionPolicyID(id)
+	return _u
+}
+
+// SetNillableTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableTransitionPolicyID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		_u = _u.SetTransitionPolicyID(*id)
+	}
+	return _u
+}
+
+// SetTransitionPolicy sets the "transition_policy" edge to the UserTransitionPolicy entity.
+func (_u *UserUpdateOne) SetTransitionPolicy(v *UserTransitionPolicy) *UserUpdateOne {
+	return _u.SetTransitionPolicyID(v.ID)
+}
+
+// AddTransitionConfirmerIDs adds the "transition_confirmers" edge to the UserTransitionConfirmer entity by IDs.
+func (_u *UserUpdateOne) AddTransitionConfirmerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddTransitionConfirmerIDs(ids...)
+	return _u
+}
+
+// AddTransitionConfirmers adds the "transition_confirmers" edges to the UserTransitionConfirmer entity.
+func (_u *UserUpdateOne) AddTransitionConfirmers(v ...*UserTransitionConfirmer) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitionConfirmerIDs(ids...)
+}
+
+// AddAliveCheckIDs adds the "alive_checks" edge to the UserAliveCheck entity by IDs.
+func (_u *UserUpdateOne) AddAliveCheckIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddAliveCheckIDs(ids...)
+	return _u
+}
+
+// AddAliveChecks adds the "alive_checks" edges to the UserAliveCheck entity.
+func (_u *UserUpdateOne) AddAliveChecks(v ...*UserAliveCheck) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAliveCheckIDs(ids...)
+}
+
+// AddTransitionCaseIDs adds the "transition_cases" edge to the UserTransitionCase entity by IDs.
+func (_u *UserUpdateOne) AddTransitionCaseIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddTransitionCaseIDs(ids...)
+	return _u
+}
+
+// AddTransitionCases adds the "transition_cases" edges to the UserTransitionCase entity.
+func (_u *UserUpdateOne) AddTransitionCases(v ...*UserTransitionCase) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitionCaseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -880,6 +1245,75 @@ func (_u *UserUpdateOne) RemoveUserConfig(v ...*UserConfig) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserConfigIDs(ids...)
+}
+
+// ClearTransitionPolicy clears the "transition_policy" edge to the UserTransitionPolicy entity.
+func (_u *UserUpdateOne) ClearTransitionPolicy() *UserUpdateOne {
+	_u.mutation.ClearTransitionPolicy()
+	return _u
+}
+
+// ClearTransitionConfirmers clears all "transition_confirmers" edges to the UserTransitionConfirmer entity.
+func (_u *UserUpdateOne) ClearTransitionConfirmers() *UserUpdateOne {
+	_u.mutation.ClearTransitionConfirmers()
+	return _u
+}
+
+// RemoveTransitionConfirmerIDs removes the "transition_confirmers" edge to UserTransitionConfirmer entities by IDs.
+func (_u *UserUpdateOne) RemoveTransitionConfirmerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveTransitionConfirmerIDs(ids...)
+	return _u
+}
+
+// RemoveTransitionConfirmers removes "transition_confirmers" edges to UserTransitionConfirmer entities.
+func (_u *UserUpdateOne) RemoveTransitionConfirmers(v ...*UserTransitionConfirmer) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitionConfirmerIDs(ids...)
+}
+
+// ClearAliveChecks clears all "alive_checks" edges to the UserAliveCheck entity.
+func (_u *UserUpdateOne) ClearAliveChecks() *UserUpdateOne {
+	_u.mutation.ClearAliveChecks()
+	return _u
+}
+
+// RemoveAliveCheckIDs removes the "alive_checks" edge to UserAliveCheck entities by IDs.
+func (_u *UserUpdateOne) RemoveAliveCheckIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveAliveCheckIDs(ids...)
+	return _u
+}
+
+// RemoveAliveChecks removes "alive_checks" edges to UserAliveCheck entities.
+func (_u *UserUpdateOne) RemoveAliveChecks(v ...*UserAliveCheck) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAliveCheckIDs(ids...)
+}
+
+// ClearTransitionCases clears all "transition_cases" edges to the UserTransitionCase entity.
+func (_u *UserUpdateOne) ClearTransitionCases() *UserUpdateOne {
+	_u.mutation.ClearTransitionCases()
+	return _u
+}
+
+// RemoveTransitionCaseIDs removes the "transition_cases" edge to UserTransitionCase entities by IDs.
+func (_u *UserUpdateOne) RemoveTransitionCaseIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveTransitionCaseIDs(ids...)
+	return _u
+}
+
+// RemoveTransitionCases removes "transition_cases" edges to UserTransitionCase entities.
+func (_u *UserUpdateOne) RemoveTransitionCases(v ...*UserTransitionCase) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitionCaseIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1212,6 +1646,170 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitionPolicyCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TransitionPolicyTable,
+			Columns: []string{user.TransitionPolicyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionpolicy.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionPolicyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TransitionPolicyTable,
+			Columns: []string{user.TransitionPolicyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionpolicy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitionConfirmersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitionConfirmersIDs(); len(nodes) > 0 && !_u.mutation.TransitionConfirmersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionConfirmersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AliveChecksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAliveChecksIDs(); len(nodes) > 0 && !_u.mutation.AliveChecksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AliveChecksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitionCasesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitionCasesIDs(); len(nodes) > 0 && !_u.mutation.TransitionCasesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitionCasesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

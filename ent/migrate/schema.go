@@ -3,6 +3,7 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -32,6 +33,108 @@ var (
 				Columns:    []*schema.Column{AccountsColumns[9]},
 				RefColumns: []*schema.Column{LegaciesColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// AccountHandlingEventsColumns holds the columns for the "account_handling_events" table.
+	AccountHandlingEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "event_type", Type: field.TypeString},
+		{Name: "message", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "account_handling_task_events", Type: field.TypeUUID},
+	}
+	// AccountHandlingEventsTable holds the schema information for the "account_handling_events" table.
+	AccountHandlingEventsTable = &schema.Table{
+		Name:       "account_handling_events",
+		Columns:    AccountHandlingEventsColumns,
+		PrimaryKey: []*schema.Column{AccountHandlingEventsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_handling_events_account_handling_tasks_events",
+				Columns:    []*schema.Column{AccountHandlingEventsColumns[4]},
+				RefColumns: []*schema.Column{AccountHandlingTasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// AccountHandlingTasksColumns holds the columns for the "account_handling_tasks" table.
+	AccountHandlingTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "action_snapshot", Type: field.TypeString},
+		{Name: "action_message_snapshot", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeString, Default: "pending"},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true},
+		{Name: "request_count", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "account_id", Type: field.TypeUUID},
+		{Name: "transition_case_id", Type: field.TypeUUID},
+	}
+	// AccountHandlingTasksTable holds the schema information for the "account_handling_tasks" table.
+	AccountHandlingTasksTable = &schema.Table{
+		Name:       "account_handling_tasks",
+		Columns:    AccountHandlingTasksColumns,
+		PrimaryKey: []*schema.Column{AccountHandlingTasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_handling_tasks_accounts_handling_tasks",
+				Columns:    []*schema.Column{AccountHandlingTasksColumns[10]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "account_handling_tasks_user_transition_cases_tasks",
+				Columns:    []*schema.Column{AccountHandlingTasksColumns[11]},
+				RefColumns: []*schema.Column{UserTransitionCasesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "accounthandlingtask_transition_case_id_account_id",
+				Unique:  true,
+				Columns: []*schema.Column{AccountHandlingTasksColumns[11], AccountHandlingTasksColumns[10]},
+			},
+		},
+	}
+	// AccountHandlingTaskAssigneesColumns holds the columns for the "account_handling_task_assignees" table.
+	AccountHandlingTaskAssigneesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "stakeholder_id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "phone", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeString, Default: "pending"},
+		{Name: "request_token_hash", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "request_token_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "requested_at", Type: field.TypeTime, Nullable: true},
+		{Name: "responded_at", Type: field.TypeTime, Nullable: true},
+		{Name: "response_message", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "task_id", Type: field.TypeUUID},
+	}
+	// AccountHandlingTaskAssigneesTable holds the schema information for the "account_handling_task_assignees" table.
+	AccountHandlingTaskAssigneesTable = &schema.Table{
+		Name:       "account_handling_task_assignees",
+		Columns:    AccountHandlingTaskAssigneesColumns,
+		PrimaryKey: []*schema.Column{AccountHandlingTaskAssigneesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_handling_task_assignees_account_handling_tasks_assignees",
+				Columns:    []*schema.Column{AccountHandlingTaskAssigneesColumns[13]},
+				RefColumns: []*schema.Column{AccountHandlingTasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "accounthandlingtaskassignee_task_id_stakeholder_id",
+				Unique:  true,
+				Columns: []*schema.Column{AccountHandlingTaskAssigneesColumns[13], AccountHandlingTaskAssigneesColumns[1]},
 			},
 		},
 	}
@@ -139,13 +242,43 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// UserAliveChecksColumns holds the columns for the "user_alive_checks" table.
+	UserAliveChecksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "sequence", Type: field.TypeInt},
+		{Name: "scheduled_at", Type: field.TypeTime},
+		{Name: "due_at", Type: field.TypeTime},
+		{Name: "responded_at", Type: field.TypeTime, Nullable: true},
+		{Name: "status", Type: field.TypeString, Default: "scheduled"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// UserAliveChecksTable holds the schema information for the "user_alive_checks" table.
+	UserAliveChecksTable = &schema.Table{
+		Name:       "user_alive_checks",
+		Columns:    UserAliveChecksColumns,
+		PrimaryKey: []*schema.Column{UserAliveChecksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_alive_checks_users_alive_checks",
+				Columns:    []*schema.Column{UserAliveChecksColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "useralivecheck_user_id_sequence",
+				Unique:  true,
+				Columns: []*schema.Column{UserAliveChecksColumns[7], UserAliveChecksColumns[1]},
+			},
+		},
+	}
 	// UserConfigsColumns holds the columns for the "user_configs" table.
 	UserConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "lock_by_face_id", Type: field.TypeBool, Default: true},
 		{Name: "certification_before_sensitive_information", Type: field.TypeBool, Default: true},
-		{Name: "conversion_criteria", Type: field.TypeString, Default: "tmp"},
-		{Name: "survival_check_interval_days", Type: field.TypeInt, Default: 90},
 		{Name: "user_user_config", Type: field.TypeUUID},
 	}
 	// UserConfigsTable holds the schema information for the "user_configs" table.
@@ -156,7 +289,155 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_configs_users_user_config",
-				Columns:    []*schema.Column{UserConfigsColumns[5]},
+				Columns:    []*schema.Column{UserConfigsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// UserTransitionCasesColumns holds the columns for the "user_transition_cases" table.
+	UserTransitionCasesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "active_slot", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "status", Type: field.TypeString, Default: "pending_confirmation"},
+		{Name: "minimum_confirmers_snapshot", Type: field.TypeInt},
+		{Name: "waiting_period_days_snapshot", Type: field.TypeInt},
+		{Name: "requested_at", Type: field.TypeTime},
+		{Name: "waiting_started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "eligible_at", Type: field.TypeTime, Nullable: true},
+		{Name: "confirmed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "cancelled_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_transition_cases", Type: field.TypeUUID},
+	}
+	// UserTransitionCasesTable holds the schema information for the "user_transition_cases" table.
+	UserTransitionCasesTable = &schema.Table{
+		Name:       "user_transition_cases",
+		Columns:    UserTransitionCasesColumns,
+		PrimaryKey: []*schema.Column{UserTransitionCasesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_transition_cases_users_transition_cases",
+				Columns:    []*schema.Column{UserTransitionCasesColumns[12]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// UserTransitionConfirmationsColumns holds the columns for the "user_transition_confirmations" table.
+	UserTransitionConfirmationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "decision", Type: field.TypeString},
+		{Name: "comment", Type: field.TypeString, Nullable: true},
+		{Name: "responded_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "transition_case_id", Type: field.TypeUUID},
+		{Name: "transition_confirmer_id", Type: field.TypeUUID},
+	}
+	// UserTransitionConfirmationsTable holds the schema information for the "user_transition_confirmations" table.
+	UserTransitionConfirmationsTable = &schema.Table{
+		Name:       "user_transition_confirmations",
+		Columns:    UserTransitionConfirmationsColumns,
+		PrimaryKey: []*schema.Column{UserTransitionConfirmationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_transition_confirmations_user_transition_cases_confirmations",
+				Columns:    []*schema.Column{UserTransitionConfirmationsColumns[5]},
+				RefColumns: []*schema.Column{UserTransitionCasesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_transition_confirmations_user_transition_confirmers_confirmations",
+				Columns:    []*schema.Column{UserTransitionConfirmationsColumns[6]},
+				RefColumns: []*schema.Column{UserTransitionConfirmersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "usertransitionconfirmation_transition_case_id_transition_confirmer_id",
+				Unique:  true,
+				Columns: []*schema.Column{UserTransitionConfirmationsColumns[5], UserTransitionConfirmationsColumns[6]},
+			},
+		},
+	}
+	// UserTransitionConfirmersColumns holds the columns for the "user_transition_confirmers" table.
+	UserTransitionConfirmersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "phone", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeString, Default: "pending"},
+		{Name: "invite_token_hash", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "invite_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "auth_token_hash", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "auth_token_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "invited_at", Type: field.TypeTime, Nullable: true},
+		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_transition_confirmers", Type: field.TypeUUID},
+		{Name: "user_transition_confirmer_stakeholder", Type: field.TypeUUID, Nullable: true},
+	}
+	// UserTransitionConfirmersTable holds the schema information for the "user_transition_confirmers" table.
+	UserTransitionConfirmersTable = &schema.Table{
+		Name:       "user_transition_confirmers",
+		Columns:    UserTransitionConfirmersColumns,
+		PrimaryKey: []*schema.Column{UserTransitionConfirmersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_transition_confirmers_users_transition_confirmers",
+				Columns:    []*schema.Column{UserTransitionConfirmersColumns[14]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_transition_confirmers_stakeholders_stakeholder",
+				Columns:    []*schema.Column{UserTransitionConfirmersColumns[15]},
+				RefColumns: []*schema.Column{StakeholdersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "usertransitionconfirmer_email_user_transition_confirmers",
+				Unique:  true,
+				Columns: []*schema.Column{UserTransitionConfirmersColumns[2], UserTransitionConfirmersColumns[14]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status IN ('pending', 'accepted') AND email IS NOT NULL",
+				},
+			},
+			{
+				Name:    "usertransitionconfirmer_phone_user_transition_confirmers",
+				Unique:  true,
+				Columns: []*schema.Column{UserTransitionConfirmersColumns[3], UserTransitionConfirmersColumns[14]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status IN ('pending', 'accepted') AND phone IS NOT NULL",
+				},
+			},
+		},
+	}
+	// UserTransitionPoliciesColumns holds the columns for the "user_transition_policies" table.
+	UserTransitionPoliciesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "minimum_confirmers", Type: field.TypeInt, Default: 2},
+		{Name: "waiting_period_days", Type: field.TypeInt, Default: 7},
+		{Name: "alive_check_interval_days", Type: field.TypeInt, Default: 90},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_transition_policy", Type: field.TypeUUID, Unique: true},
+	}
+	// UserTransitionPoliciesTable holds the schema information for the "user_transition_policies" table.
+	UserTransitionPoliciesTable = &schema.Table{
+		Name:       "user_transition_policies",
+		Columns:    UserTransitionPoliciesColumns,
+		PrimaryKey: []*schema.Column{UserTransitionPoliciesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_transition_policies_users_transition_policy",
+				Columns:    []*schema.Column{UserTransitionPoliciesColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -287,56 +568,49 @@ var (
 			},
 		},
 	}
-	// UserConfigVerifierColumns holds the columns for the "user_config_verifier" table.
-	UserConfigVerifierColumns = []*schema.Column{
-		{Name: "user_config_id", Type: field.TypeUUID},
-		{Name: "stakeholder_id", Type: field.TypeUUID},
-	}
-	// UserConfigVerifierTable holds the schema information for the "user_config_verifier" table.
-	UserConfigVerifierTable = &schema.Table{
-		Name:       "user_config_verifier",
-		Columns:    UserConfigVerifierColumns,
-		PrimaryKey: []*schema.Column{UserConfigVerifierColumns[0], UserConfigVerifierColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_config_verifier_user_config_id",
-				Columns:    []*schema.Column{UserConfigVerifierColumns[0]},
-				RefColumns: []*schema.Column{UserConfigsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_config_verifier_stakeholder_id",
-				Columns:    []*schema.Column{UserConfigVerifierColumns[1]},
-				RefColumns: []*schema.Column{StakeholdersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
+		AccountHandlingEventsTable,
+		AccountHandlingTasksTable,
+		AccountHandlingTaskAssigneesTable,
 		LastWordsTable,
 		LegaciesTable,
 		StakeholdersTable,
 		StakeholderGroupsTable,
 		UsersTable,
+		UserAliveChecksTable,
 		UserConfigsTable,
+		UserTransitionCasesTable,
+		UserTransitionConfirmationsTable,
+		UserTransitionConfirmersTable,
+		UserTransitionPoliciesTable,
 		AccountStakeholdersTable,
 		AccountStakeholderGroupsTable,
 		LastWordReceiverTable,
 		LastWordReceiverGroupsTable,
 		StakeholderGroupStakeholdersTable,
-		UserConfigVerifierTable,
 	}
 )
 
 func init() {
 	AccountsTable.ForeignKeys[0].RefTable = LegaciesTable
+	AccountHandlingEventsTable.ForeignKeys[0].RefTable = AccountHandlingTasksTable
+	AccountHandlingTasksTable.ForeignKeys[0].RefTable = AccountsTable
+	AccountHandlingTasksTable.ForeignKeys[1].RefTable = UserTransitionCasesTable
+	AccountHandlingTaskAssigneesTable.ForeignKeys[0].RefTable = AccountHandlingTasksTable
 	LastWordsTable.ForeignKeys[0].RefTable = UsersTable
 	LegaciesTable.ForeignKeys[0].RefTable = UsersTable
 	StakeholdersTable.ForeignKeys[0].RefTable = UsersTable
 	StakeholderGroupsTable.ForeignKeys[0].RefTable = UsersTable
+	UserAliveChecksTable.ForeignKeys[0].RefTable = UsersTable
 	UserConfigsTable.ForeignKeys[0].RefTable = UsersTable
+	UserTransitionCasesTable.ForeignKeys[0].RefTable = UsersTable
+	UserTransitionConfirmationsTable.ForeignKeys[0].RefTable = UserTransitionCasesTable
+	UserTransitionConfirmationsTable.ForeignKeys[1].RefTable = UserTransitionConfirmersTable
+	UserTransitionConfirmersTable.ForeignKeys[0].RefTable = UsersTable
+	UserTransitionConfirmersTable.ForeignKeys[1].RefTable = StakeholdersTable
+	UserTransitionPoliciesTable.ForeignKeys[0].RefTable = UsersTable
 	AccountStakeholdersTable.ForeignKeys[0].RefTable = AccountsTable
 	AccountStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
 	AccountStakeholderGroupsTable.ForeignKeys[0].RefTable = AccountsTable
@@ -347,6 +621,4 @@ func init() {
 	LastWordReceiverGroupsTable.ForeignKeys[1].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[0].RefTable = StakeholderGroupsTable
 	StakeholderGroupStakeholdersTable.ForeignKeys[1].RefTable = StakeholdersTable
-	UserConfigVerifierTable.ForeignKeys[0].RefTable = UserConfigsTable
-	UserConfigVerifierTable.ForeignKeys[1].RefTable = StakeholdersTable
 }

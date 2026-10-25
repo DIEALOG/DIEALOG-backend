@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -182,6 +183,21 @@ func (_u *AccountUpdate) AddStakeholderGroups(v ...*StakeholderGroup) *AccountUp
 	return _u.AddStakeholderGroupIDs(ids...)
 }
 
+// AddHandlingTaskIDs adds the "handling_tasks" edge to the AccountHandlingTask entity by IDs.
+func (_u *AccountUpdate) AddHandlingTaskIDs(ids ...uuid.UUID) *AccountUpdate {
+	_u.mutation.AddHandlingTaskIDs(ids...)
+	return _u
+}
+
+// AddHandlingTasks adds the "handling_tasks" edges to the AccountHandlingTask entity.
+func (_u *AccountUpdate) AddHandlingTasks(v ...*AccountHandlingTask) *AccountUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddHandlingTaskIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (_u *AccountUpdate) Mutation() *AccountMutation {
 	return _u.mutation
@@ -227,6 +243,27 @@ func (_u *AccountUpdate) RemoveStakeholderGroups(v ...*StakeholderGroup) *Accoun
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderGroupIDs(ids...)
+}
+
+// ClearHandlingTasks clears all "handling_tasks" edges to the AccountHandlingTask entity.
+func (_u *AccountUpdate) ClearHandlingTasks() *AccountUpdate {
+	_u.mutation.ClearHandlingTasks()
+	return _u
+}
+
+// RemoveHandlingTaskIDs removes the "handling_tasks" edge to AccountHandlingTask entities by IDs.
+func (_u *AccountUpdate) RemoveHandlingTaskIDs(ids ...uuid.UUID) *AccountUpdate {
+	_u.mutation.RemoveHandlingTaskIDs(ids...)
+	return _u
+}
+
+// RemoveHandlingTasks removes "handling_tasks" edges to AccountHandlingTask entities.
+func (_u *AccountUpdate) RemoveHandlingTasks(v ...*AccountHandlingTask) *AccountUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveHandlingTaskIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -414,6 +451,51 @@ func (_u *AccountUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.HandlingTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedHandlingTasksIDs(); len(nodes) > 0 && !_u.mutation.HandlingTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.HandlingTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -586,6 +668,21 @@ func (_u *AccountUpdateOne) AddStakeholderGroups(v ...*StakeholderGroup) *Accoun
 	return _u.AddStakeholderGroupIDs(ids...)
 }
 
+// AddHandlingTaskIDs adds the "handling_tasks" edge to the AccountHandlingTask entity by IDs.
+func (_u *AccountUpdateOne) AddHandlingTaskIDs(ids ...uuid.UUID) *AccountUpdateOne {
+	_u.mutation.AddHandlingTaskIDs(ids...)
+	return _u
+}
+
+// AddHandlingTasks adds the "handling_tasks" edges to the AccountHandlingTask entity.
+func (_u *AccountUpdateOne) AddHandlingTasks(v ...*AccountHandlingTask) *AccountUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddHandlingTaskIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (_u *AccountUpdateOne) Mutation() *AccountMutation {
 	return _u.mutation
@@ -631,6 +728,27 @@ func (_u *AccountUpdateOne) RemoveStakeholderGroups(v ...*StakeholderGroup) *Acc
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStakeholderGroupIDs(ids...)
+}
+
+// ClearHandlingTasks clears all "handling_tasks" edges to the AccountHandlingTask entity.
+func (_u *AccountUpdateOne) ClearHandlingTasks() *AccountUpdateOne {
+	_u.mutation.ClearHandlingTasks()
+	return _u
+}
+
+// RemoveHandlingTaskIDs removes the "handling_tasks" edge to AccountHandlingTask entities by IDs.
+func (_u *AccountUpdateOne) RemoveHandlingTaskIDs(ids ...uuid.UUID) *AccountUpdateOne {
+	_u.mutation.RemoveHandlingTaskIDs(ids...)
+	return _u
+}
+
+// RemoveHandlingTasks removes "handling_tasks" edges to AccountHandlingTask entities.
+func (_u *AccountUpdateOne) RemoveHandlingTasks(v ...*AccountHandlingTask) *AccountUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveHandlingTaskIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -841,6 +959,51 @@ func (_u *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.HandlingTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedHandlingTasksIDs(); len(nodes) > 0 && !_u.mutation.HandlingTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.HandlingTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

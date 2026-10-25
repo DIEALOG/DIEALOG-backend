@@ -49,5 +49,14 @@ func (User) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("user_config", UserConfig.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("transition_policy", UserTransitionPolicy.Type).
+			Unique().
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("transition_confirmers", UserTransitionConfirmer.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("alive_checks", UserAliveCheck.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("transition_cases", UserTransitionCase.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

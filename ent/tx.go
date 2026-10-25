@@ -14,6 +14,12 @@ type Tx struct {
 	config
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// AccountHandlingEvent is the client for interacting with the AccountHandlingEvent builders.
+	AccountHandlingEvent *AccountHandlingEventClient
+	// AccountHandlingTask is the client for interacting with the AccountHandlingTask builders.
+	AccountHandlingTask *AccountHandlingTaskClient
+	// AccountHandlingTaskAssignee is the client for interacting with the AccountHandlingTaskAssignee builders.
+	AccountHandlingTaskAssignee *AccountHandlingTaskAssigneeClient
 	// LastWord is the client for interacting with the LastWord builders.
 	LastWord *LastWordClient
 	// Legacy is the client for interacting with the Legacy builders.
@@ -24,8 +30,18 @@ type Tx struct {
 	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserAliveCheck is the client for interacting with the UserAliveCheck builders.
+	UserAliveCheck *UserAliveCheckClient
 	// UserConfig is the client for interacting with the UserConfig builders.
 	UserConfig *UserConfigClient
+	// UserTransitionCase is the client for interacting with the UserTransitionCase builders.
+	UserTransitionCase *UserTransitionCaseClient
+	// UserTransitionConfirmation is the client for interacting with the UserTransitionConfirmation builders.
+	UserTransitionConfirmation *UserTransitionConfirmationClient
+	// UserTransitionConfirmer is the client for interacting with the UserTransitionConfirmer builders.
+	UserTransitionConfirmer *UserTransitionConfirmerClient
+	// UserTransitionPolicy is the client for interacting with the UserTransitionPolicy builders.
+	UserTransitionPolicy *UserTransitionPolicyClient
 
 	// lazily loaded.
 	client     *Client
@@ -158,12 +174,20 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Account = NewAccountClient(tx.config)
+	tx.AccountHandlingEvent = NewAccountHandlingEventClient(tx.config)
+	tx.AccountHandlingTask = NewAccountHandlingTaskClient(tx.config)
+	tx.AccountHandlingTaskAssignee = NewAccountHandlingTaskAssigneeClient(tx.config)
 	tx.LastWord = NewLastWordClient(tx.config)
 	tx.Legacy = NewLegacyClient(tx.config)
 	tx.Stakeholder = NewStakeholderClient(tx.config)
 	tx.StakeholderGroup = NewStakeholderGroupClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserAliveCheck = NewUserAliveCheckClient(tx.config)
 	tx.UserConfig = NewUserConfigClient(tx.config)
+	tx.UserTransitionCase = NewUserTransitionCaseClient(tx.config)
+	tx.UserTransitionConfirmation = NewUserTransitionConfirmationClient(tx.config)
+	tx.UserTransitionConfirmer = NewUserTransitionConfirmerClient(tx.config)
+	tx.UserTransitionPolicy = NewUserTransitionPolicyClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

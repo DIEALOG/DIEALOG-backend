@@ -11,9 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
-	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
-	"github.com/google/uuid"
 )
 
 // UserConfigUpdate is the builder for updating UserConfig entities.
@@ -57,80 +55,9 @@ func (_u *UserConfigUpdate) SetNillableCertificationBeforeSensitiveInformation(v
 	return _u
 }
 
-// SetConversionCriteria sets the "conversion_criteria" field.
-func (_u *UserConfigUpdate) SetConversionCriteria(v string) *UserConfigUpdate {
-	_u.mutation.SetConversionCriteria(v)
-	return _u
-}
-
-// SetNillableConversionCriteria sets the "conversion_criteria" field if the given value is not nil.
-func (_u *UserConfigUpdate) SetNillableConversionCriteria(v *string) *UserConfigUpdate {
-	if v != nil {
-		_u.SetConversionCriteria(*v)
-	}
-	return _u
-}
-
-// SetSurvivalCheckIntervalDays sets the "survival_check_interval_days" field.
-func (_u *UserConfigUpdate) SetSurvivalCheckIntervalDays(v int) *UserConfigUpdate {
-	_u.mutation.ResetSurvivalCheckIntervalDays()
-	_u.mutation.SetSurvivalCheckIntervalDays(v)
-	return _u
-}
-
-// SetNillableSurvivalCheckIntervalDays sets the "survival_check_interval_days" field if the given value is not nil.
-func (_u *UserConfigUpdate) SetNillableSurvivalCheckIntervalDays(v *int) *UserConfigUpdate {
-	if v != nil {
-		_u.SetSurvivalCheckIntervalDays(*v)
-	}
-	return _u
-}
-
-// AddSurvivalCheckIntervalDays adds value to the "survival_check_interval_days" field.
-func (_u *UserConfigUpdate) AddSurvivalCheckIntervalDays(v int) *UserConfigUpdate {
-	_u.mutation.AddSurvivalCheckIntervalDays(v)
-	return _u
-}
-
-// AddVerifierIDs adds the "verifier" edge to the Stakeholder entity by IDs.
-func (_u *UserConfigUpdate) AddVerifierIDs(ids ...uuid.UUID) *UserConfigUpdate {
-	_u.mutation.AddVerifierIDs(ids...)
-	return _u
-}
-
-// AddVerifier adds the "verifier" edges to the Stakeholder entity.
-func (_u *UserConfigUpdate) AddVerifier(v ...*Stakeholder) *UserConfigUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVerifierIDs(ids...)
-}
-
 // Mutation returns the UserConfigMutation object of the builder.
 func (_u *UserConfigUpdate) Mutation() *UserConfigMutation {
 	return _u.mutation
-}
-
-// ClearVerifier clears all "verifier" edges to the Stakeholder entity.
-func (_u *UserConfigUpdate) ClearVerifier() *UserConfigUpdate {
-	_u.mutation.ClearVerifier()
-	return _u
-}
-
-// RemoveVerifierIDs removes the "verifier" edge to Stakeholder entities by IDs.
-func (_u *UserConfigUpdate) RemoveVerifierIDs(ids ...uuid.UUID) *UserConfigUpdate {
-	_u.mutation.RemoveVerifierIDs(ids...)
-	return _u
-}
-
-// RemoveVerifier removes "verifier" edges to Stakeholder entities.
-func (_u *UserConfigUpdate) RemoveVerifier(v ...*Stakeholder) *UserConfigUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVerifierIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -162,11 +89,6 @@ func (_u *UserConfigUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserConfigUpdate) check() error {
-	if v, ok := _u.mutation.ConversionCriteria(); ok {
-		if err := userconfig.ConversionCriteriaValidator(v); err != nil {
-			return &ValidationError{Name: "conversion_criteria", err: fmt.Errorf(`ent: validator failed for field "UserConfig.conversion_criteria": %w`, err)}
-		}
-	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "UserConfig.user"`)
 	}
@@ -190,60 +112,6 @@ func (_u *UserConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.CertificationBeforeSensitiveInformation(); ok {
 		_spec.SetField(userconfig.FieldCertificationBeforeSensitiveInformation, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ConversionCriteria(); ok {
-		_spec.SetField(userconfig.FieldConversionCriteria, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.SurvivalCheckIntervalDays(); ok {
-		_spec.SetField(userconfig.FieldSurvivalCheckIntervalDays, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedSurvivalCheckIntervalDays(); ok {
-		_spec.AddField(userconfig.FieldSurvivalCheckIntervalDays, field.TypeInt, value)
-	}
-	if _u.mutation.VerifierCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVerifierIDs(); len(nodes) > 0 && !_u.mutation.VerifierCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VerifierIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -293,80 +161,9 @@ func (_u *UserConfigUpdateOne) SetNillableCertificationBeforeSensitiveInformatio
 	return _u
 }
 
-// SetConversionCriteria sets the "conversion_criteria" field.
-func (_u *UserConfigUpdateOne) SetConversionCriteria(v string) *UserConfigUpdateOne {
-	_u.mutation.SetConversionCriteria(v)
-	return _u
-}
-
-// SetNillableConversionCriteria sets the "conversion_criteria" field if the given value is not nil.
-func (_u *UserConfigUpdateOne) SetNillableConversionCriteria(v *string) *UserConfigUpdateOne {
-	if v != nil {
-		_u.SetConversionCriteria(*v)
-	}
-	return _u
-}
-
-// SetSurvivalCheckIntervalDays sets the "survival_check_interval_days" field.
-func (_u *UserConfigUpdateOne) SetSurvivalCheckIntervalDays(v int) *UserConfigUpdateOne {
-	_u.mutation.ResetSurvivalCheckIntervalDays()
-	_u.mutation.SetSurvivalCheckIntervalDays(v)
-	return _u
-}
-
-// SetNillableSurvivalCheckIntervalDays sets the "survival_check_interval_days" field if the given value is not nil.
-func (_u *UserConfigUpdateOne) SetNillableSurvivalCheckIntervalDays(v *int) *UserConfigUpdateOne {
-	if v != nil {
-		_u.SetSurvivalCheckIntervalDays(*v)
-	}
-	return _u
-}
-
-// AddSurvivalCheckIntervalDays adds value to the "survival_check_interval_days" field.
-func (_u *UserConfigUpdateOne) AddSurvivalCheckIntervalDays(v int) *UserConfigUpdateOne {
-	_u.mutation.AddSurvivalCheckIntervalDays(v)
-	return _u
-}
-
-// AddVerifierIDs adds the "verifier" edge to the Stakeholder entity by IDs.
-func (_u *UserConfigUpdateOne) AddVerifierIDs(ids ...uuid.UUID) *UserConfigUpdateOne {
-	_u.mutation.AddVerifierIDs(ids...)
-	return _u
-}
-
-// AddVerifier adds the "verifier" edges to the Stakeholder entity.
-func (_u *UserConfigUpdateOne) AddVerifier(v ...*Stakeholder) *UserConfigUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVerifierIDs(ids...)
-}
-
 // Mutation returns the UserConfigMutation object of the builder.
 func (_u *UserConfigUpdateOne) Mutation() *UserConfigMutation {
 	return _u.mutation
-}
-
-// ClearVerifier clears all "verifier" edges to the Stakeholder entity.
-func (_u *UserConfigUpdateOne) ClearVerifier() *UserConfigUpdateOne {
-	_u.mutation.ClearVerifier()
-	return _u
-}
-
-// RemoveVerifierIDs removes the "verifier" edge to Stakeholder entities by IDs.
-func (_u *UserConfigUpdateOne) RemoveVerifierIDs(ids ...uuid.UUID) *UserConfigUpdateOne {
-	_u.mutation.RemoveVerifierIDs(ids...)
-	return _u
-}
-
-// RemoveVerifier removes "verifier" edges to Stakeholder entities.
-func (_u *UserConfigUpdateOne) RemoveVerifier(v ...*Stakeholder) *UserConfigUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVerifierIDs(ids...)
 }
 
 // Where appends a list predicates to the UserConfigUpdate builder.
@@ -411,11 +208,6 @@ func (_u *UserConfigUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserConfigUpdateOne) check() error {
-	if v, ok := _u.mutation.ConversionCriteria(); ok {
-		if err := userconfig.ConversionCriteriaValidator(v); err != nil {
-			return &ValidationError{Name: "conversion_criteria", err: fmt.Errorf(`ent: validator failed for field "UserConfig.conversion_criteria": %w`, err)}
-		}
-	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "UserConfig.user"`)
 	}
@@ -456,60 +248,6 @@ func (_u *UserConfigUpdateOne) sqlSave(ctx context.Context) (_node *UserConfig, 
 	}
 	if value, ok := _u.mutation.CertificationBeforeSensitiveInformation(); ok {
 		_spec.SetField(userconfig.FieldCertificationBeforeSensitiveInformation, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ConversionCriteria(); ok {
-		_spec.SetField(userconfig.FieldConversionCriteria, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.SurvivalCheckIntervalDays(); ok {
-		_spec.SetField(userconfig.FieldSurvivalCheckIntervalDays, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedSurvivalCheckIntervalDays(); ok {
-		_spec.AddField(userconfig.FieldSurvivalCheckIntervalDays, field.TypeInt, value)
-	}
-	if _u.mutation.VerifierCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVerifierIDs(); len(nodes) > 0 && !_u.mutation.VerifierCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VerifierIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &UserConfig{config: _u.config}
 	_spec.Assign = _node.assignValues

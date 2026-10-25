@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
@@ -30,6 +31,7 @@ type AccountQuery struct {
 	withLegacy            *LegacyQuery
 	withStakeholders      *StakeholderQuery
 	withStakeholderGroups *StakeholderGroupQuery
+	withHandlingTasks     *AccountHandlingTaskQuery
 	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -126,6 +128,28 @@ func (_q *AccountQuery) QueryStakeholderGroups() *StakeholderGroupQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(stakeholdergroup.Table, stakeholdergroup.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, account.StakeholderGroupsTable, account.StakeholderGroupsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHandlingTasks chains the current query on the "handling_tasks" edge.
+func (_q *AccountQuery) QueryHandlingTasks() *AccountHandlingTaskQuery {
+	query := (&AccountHandlingTaskClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(accounthandlingtask.Table, accounthandlingtask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.HandlingTasksTable, account.HandlingTasksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -328,6 +352,7 @@ func (_q *AccountQuery) Clone() *AccountQuery {
 		withLegacy:            _q.withLegacy.Clone(),
 		withStakeholders:      _q.withStakeholders.Clone(),
 		withStakeholderGroups: _q.withStakeholderGroups.Clone(),
+		withHandlingTasks:     _q.withHandlingTasks.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -364,6 +389,17 @@ func (_q *AccountQuery) WithStakeholderGroups(opts ...func(*StakeholderGroupQuer
 		opt(query)
 	}
 	_q.withStakeholderGroups = query
+	return _q
+}
+
+// WithHandlingTasks tells the query-builder to eager-load the nodes that are connected to
+// the "handling_tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AccountQuery) WithHandlingTasks(opts ...func(*AccountHandlingTaskQuery)) *AccountQuery {
+	query := (&AccountHandlingTaskClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withHandlingTasks = query
 	return _q
 }
 
@@ -446,10 +482,11 @@ func (_q *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		nodes       = []*Account{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withLegacy != nil,
 			_q.withStakeholders != nil,
 			_q.withStakeholderGroups != nil,
+			_q.withHandlingTasks != nil,
 		}
 	)
 	if _q.withLegacy != nil {
@@ -495,6 +532,13 @@ func (_q *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 			func(n *Account, e *StakeholderGroup) {
 				n.Edges.StakeholderGroups = append(n.Edges.StakeholderGroups, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withHandlingTasks; query != nil {
+		if err := _q.loadHandlingTasks(ctx, query, nodes,
+			func(n *Account) { n.Edges.HandlingTasks = []*AccountHandlingTask{} },
+			func(n *Account, e *AccountHandlingTask) { n.Edges.HandlingTasks = append(n.Edges.HandlingTasks, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -652,6 +696,36 @@ func (_q *AccountQuery) loadStakeholderGroups(ctx context.Context, query *Stakeh
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *AccountQuery) loadHandlingTasks(ctx context.Context, query *AccountHandlingTaskQuery, nodes []*Account, init func(*Account), assign func(*Account, *AccountHandlingTask)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Account)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(accounthandlingtask.FieldAccountID)
+	}
+	query.Where(predicate.AccountHandlingTask(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(account.HandlingTasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AccountID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "account_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

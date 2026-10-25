@@ -197,6 +197,9 @@ func (r *legacyRepository) FindAccountById(c context.Context, id *domain.ID, use
 			),
 		).
 		WithStakeholders().
+		WithStakeholderGroups(func(q *ent.StakeholderGroupQuery) {
+			q.WithStakeholders()
+		}).
 		WithLegacy().
 		Only(c)
 

@@ -18,15 +18,12 @@ func (UserConfig) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("id"),
 		field.Bool("lock_by_face_id").Default(true),
 		field.Bool("certification_before_sensitive_information").Default(true),
-		field.String("conversion_criteria").NotEmpty().Default("tmp"),
-		field.Int("survival_check_interval_days").Default(90),
 	}
 }
 
 // Edges of the UserConfig.
 func (UserConfig) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("verifier", Stakeholder.Type),
 		edge.From("user", User.Type).
 			Ref("user_config").
 			Unique().

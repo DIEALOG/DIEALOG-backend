@@ -17,12 +17,20 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingevent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmation"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 )
 
 // Client is the client that holds all ent builders.
@@ -32,6 +40,12 @@ type Client struct {
 	Schema *migrate.Schema
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// AccountHandlingEvent is the client for interacting with the AccountHandlingEvent builders.
+	AccountHandlingEvent *AccountHandlingEventClient
+	// AccountHandlingTask is the client for interacting with the AccountHandlingTask builders.
+	AccountHandlingTask *AccountHandlingTaskClient
+	// AccountHandlingTaskAssignee is the client for interacting with the AccountHandlingTaskAssignee builders.
+	AccountHandlingTaskAssignee *AccountHandlingTaskAssigneeClient
 	// LastWord is the client for interacting with the LastWord builders.
 	LastWord *LastWordClient
 	// Legacy is the client for interacting with the Legacy builders.
@@ -42,8 +56,18 @@ type Client struct {
 	StakeholderGroup *StakeholderGroupClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserAliveCheck is the client for interacting with the UserAliveCheck builders.
+	UserAliveCheck *UserAliveCheckClient
 	// UserConfig is the client for interacting with the UserConfig builders.
 	UserConfig *UserConfigClient
+	// UserTransitionCase is the client for interacting with the UserTransitionCase builders.
+	UserTransitionCase *UserTransitionCaseClient
+	// UserTransitionConfirmation is the client for interacting with the UserTransitionConfirmation builders.
+	UserTransitionConfirmation *UserTransitionConfirmationClient
+	// UserTransitionConfirmer is the client for interacting with the UserTransitionConfirmer builders.
+	UserTransitionConfirmer *UserTransitionConfirmerClient
+	// UserTransitionPolicy is the client for interacting with the UserTransitionPolicy builders.
+	UserTransitionPolicy *UserTransitionPolicyClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -56,12 +80,20 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Account = NewAccountClient(c.config)
+	c.AccountHandlingEvent = NewAccountHandlingEventClient(c.config)
+	c.AccountHandlingTask = NewAccountHandlingTaskClient(c.config)
+	c.AccountHandlingTaskAssignee = NewAccountHandlingTaskAssigneeClient(c.config)
 	c.LastWord = NewLastWordClient(c.config)
 	c.Legacy = NewLegacyClient(c.config)
 	c.Stakeholder = NewStakeholderClient(c.config)
 	c.StakeholderGroup = NewStakeholderGroupClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserAliveCheck = NewUserAliveCheckClient(c.config)
 	c.UserConfig = NewUserConfigClient(c.config)
+	c.UserTransitionCase = NewUserTransitionCaseClient(c.config)
+	c.UserTransitionConfirmation = NewUserTransitionConfirmationClient(c.config)
+	c.UserTransitionConfirmer = NewUserTransitionConfirmerClient(c.config)
+	c.UserTransitionPolicy = NewUserTransitionPolicyClient(c.config)
 }
 
 type (
@@ -152,15 +184,23 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Account:          NewAccountClient(cfg),
-		LastWord:         NewLastWordClient(cfg),
-		Legacy:           NewLegacyClient(cfg),
-		Stakeholder:      NewStakeholderClient(cfg),
-		StakeholderGroup: NewStakeholderGroupClient(cfg),
-		User:             NewUserClient(cfg),
-		UserConfig:       NewUserConfigClient(cfg),
+		ctx:                         ctx,
+		config:                      cfg,
+		Account:                     NewAccountClient(cfg),
+		AccountHandlingEvent:        NewAccountHandlingEventClient(cfg),
+		AccountHandlingTask:         NewAccountHandlingTaskClient(cfg),
+		AccountHandlingTaskAssignee: NewAccountHandlingTaskAssigneeClient(cfg),
+		LastWord:                    NewLastWordClient(cfg),
+		Legacy:                      NewLegacyClient(cfg),
+		Stakeholder:                 NewStakeholderClient(cfg),
+		StakeholderGroup:            NewStakeholderGroupClient(cfg),
+		User:                        NewUserClient(cfg),
+		UserAliveCheck:              NewUserAliveCheckClient(cfg),
+		UserConfig:                  NewUserConfigClient(cfg),
+		UserTransitionCase:          NewUserTransitionCaseClient(cfg),
+		UserTransitionConfirmation:  NewUserTransitionConfirmationClient(cfg),
+		UserTransitionConfirmer:     NewUserTransitionConfirmerClient(cfg),
+		UserTransitionPolicy:        NewUserTransitionPolicyClient(cfg),
 	}, nil
 }
 
@@ -178,15 +218,23 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Account:          NewAccountClient(cfg),
-		LastWord:         NewLastWordClient(cfg),
-		Legacy:           NewLegacyClient(cfg),
-		Stakeholder:      NewStakeholderClient(cfg),
-		StakeholderGroup: NewStakeholderGroupClient(cfg),
-		User:             NewUserClient(cfg),
-		UserConfig:       NewUserConfigClient(cfg),
+		ctx:                         ctx,
+		config:                      cfg,
+		Account:                     NewAccountClient(cfg),
+		AccountHandlingEvent:        NewAccountHandlingEventClient(cfg),
+		AccountHandlingTask:         NewAccountHandlingTaskClient(cfg),
+		AccountHandlingTaskAssignee: NewAccountHandlingTaskAssigneeClient(cfg),
+		LastWord:                    NewLastWordClient(cfg),
+		Legacy:                      NewLegacyClient(cfg),
+		Stakeholder:                 NewStakeholderClient(cfg),
+		StakeholderGroup:            NewStakeholderGroupClient(cfg),
+		User:                        NewUserClient(cfg),
+		UserAliveCheck:              NewUserAliveCheckClient(cfg),
+		UserConfig:                  NewUserConfigClient(cfg),
+		UserTransitionCase:          NewUserTransitionCaseClient(cfg),
+		UserTransitionConfirmation:  NewUserTransitionConfirmationClient(cfg),
+		UserTransitionConfirmer:     NewUserTransitionConfirmerClient(cfg),
+		UserTransitionPolicy:        NewUserTransitionPolicyClient(cfg),
 	}, nil
 }
 
@@ -216,8 +264,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
-		c.UserConfig,
+		c.Account, c.AccountHandlingEvent, c.AccountHandlingTask,
+		c.AccountHandlingTaskAssignee, c.LastWord, c.Legacy, c.Stakeholder,
+		c.StakeholderGroup, c.User, c.UserAliveCheck, c.UserConfig,
+		c.UserTransitionCase, c.UserTransitionConfirmation, c.UserTransitionConfirmer,
+		c.UserTransitionPolicy,
 	} {
 		n.Use(hooks...)
 	}
@@ -227,8 +278,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Account, c.LastWord, c.Legacy, c.Stakeholder, c.StakeholderGroup, c.User,
-		c.UserConfig,
+		c.Account, c.AccountHandlingEvent, c.AccountHandlingTask,
+		c.AccountHandlingTaskAssignee, c.LastWord, c.Legacy, c.Stakeholder,
+		c.StakeholderGroup, c.User, c.UserAliveCheck, c.UserConfig,
+		c.UserTransitionCase, c.UserTransitionConfirmation, c.UserTransitionConfirmer,
+		c.UserTransitionPolicy,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -239,6 +293,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AccountMutation:
 		return c.Account.mutate(ctx, m)
+	case *AccountHandlingEventMutation:
+		return c.AccountHandlingEvent.mutate(ctx, m)
+	case *AccountHandlingTaskMutation:
+		return c.AccountHandlingTask.mutate(ctx, m)
+	case *AccountHandlingTaskAssigneeMutation:
+		return c.AccountHandlingTaskAssignee.mutate(ctx, m)
 	case *LastWordMutation:
 		return c.LastWord.mutate(ctx, m)
 	case *LegacyMutation:
@@ -249,8 +309,18 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.StakeholderGroup.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserAliveCheckMutation:
+		return c.UserAliveCheck.mutate(ctx, m)
 	case *UserConfigMutation:
 		return c.UserConfig.mutate(ctx, m)
+	case *UserTransitionCaseMutation:
+		return c.UserTransitionCase.mutate(ctx, m)
+	case *UserTransitionConfirmationMutation:
+		return c.UserTransitionConfirmation.mutate(ctx, m)
+	case *UserTransitionConfirmerMutation:
+		return c.UserTransitionConfirmer.mutate(ctx, m)
+	case *UserTransitionPolicyMutation:
+		return c.UserTransitionPolicy.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -412,6 +482,22 @@ func (c *AccountClient) QueryStakeholderGroups(_m *Account) *StakeholderGroupQue
 	return query
 }
 
+// QueryHandlingTasks queries the handling_tasks edge of a Account.
+func (c *AccountClient) QueryHandlingTasks(_m *Account) *AccountHandlingTaskQuery {
+	query := (&AccountHandlingTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, id),
+			sqlgraph.To(accounthandlingtask.Table, accounthandlingtask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.HandlingTasksTable, account.HandlingTasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AccountClient) Hooks() []Hook {
 	return c.hooks.Account
@@ -434,6 +520,501 @@ func (c *AccountClient) mutate(ctx context.Context, m *AccountMutation) (Value, 
 		return (&AccountDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Account mutation op: %q", m.Op())
+	}
+}
+
+// AccountHandlingEventClient is a client for the AccountHandlingEvent schema.
+type AccountHandlingEventClient struct {
+	config
+}
+
+// NewAccountHandlingEventClient returns a client for the AccountHandlingEvent from the given config.
+func NewAccountHandlingEventClient(c config) *AccountHandlingEventClient {
+	return &AccountHandlingEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `accounthandlingevent.Hooks(f(g(h())))`.
+func (c *AccountHandlingEventClient) Use(hooks ...Hook) {
+	c.hooks.AccountHandlingEvent = append(c.hooks.AccountHandlingEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `accounthandlingevent.Intercept(f(g(h())))`.
+func (c *AccountHandlingEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AccountHandlingEvent = append(c.inters.AccountHandlingEvent, interceptors...)
+}
+
+// Create returns a builder for creating a AccountHandlingEvent entity.
+func (c *AccountHandlingEventClient) Create() *AccountHandlingEventCreate {
+	mutation := newAccountHandlingEventMutation(c.config, OpCreate)
+	return &AccountHandlingEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AccountHandlingEvent entities.
+func (c *AccountHandlingEventClient) CreateBulk(builders ...*AccountHandlingEventCreate) *AccountHandlingEventCreateBulk {
+	return &AccountHandlingEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AccountHandlingEventClient) MapCreateBulk(slice any, setFunc func(*AccountHandlingEventCreate, int)) *AccountHandlingEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AccountHandlingEventCreateBulk{err: fmt.Errorf("calling to AccountHandlingEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AccountHandlingEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AccountHandlingEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AccountHandlingEvent.
+func (c *AccountHandlingEventClient) Update() *AccountHandlingEventUpdate {
+	mutation := newAccountHandlingEventMutation(c.config, OpUpdate)
+	return &AccountHandlingEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AccountHandlingEventClient) UpdateOne(_m *AccountHandlingEvent) *AccountHandlingEventUpdateOne {
+	mutation := newAccountHandlingEventMutation(c.config, OpUpdateOne, withAccountHandlingEvent(_m))
+	return &AccountHandlingEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AccountHandlingEventClient) UpdateOneID(id uuid.UUID) *AccountHandlingEventUpdateOne {
+	mutation := newAccountHandlingEventMutation(c.config, OpUpdateOne, withAccountHandlingEventID(id))
+	return &AccountHandlingEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AccountHandlingEvent.
+func (c *AccountHandlingEventClient) Delete() *AccountHandlingEventDelete {
+	mutation := newAccountHandlingEventMutation(c.config, OpDelete)
+	return &AccountHandlingEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AccountHandlingEventClient) DeleteOne(_m *AccountHandlingEvent) *AccountHandlingEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AccountHandlingEventClient) DeleteOneID(id uuid.UUID) *AccountHandlingEventDeleteOne {
+	builder := c.Delete().Where(accounthandlingevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AccountHandlingEventDeleteOne{builder}
+}
+
+// Query returns a query builder for AccountHandlingEvent.
+func (c *AccountHandlingEventClient) Query() *AccountHandlingEventQuery {
+	return &AccountHandlingEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAccountHandlingEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AccountHandlingEvent entity by its id.
+func (c *AccountHandlingEventClient) Get(ctx context.Context, id uuid.UUID) (*AccountHandlingEvent, error) {
+	return c.Query().Where(accounthandlingevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AccountHandlingEventClient) GetX(ctx context.Context, id uuid.UUID) *AccountHandlingEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTask queries the task edge of a AccountHandlingEvent.
+func (c *AccountHandlingEventClient) QueryTask(_m *AccountHandlingEvent) *AccountHandlingTaskQuery {
+	query := (&AccountHandlingTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingevent.Table, accounthandlingevent.FieldID, id),
+			sqlgraph.To(accounthandlingtask.Table, accounthandlingtask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, accounthandlingevent.TaskTable, accounthandlingevent.TaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AccountHandlingEventClient) Hooks() []Hook {
+	return c.hooks.AccountHandlingEvent
+}
+
+// Interceptors returns the client interceptors.
+func (c *AccountHandlingEventClient) Interceptors() []Interceptor {
+	return c.inters.AccountHandlingEvent
+}
+
+func (c *AccountHandlingEventClient) mutate(ctx context.Context, m *AccountHandlingEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AccountHandlingEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AccountHandlingEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AccountHandlingEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AccountHandlingEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AccountHandlingEvent mutation op: %q", m.Op())
+	}
+}
+
+// AccountHandlingTaskClient is a client for the AccountHandlingTask schema.
+type AccountHandlingTaskClient struct {
+	config
+}
+
+// NewAccountHandlingTaskClient returns a client for the AccountHandlingTask from the given config.
+func NewAccountHandlingTaskClient(c config) *AccountHandlingTaskClient {
+	return &AccountHandlingTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `accounthandlingtask.Hooks(f(g(h())))`.
+func (c *AccountHandlingTaskClient) Use(hooks ...Hook) {
+	c.hooks.AccountHandlingTask = append(c.hooks.AccountHandlingTask, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `accounthandlingtask.Intercept(f(g(h())))`.
+func (c *AccountHandlingTaskClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AccountHandlingTask = append(c.inters.AccountHandlingTask, interceptors...)
+}
+
+// Create returns a builder for creating a AccountHandlingTask entity.
+func (c *AccountHandlingTaskClient) Create() *AccountHandlingTaskCreate {
+	mutation := newAccountHandlingTaskMutation(c.config, OpCreate)
+	return &AccountHandlingTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AccountHandlingTask entities.
+func (c *AccountHandlingTaskClient) CreateBulk(builders ...*AccountHandlingTaskCreate) *AccountHandlingTaskCreateBulk {
+	return &AccountHandlingTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AccountHandlingTaskClient) MapCreateBulk(slice any, setFunc func(*AccountHandlingTaskCreate, int)) *AccountHandlingTaskCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AccountHandlingTaskCreateBulk{err: fmt.Errorf("calling to AccountHandlingTaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AccountHandlingTaskCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AccountHandlingTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AccountHandlingTask.
+func (c *AccountHandlingTaskClient) Update() *AccountHandlingTaskUpdate {
+	mutation := newAccountHandlingTaskMutation(c.config, OpUpdate)
+	return &AccountHandlingTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AccountHandlingTaskClient) UpdateOne(_m *AccountHandlingTask) *AccountHandlingTaskUpdateOne {
+	mutation := newAccountHandlingTaskMutation(c.config, OpUpdateOne, withAccountHandlingTask(_m))
+	return &AccountHandlingTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AccountHandlingTaskClient) UpdateOneID(id uuid.UUID) *AccountHandlingTaskUpdateOne {
+	mutation := newAccountHandlingTaskMutation(c.config, OpUpdateOne, withAccountHandlingTaskID(id))
+	return &AccountHandlingTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AccountHandlingTask.
+func (c *AccountHandlingTaskClient) Delete() *AccountHandlingTaskDelete {
+	mutation := newAccountHandlingTaskMutation(c.config, OpDelete)
+	return &AccountHandlingTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AccountHandlingTaskClient) DeleteOne(_m *AccountHandlingTask) *AccountHandlingTaskDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AccountHandlingTaskClient) DeleteOneID(id uuid.UUID) *AccountHandlingTaskDeleteOne {
+	builder := c.Delete().Where(accounthandlingtask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AccountHandlingTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for AccountHandlingTask.
+func (c *AccountHandlingTaskClient) Query() *AccountHandlingTaskQuery {
+	return &AccountHandlingTaskQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAccountHandlingTask},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AccountHandlingTask entity by its id.
+func (c *AccountHandlingTaskClient) Get(ctx context.Context, id uuid.UUID) (*AccountHandlingTask, error) {
+	return c.Query().Where(accounthandlingtask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AccountHandlingTaskClient) GetX(ctx context.Context, id uuid.UUID) *AccountHandlingTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTransitionCase queries the transition_case edge of a AccountHandlingTask.
+func (c *AccountHandlingTaskClient) QueryTransitionCase(_m *AccountHandlingTask) *UserTransitionCaseQuery {
+	query := (&UserTransitionCaseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingtask.Table, accounthandlingtask.FieldID, id),
+			sqlgraph.To(usertransitioncase.Table, usertransitioncase.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, accounthandlingtask.TransitionCaseTable, accounthandlingtask.TransitionCaseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAccount queries the account edge of a AccountHandlingTask.
+func (c *AccountHandlingTaskClient) QueryAccount(_m *AccountHandlingTask) *AccountQuery {
+	query := (&AccountClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingtask.Table, accounthandlingtask.FieldID, id),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, accounthandlingtask.AccountTable, accounthandlingtask.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvents queries the events edge of a AccountHandlingTask.
+func (c *AccountHandlingTaskClient) QueryEvents(_m *AccountHandlingTask) *AccountHandlingEventQuery {
+	query := (&AccountHandlingEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingtask.Table, accounthandlingtask.FieldID, id),
+			sqlgraph.To(accounthandlingevent.Table, accounthandlingevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, accounthandlingtask.EventsTable, accounthandlingtask.EventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAssignees queries the assignees edge of a AccountHandlingTask.
+func (c *AccountHandlingTaskClient) QueryAssignees(_m *AccountHandlingTask) *AccountHandlingTaskAssigneeQuery {
+	query := (&AccountHandlingTaskAssigneeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingtask.Table, accounthandlingtask.FieldID, id),
+			sqlgraph.To(accounthandlingtaskassignee.Table, accounthandlingtaskassignee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, accounthandlingtask.AssigneesTable, accounthandlingtask.AssigneesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AccountHandlingTaskClient) Hooks() []Hook {
+	return c.hooks.AccountHandlingTask
+}
+
+// Interceptors returns the client interceptors.
+func (c *AccountHandlingTaskClient) Interceptors() []Interceptor {
+	return c.inters.AccountHandlingTask
+}
+
+func (c *AccountHandlingTaskClient) mutate(ctx context.Context, m *AccountHandlingTaskMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AccountHandlingTaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AccountHandlingTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AccountHandlingTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AccountHandlingTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AccountHandlingTask mutation op: %q", m.Op())
+	}
+}
+
+// AccountHandlingTaskAssigneeClient is a client for the AccountHandlingTaskAssignee schema.
+type AccountHandlingTaskAssigneeClient struct {
+	config
+}
+
+// NewAccountHandlingTaskAssigneeClient returns a client for the AccountHandlingTaskAssignee from the given config.
+func NewAccountHandlingTaskAssigneeClient(c config) *AccountHandlingTaskAssigneeClient {
+	return &AccountHandlingTaskAssigneeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `accounthandlingtaskassignee.Hooks(f(g(h())))`.
+func (c *AccountHandlingTaskAssigneeClient) Use(hooks ...Hook) {
+	c.hooks.AccountHandlingTaskAssignee = append(c.hooks.AccountHandlingTaskAssignee, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `accounthandlingtaskassignee.Intercept(f(g(h())))`.
+func (c *AccountHandlingTaskAssigneeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AccountHandlingTaskAssignee = append(c.inters.AccountHandlingTaskAssignee, interceptors...)
+}
+
+// Create returns a builder for creating a AccountHandlingTaskAssignee entity.
+func (c *AccountHandlingTaskAssigneeClient) Create() *AccountHandlingTaskAssigneeCreate {
+	mutation := newAccountHandlingTaskAssigneeMutation(c.config, OpCreate)
+	return &AccountHandlingTaskAssigneeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AccountHandlingTaskAssignee entities.
+func (c *AccountHandlingTaskAssigneeClient) CreateBulk(builders ...*AccountHandlingTaskAssigneeCreate) *AccountHandlingTaskAssigneeCreateBulk {
+	return &AccountHandlingTaskAssigneeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AccountHandlingTaskAssigneeClient) MapCreateBulk(slice any, setFunc func(*AccountHandlingTaskAssigneeCreate, int)) *AccountHandlingTaskAssigneeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AccountHandlingTaskAssigneeCreateBulk{err: fmt.Errorf("calling to AccountHandlingTaskAssigneeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AccountHandlingTaskAssigneeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AccountHandlingTaskAssigneeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AccountHandlingTaskAssignee.
+func (c *AccountHandlingTaskAssigneeClient) Update() *AccountHandlingTaskAssigneeUpdate {
+	mutation := newAccountHandlingTaskAssigneeMutation(c.config, OpUpdate)
+	return &AccountHandlingTaskAssigneeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AccountHandlingTaskAssigneeClient) UpdateOne(_m *AccountHandlingTaskAssignee) *AccountHandlingTaskAssigneeUpdateOne {
+	mutation := newAccountHandlingTaskAssigneeMutation(c.config, OpUpdateOne, withAccountHandlingTaskAssignee(_m))
+	return &AccountHandlingTaskAssigneeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AccountHandlingTaskAssigneeClient) UpdateOneID(id uuid.UUID) *AccountHandlingTaskAssigneeUpdateOne {
+	mutation := newAccountHandlingTaskAssigneeMutation(c.config, OpUpdateOne, withAccountHandlingTaskAssigneeID(id))
+	return &AccountHandlingTaskAssigneeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AccountHandlingTaskAssignee.
+func (c *AccountHandlingTaskAssigneeClient) Delete() *AccountHandlingTaskAssigneeDelete {
+	mutation := newAccountHandlingTaskAssigneeMutation(c.config, OpDelete)
+	return &AccountHandlingTaskAssigneeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AccountHandlingTaskAssigneeClient) DeleteOne(_m *AccountHandlingTaskAssignee) *AccountHandlingTaskAssigneeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AccountHandlingTaskAssigneeClient) DeleteOneID(id uuid.UUID) *AccountHandlingTaskAssigneeDeleteOne {
+	builder := c.Delete().Where(accounthandlingtaskassignee.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AccountHandlingTaskAssigneeDeleteOne{builder}
+}
+
+// Query returns a query builder for AccountHandlingTaskAssignee.
+func (c *AccountHandlingTaskAssigneeClient) Query() *AccountHandlingTaskAssigneeQuery {
+	return &AccountHandlingTaskAssigneeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAccountHandlingTaskAssignee},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AccountHandlingTaskAssignee entity by its id.
+func (c *AccountHandlingTaskAssigneeClient) Get(ctx context.Context, id uuid.UUID) (*AccountHandlingTaskAssignee, error) {
+	return c.Query().Where(accounthandlingtaskassignee.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AccountHandlingTaskAssigneeClient) GetX(ctx context.Context, id uuid.UUID) *AccountHandlingTaskAssignee {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTask queries the task edge of a AccountHandlingTaskAssignee.
+func (c *AccountHandlingTaskAssigneeClient) QueryTask(_m *AccountHandlingTaskAssignee) *AccountHandlingTaskQuery {
+	query := (&AccountHandlingTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(accounthandlingtaskassignee.Table, accounthandlingtaskassignee.FieldID, id),
+			sqlgraph.To(accounthandlingtask.Table, accounthandlingtask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, accounthandlingtaskassignee.TaskTable, accounthandlingtaskassignee.TaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AccountHandlingTaskAssigneeClient) Hooks() []Hook {
+	return c.hooks.AccountHandlingTaskAssignee
+}
+
+// Interceptors returns the client interceptors.
+func (c *AccountHandlingTaskAssigneeClient) Interceptors() []Interceptor {
+	return c.inters.AccountHandlingTaskAssignee
+}
+
+func (c *AccountHandlingTaskAssigneeClient) mutate(ctx context.Context, m *AccountHandlingTaskAssigneeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AccountHandlingTaskAssigneeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AccountHandlingTaskAssigneeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AccountHandlingTaskAssigneeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AccountHandlingTaskAssigneeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AccountHandlingTaskAssignee mutation op: %q", m.Op())
 	}
 }
 
@@ -955,22 +1536,6 @@ func (c *StakeholderClient) QueryLastWords(_m *Stakeholder) *LastWordQuery {
 	return query
 }
 
-// QueryUserConfig queries the user_config edge of a Stakeholder.
-func (c *StakeholderClient) QueryUserConfig(_m *Stakeholder) *UserConfigQuery {
-	query := (&UserConfigClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(stakeholder.Table, stakeholder.FieldID, id),
-			sqlgraph.To(userconfig.Table, userconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, stakeholder.UserConfigTable, stakeholder.UserConfigPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *StakeholderClient) Hooks() []Hook {
 	return c.hooks.Stakeholder
@@ -1381,6 +1946,70 @@ func (c *UserClient) QueryUserConfig(_m *User) *UserConfigQuery {
 	return query
 }
 
+// QueryTransitionPolicy queries the transition_policy edge of a User.
+func (c *UserClient) QueryTransitionPolicy(_m *User) *UserTransitionPolicyQuery {
+	query := (&UserTransitionPolicyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(usertransitionpolicy.Table, usertransitionpolicy.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.TransitionPolicyTable, user.TransitionPolicyColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransitionConfirmers queries the transition_confirmers edge of a User.
+func (c *UserClient) QueryTransitionConfirmers(_m *User) *UserTransitionConfirmerQuery {
+	query := (&UserTransitionConfirmerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransitionConfirmersTable, user.TransitionConfirmersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAliveChecks queries the alive_checks edge of a User.
+func (c *UserClient) QueryAliveChecks(_m *User) *UserAliveCheckQuery {
+	query := (&UserAliveCheckClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(useralivecheck.Table, useralivecheck.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AliveChecksTable, user.AliveChecksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransitionCases queries the transition_cases edge of a User.
+func (c *UserClient) QueryTransitionCases(_m *User) *UserTransitionCaseQuery {
+	query := (&UserTransitionCaseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(usertransitioncase.Table, usertransitioncase.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransitionCasesTable, user.TransitionCasesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1403,6 +2032,155 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 		return (&UserDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown User mutation op: %q", m.Op())
+	}
+}
+
+// UserAliveCheckClient is a client for the UserAliveCheck schema.
+type UserAliveCheckClient struct {
+	config
+}
+
+// NewUserAliveCheckClient returns a client for the UserAliveCheck from the given config.
+func NewUserAliveCheckClient(c config) *UserAliveCheckClient {
+	return &UserAliveCheckClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `useralivecheck.Hooks(f(g(h())))`.
+func (c *UserAliveCheckClient) Use(hooks ...Hook) {
+	c.hooks.UserAliveCheck = append(c.hooks.UserAliveCheck, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `useralivecheck.Intercept(f(g(h())))`.
+func (c *UserAliveCheckClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserAliveCheck = append(c.inters.UserAliveCheck, interceptors...)
+}
+
+// Create returns a builder for creating a UserAliveCheck entity.
+func (c *UserAliveCheckClient) Create() *UserAliveCheckCreate {
+	mutation := newUserAliveCheckMutation(c.config, OpCreate)
+	return &UserAliveCheckCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserAliveCheck entities.
+func (c *UserAliveCheckClient) CreateBulk(builders ...*UserAliveCheckCreate) *UserAliveCheckCreateBulk {
+	return &UserAliveCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserAliveCheckClient) MapCreateBulk(slice any, setFunc func(*UserAliveCheckCreate, int)) *UserAliveCheckCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserAliveCheckCreateBulk{err: fmt.Errorf("calling to UserAliveCheckClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserAliveCheckCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserAliveCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserAliveCheck.
+func (c *UserAliveCheckClient) Update() *UserAliveCheckUpdate {
+	mutation := newUserAliveCheckMutation(c.config, OpUpdate)
+	return &UserAliveCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserAliveCheckClient) UpdateOne(_m *UserAliveCheck) *UserAliveCheckUpdateOne {
+	mutation := newUserAliveCheckMutation(c.config, OpUpdateOne, withUserAliveCheck(_m))
+	return &UserAliveCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserAliveCheckClient) UpdateOneID(id uuid.UUID) *UserAliveCheckUpdateOne {
+	mutation := newUserAliveCheckMutation(c.config, OpUpdateOne, withUserAliveCheckID(id))
+	return &UserAliveCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserAliveCheck.
+func (c *UserAliveCheckClient) Delete() *UserAliveCheckDelete {
+	mutation := newUserAliveCheckMutation(c.config, OpDelete)
+	return &UserAliveCheckDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserAliveCheckClient) DeleteOne(_m *UserAliveCheck) *UserAliveCheckDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserAliveCheckClient) DeleteOneID(id uuid.UUID) *UserAliveCheckDeleteOne {
+	builder := c.Delete().Where(useralivecheck.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserAliveCheckDeleteOne{builder}
+}
+
+// Query returns a query builder for UserAliveCheck.
+func (c *UserAliveCheckClient) Query() *UserAliveCheckQuery {
+	return &UserAliveCheckQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserAliveCheck},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserAliveCheck entity by its id.
+func (c *UserAliveCheckClient) Get(ctx context.Context, id uuid.UUID) (*UserAliveCheck, error) {
+	return c.Query().Where(useralivecheck.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserAliveCheckClient) GetX(ctx context.Context, id uuid.UUID) *UserAliveCheck {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a UserAliveCheck.
+func (c *UserAliveCheckClient) QueryOwner(_m *UserAliveCheck) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(useralivecheck.Table, useralivecheck.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, useralivecheck.OwnerTable, useralivecheck.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserAliveCheckClient) Hooks() []Hook {
+	return c.hooks.UserAliveCheck
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserAliveCheckClient) Interceptors() []Interceptor {
+	return c.inters.UserAliveCheck
+}
+
+func (c *UserAliveCheckClient) mutate(ctx context.Context, m *UserAliveCheckMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserAliveCheckCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserAliveCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserAliveCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserAliveCheckDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserAliveCheck mutation op: %q", m.Op())
 	}
 }
 
@@ -1514,22 +2292,6 @@ func (c *UserConfigClient) GetX(ctx context.Context, id uuid.UUID) *UserConfig {
 	return obj
 }
 
-// QueryVerifier queries the verifier edge of a UserConfig.
-func (c *UserConfigClient) QueryVerifier(_m *UserConfig) *StakeholderQuery {
-	query := (&StakeholderClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userconfig.Table, userconfig.FieldID, id),
-			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userconfig.VerifierTable, userconfig.VerifierPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryUser queries the user edge of a UserConfig.
 func (c *UserConfigClient) QueryUser(_m *UserConfig) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -1571,14 +2333,694 @@ func (c *UserConfigClient) mutate(ctx context.Context, m *UserConfigMutation) (V
 	}
 }
 
+// UserTransitionCaseClient is a client for the UserTransitionCase schema.
+type UserTransitionCaseClient struct {
+	config
+}
+
+// NewUserTransitionCaseClient returns a client for the UserTransitionCase from the given config.
+func NewUserTransitionCaseClient(c config) *UserTransitionCaseClient {
+	return &UserTransitionCaseClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usertransitioncase.Hooks(f(g(h())))`.
+func (c *UserTransitionCaseClient) Use(hooks ...Hook) {
+	c.hooks.UserTransitionCase = append(c.hooks.UserTransitionCase, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usertransitioncase.Intercept(f(g(h())))`.
+func (c *UserTransitionCaseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserTransitionCase = append(c.inters.UserTransitionCase, interceptors...)
+}
+
+// Create returns a builder for creating a UserTransitionCase entity.
+func (c *UserTransitionCaseClient) Create() *UserTransitionCaseCreate {
+	mutation := newUserTransitionCaseMutation(c.config, OpCreate)
+	return &UserTransitionCaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserTransitionCase entities.
+func (c *UserTransitionCaseClient) CreateBulk(builders ...*UserTransitionCaseCreate) *UserTransitionCaseCreateBulk {
+	return &UserTransitionCaseCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserTransitionCaseClient) MapCreateBulk(slice any, setFunc func(*UserTransitionCaseCreate, int)) *UserTransitionCaseCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserTransitionCaseCreateBulk{err: fmt.Errorf("calling to UserTransitionCaseClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserTransitionCaseCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserTransitionCaseCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserTransitionCase.
+func (c *UserTransitionCaseClient) Update() *UserTransitionCaseUpdate {
+	mutation := newUserTransitionCaseMutation(c.config, OpUpdate)
+	return &UserTransitionCaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserTransitionCaseClient) UpdateOne(_m *UserTransitionCase) *UserTransitionCaseUpdateOne {
+	mutation := newUserTransitionCaseMutation(c.config, OpUpdateOne, withUserTransitionCase(_m))
+	return &UserTransitionCaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserTransitionCaseClient) UpdateOneID(id uuid.UUID) *UserTransitionCaseUpdateOne {
+	mutation := newUserTransitionCaseMutation(c.config, OpUpdateOne, withUserTransitionCaseID(id))
+	return &UserTransitionCaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserTransitionCase.
+func (c *UserTransitionCaseClient) Delete() *UserTransitionCaseDelete {
+	mutation := newUserTransitionCaseMutation(c.config, OpDelete)
+	return &UserTransitionCaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserTransitionCaseClient) DeleteOne(_m *UserTransitionCase) *UserTransitionCaseDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserTransitionCaseClient) DeleteOneID(id uuid.UUID) *UserTransitionCaseDeleteOne {
+	builder := c.Delete().Where(usertransitioncase.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserTransitionCaseDeleteOne{builder}
+}
+
+// Query returns a query builder for UserTransitionCase.
+func (c *UserTransitionCaseClient) Query() *UserTransitionCaseQuery {
+	return &UserTransitionCaseQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserTransitionCase},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserTransitionCase entity by its id.
+func (c *UserTransitionCaseClient) Get(ctx context.Context, id uuid.UUID) (*UserTransitionCase, error) {
+	return c.Query().Where(usertransitioncase.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserTransitionCaseClient) GetX(ctx context.Context, id uuid.UUID) *UserTransitionCase {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a UserTransitionCase.
+func (c *UserTransitionCaseClient) QueryOwner(_m *UserTransitionCase) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitioncase.Table, usertransitioncase.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usertransitioncase.OwnerTable, usertransitioncase.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryConfirmations queries the confirmations edge of a UserTransitionCase.
+func (c *UserTransitionCaseClient) QueryConfirmations(_m *UserTransitionCase) *UserTransitionConfirmationQuery {
+	query := (&UserTransitionConfirmationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitioncase.Table, usertransitioncase.FieldID, id),
+			sqlgraph.To(usertransitionconfirmation.Table, usertransitionconfirmation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, usertransitioncase.ConfirmationsTable, usertransitioncase.ConfirmationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTasks queries the tasks edge of a UserTransitionCase.
+func (c *UserTransitionCaseClient) QueryTasks(_m *UserTransitionCase) *AccountHandlingTaskQuery {
+	query := (&AccountHandlingTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitioncase.Table, usertransitioncase.FieldID, id),
+			sqlgraph.To(accounthandlingtask.Table, accounthandlingtask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, usertransitioncase.TasksTable, usertransitioncase.TasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserTransitionCaseClient) Hooks() []Hook {
+	return c.hooks.UserTransitionCase
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserTransitionCaseClient) Interceptors() []Interceptor {
+	return c.inters.UserTransitionCase
+}
+
+func (c *UserTransitionCaseClient) mutate(ctx context.Context, m *UserTransitionCaseMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserTransitionCaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserTransitionCaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserTransitionCaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserTransitionCaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserTransitionCase mutation op: %q", m.Op())
+	}
+}
+
+// UserTransitionConfirmationClient is a client for the UserTransitionConfirmation schema.
+type UserTransitionConfirmationClient struct {
+	config
+}
+
+// NewUserTransitionConfirmationClient returns a client for the UserTransitionConfirmation from the given config.
+func NewUserTransitionConfirmationClient(c config) *UserTransitionConfirmationClient {
+	return &UserTransitionConfirmationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usertransitionconfirmation.Hooks(f(g(h())))`.
+func (c *UserTransitionConfirmationClient) Use(hooks ...Hook) {
+	c.hooks.UserTransitionConfirmation = append(c.hooks.UserTransitionConfirmation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usertransitionconfirmation.Intercept(f(g(h())))`.
+func (c *UserTransitionConfirmationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserTransitionConfirmation = append(c.inters.UserTransitionConfirmation, interceptors...)
+}
+
+// Create returns a builder for creating a UserTransitionConfirmation entity.
+func (c *UserTransitionConfirmationClient) Create() *UserTransitionConfirmationCreate {
+	mutation := newUserTransitionConfirmationMutation(c.config, OpCreate)
+	return &UserTransitionConfirmationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserTransitionConfirmation entities.
+func (c *UserTransitionConfirmationClient) CreateBulk(builders ...*UserTransitionConfirmationCreate) *UserTransitionConfirmationCreateBulk {
+	return &UserTransitionConfirmationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserTransitionConfirmationClient) MapCreateBulk(slice any, setFunc func(*UserTransitionConfirmationCreate, int)) *UserTransitionConfirmationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserTransitionConfirmationCreateBulk{err: fmt.Errorf("calling to UserTransitionConfirmationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserTransitionConfirmationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserTransitionConfirmationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserTransitionConfirmation.
+func (c *UserTransitionConfirmationClient) Update() *UserTransitionConfirmationUpdate {
+	mutation := newUserTransitionConfirmationMutation(c.config, OpUpdate)
+	return &UserTransitionConfirmationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserTransitionConfirmationClient) UpdateOne(_m *UserTransitionConfirmation) *UserTransitionConfirmationUpdateOne {
+	mutation := newUserTransitionConfirmationMutation(c.config, OpUpdateOne, withUserTransitionConfirmation(_m))
+	return &UserTransitionConfirmationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserTransitionConfirmationClient) UpdateOneID(id uuid.UUID) *UserTransitionConfirmationUpdateOne {
+	mutation := newUserTransitionConfirmationMutation(c.config, OpUpdateOne, withUserTransitionConfirmationID(id))
+	return &UserTransitionConfirmationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserTransitionConfirmation.
+func (c *UserTransitionConfirmationClient) Delete() *UserTransitionConfirmationDelete {
+	mutation := newUserTransitionConfirmationMutation(c.config, OpDelete)
+	return &UserTransitionConfirmationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserTransitionConfirmationClient) DeleteOne(_m *UserTransitionConfirmation) *UserTransitionConfirmationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserTransitionConfirmationClient) DeleteOneID(id uuid.UUID) *UserTransitionConfirmationDeleteOne {
+	builder := c.Delete().Where(usertransitionconfirmation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserTransitionConfirmationDeleteOne{builder}
+}
+
+// Query returns a query builder for UserTransitionConfirmation.
+func (c *UserTransitionConfirmationClient) Query() *UserTransitionConfirmationQuery {
+	return &UserTransitionConfirmationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserTransitionConfirmation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserTransitionConfirmation entity by its id.
+func (c *UserTransitionConfirmationClient) Get(ctx context.Context, id uuid.UUID) (*UserTransitionConfirmation, error) {
+	return c.Query().Where(usertransitionconfirmation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserTransitionConfirmationClient) GetX(ctx context.Context, id uuid.UUID) *UserTransitionConfirmation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTransitionCase queries the transition_case edge of a UserTransitionConfirmation.
+func (c *UserTransitionConfirmationClient) QueryTransitionCase(_m *UserTransitionConfirmation) *UserTransitionCaseQuery {
+	query := (&UserTransitionCaseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionconfirmation.Table, usertransitionconfirmation.FieldID, id),
+			sqlgraph.To(usertransitioncase.Table, usertransitioncase.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usertransitionconfirmation.TransitionCaseTable, usertransitionconfirmation.TransitionCaseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransitionConfirmer queries the transition_confirmer edge of a UserTransitionConfirmation.
+func (c *UserTransitionConfirmationClient) QueryTransitionConfirmer(_m *UserTransitionConfirmation) *UserTransitionConfirmerQuery {
+	query := (&UserTransitionConfirmerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionconfirmation.Table, usertransitionconfirmation.FieldID, id),
+			sqlgraph.To(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usertransitionconfirmation.TransitionConfirmerTable, usertransitionconfirmation.TransitionConfirmerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserTransitionConfirmationClient) Hooks() []Hook {
+	return c.hooks.UserTransitionConfirmation
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserTransitionConfirmationClient) Interceptors() []Interceptor {
+	return c.inters.UserTransitionConfirmation
+}
+
+func (c *UserTransitionConfirmationClient) mutate(ctx context.Context, m *UserTransitionConfirmationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserTransitionConfirmationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserTransitionConfirmationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserTransitionConfirmationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserTransitionConfirmationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserTransitionConfirmation mutation op: %q", m.Op())
+	}
+}
+
+// UserTransitionConfirmerClient is a client for the UserTransitionConfirmer schema.
+type UserTransitionConfirmerClient struct {
+	config
+}
+
+// NewUserTransitionConfirmerClient returns a client for the UserTransitionConfirmer from the given config.
+func NewUserTransitionConfirmerClient(c config) *UserTransitionConfirmerClient {
+	return &UserTransitionConfirmerClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usertransitionconfirmer.Hooks(f(g(h())))`.
+func (c *UserTransitionConfirmerClient) Use(hooks ...Hook) {
+	c.hooks.UserTransitionConfirmer = append(c.hooks.UserTransitionConfirmer, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usertransitionconfirmer.Intercept(f(g(h())))`.
+func (c *UserTransitionConfirmerClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserTransitionConfirmer = append(c.inters.UserTransitionConfirmer, interceptors...)
+}
+
+// Create returns a builder for creating a UserTransitionConfirmer entity.
+func (c *UserTransitionConfirmerClient) Create() *UserTransitionConfirmerCreate {
+	mutation := newUserTransitionConfirmerMutation(c.config, OpCreate)
+	return &UserTransitionConfirmerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserTransitionConfirmer entities.
+func (c *UserTransitionConfirmerClient) CreateBulk(builders ...*UserTransitionConfirmerCreate) *UserTransitionConfirmerCreateBulk {
+	return &UserTransitionConfirmerCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserTransitionConfirmerClient) MapCreateBulk(slice any, setFunc func(*UserTransitionConfirmerCreate, int)) *UserTransitionConfirmerCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserTransitionConfirmerCreateBulk{err: fmt.Errorf("calling to UserTransitionConfirmerClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserTransitionConfirmerCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserTransitionConfirmerCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) Update() *UserTransitionConfirmerUpdate {
+	mutation := newUserTransitionConfirmerMutation(c.config, OpUpdate)
+	return &UserTransitionConfirmerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserTransitionConfirmerClient) UpdateOne(_m *UserTransitionConfirmer) *UserTransitionConfirmerUpdateOne {
+	mutation := newUserTransitionConfirmerMutation(c.config, OpUpdateOne, withUserTransitionConfirmer(_m))
+	return &UserTransitionConfirmerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserTransitionConfirmerClient) UpdateOneID(id uuid.UUID) *UserTransitionConfirmerUpdateOne {
+	mutation := newUserTransitionConfirmerMutation(c.config, OpUpdateOne, withUserTransitionConfirmerID(id))
+	return &UserTransitionConfirmerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) Delete() *UserTransitionConfirmerDelete {
+	mutation := newUserTransitionConfirmerMutation(c.config, OpDelete)
+	return &UserTransitionConfirmerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserTransitionConfirmerClient) DeleteOne(_m *UserTransitionConfirmer) *UserTransitionConfirmerDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserTransitionConfirmerClient) DeleteOneID(id uuid.UUID) *UserTransitionConfirmerDeleteOne {
+	builder := c.Delete().Where(usertransitionconfirmer.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserTransitionConfirmerDeleteOne{builder}
+}
+
+// Query returns a query builder for UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) Query() *UserTransitionConfirmerQuery {
+	return &UserTransitionConfirmerQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserTransitionConfirmer},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserTransitionConfirmer entity by its id.
+func (c *UserTransitionConfirmerClient) Get(ctx context.Context, id uuid.UUID) (*UserTransitionConfirmer, error) {
+	return c.Query().Where(usertransitionconfirmer.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserTransitionConfirmerClient) GetX(ctx context.Context, id uuid.UUID) *UserTransitionConfirmer {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) QueryOwner(_m *UserTransitionConfirmer) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usertransitionconfirmer.OwnerTable, usertransitionconfirmer.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStakeholder queries the stakeholder edge of a UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) QueryStakeholder(_m *UserTransitionConfirmer) *StakeholderQuery {
+	query := (&StakeholderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID, id),
+			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, usertransitionconfirmer.StakeholderTable, usertransitionconfirmer.StakeholderColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryConfirmations queries the confirmations edge of a UserTransitionConfirmer.
+func (c *UserTransitionConfirmerClient) QueryConfirmations(_m *UserTransitionConfirmer) *UserTransitionConfirmationQuery {
+	query := (&UserTransitionConfirmationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID, id),
+			sqlgraph.To(usertransitionconfirmation.Table, usertransitionconfirmation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, usertransitionconfirmer.ConfirmationsTable, usertransitionconfirmer.ConfirmationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserTransitionConfirmerClient) Hooks() []Hook {
+	return c.hooks.UserTransitionConfirmer
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserTransitionConfirmerClient) Interceptors() []Interceptor {
+	return c.inters.UserTransitionConfirmer
+}
+
+func (c *UserTransitionConfirmerClient) mutate(ctx context.Context, m *UserTransitionConfirmerMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserTransitionConfirmerCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserTransitionConfirmerUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserTransitionConfirmerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserTransitionConfirmerDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserTransitionConfirmer mutation op: %q", m.Op())
+	}
+}
+
+// UserTransitionPolicyClient is a client for the UserTransitionPolicy schema.
+type UserTransitionPolicyClient struct {
+	config
+}
+
+// NewUserTransitionPolicyClient returns a client for the UserTransitionPolicy from the given config.
+func NewUserTransitionPolicyClient(c config) *UserTransitionPolicyClient {
+	return &UserTransitionPolicyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usertransitionpolicy.Hooks(f(g(h())))`.
+func (c *UserTransitionPolicyClient) Use(hooks ...Hook) {
+	c.hooks.UserTransitionPolicy = append(c.hooks.UserTransitionPolicy, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usertransitionpolicy.Intercept(f(g(h())))`.
+func (c *UserTransitionPolicyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserTransitionPolicy = append(c.inters.UserTransitionPolicy, interceptors...)
+}
+
+// Create returns a builder for creating a UserTransitionPolicy entity.
+func (c *UserTransitionPolicyClient) Create() *UserTransitionPolicyCreate {
+	mutation := newUserTransitionPolicyMutation(c.config, OpCreate)
+	return &UserTransitionPolicyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserTransitionPolicy entities.
+func (c *UserTransitionPolicyClient) CreateBulk(builders ...*UserTransitionPolicyCreate) *UserTransitionPolicyCreateBulk {
+	return &UserTransitionPolicyCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserTransitionPolicyClient) MapCreateBulk(slice any, setFunc func(*UserTransitionPolicyCreate, int)) *UserTransitionPolicyCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserTransitionPolicyCreateBulk{err: fmt.Errorf("calling to UserTransitionPolicyClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserTransitionPolicyCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserTransitionPolicyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserTransitionPolicy.
+func (c *UserTransitionPolicyClient) Update() *UserTransitionPolicyUpdate {
+	mutation := newUserTransitionPolicyMutation(c.config, OpUpdate)
+	return &UserTransitionPolicyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserTransitionPolicyClient) UpdateOne(_m *UserTransitionPolicy) *UserTransitionPolicyUpdateOne {
+	mutation := newUserTransitionPolicyMutation(c.config, OpUpdateOne, withUserTransitionPolicy(_m))
+	return &UserTransitionPolicyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserTransitionPolicyClient) UpdateOneID(id uuid.UUID) *UserTransitionPolicyUpdateOne {
+	mutation := newUserTransitionPolicyMutation(c.config, OpUpdateOne, withUserTransitionPolicyID(id))
+	return &UserTransitionPolicyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserTransitionPolicy.
+func (c *UserTransitionPolicyClient) Delete() *UserTransitionPolicyDelete {
+	mutation := newUserTransitionPolicyMutation(c.config, OpDelete)
+	return &UserTransitionPolicyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserTransitionPolicyClient) DeleteOne(_m *UserTransitionPolicy) *UserTransitionPolicyDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserTransitionPolicyClient) DeleteOneID(id uuid.UUID) *UserTransitionPolicyDeleteOne {
+	builder := c.Delete().Where(usertransitionpolicy.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserTransitionPolicyDeleteOne{builder}
+}
+
+// Query returns a query builder for UserTransitionPolicy.
+func (c *UserTransitionPolicyClient) Query() *UserTransitionPolicyQuery {
+	return &UserTransitionPolicyQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserTransitionPolicy},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserTransitionPolicy entity by its id.
+func (c *UserTransitionPolicyClient) Get(ctx context.Context, id uuid.UUID) (*UserTransitionPolicy, error) {
+	return c.Query().Where(usertransitionpolicy.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserTransitionPolicyClient) GetX(ctx context.Context, id uuid.UUID) *UserTransitionPolicy {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a UserTransitionPolicy.
+func (c *UserTransitionPolicyClient) QueryOwner(_m *UserTransitionPolicy) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usertransitionpolicy.Table, usertransitionpolicy.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, usertransitionpolicy.OwnerTable, usertransitionpolicy.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserTransitionPolicyClient) Hooks() []Hook {
+	return c.hooks.UserTransitionPolicy
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserTransitionPolicyClient) Interceptors() []Interceptor {
+	return c.inters.UserTransitionPolicy
+}
+
+func (c *UserTransitionPolicyClient) mutate(ctx context.Context, m *UserTransitionPolicyMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserTransitionPolicyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserTransitionPolicyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserTransitionPolicyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserTransitionPolicyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserTransitionPolicy mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User,
-		UserConfig []ent.Hook
+		Account, AccountHandlingEvent, AccountHandlingTask, AccountHandlingTaskAssignee,
+		LastWord, Legacy, Stakeholder, StakeholderGroup, User, UserAliveCheck,
+		UserConfig, UserTransitionCase, UserTransitionConfirmation,
+		UserTransitionConfirmer, UserTransitionPolicy []ent.Hook
 	}
 	inters struct {
-		Account, LastWord, Legacy, Stakeholder, StakeholderGroup, User,
-		UserConfig []ent.Interceptor
+		Account, AccountHandlingEvent, AccountHandlingTask, AccountHandlingTaskAssignee,
+		LastWord, Legacy, Stakeholder, StakeholderGroup, User, UserAliveCheck,
+		UserConfig, UserTransitionCase, UserTransitionConfirmation,
+		UserTransitionConfirmer, UserTransitionPolicy []ent.Interceptor
 	}
 )

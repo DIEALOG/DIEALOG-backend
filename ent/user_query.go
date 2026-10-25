@@ -18,22 +18,30 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []user.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.User
-	withStakeholders      *StakeholderQuery
-	withStakeholderGroups *StakeholderGroupQuery
-	withLegacies          *LegacyQuery
-	withLastWords         *LastWordQuery
-	withUserConfig        *UserConfigQuery
+	ctx                      *QueryContext
+	order                    []user.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.User
+	withStakeholders         *StakeholderQuery
+	withStakeholderGroups    *StakeholderGroupQuery
+	withLegacies             *LegacyQuery
+	withLastWords            *LastWordQuery
+	withUserConfig           *UserConfigQuery
+	withTransitionPolicy     *UserTransitionPolicyQuery
+	withTransitionConfirmers *UserTransitionConfirmerQuery
+	withAliveChecks          *UserAliveCheckQuery
+	withTransitionCases      *UserTransitionCaseQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -173,6 +181,94 @@ func (_q *UserQuery) QueryUserConfig() *UserConfigQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(userconfig.Table, userconfig.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.UserConfigTable, user.UserConfigColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTransitionPolicy chains the current query on the "transition_policy" edge.
+func (_q *UserQuery) QueryTransitionPolicy() *UserTransitionPolicyQuery {
+	query := (&UserTransitionPolicyClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(usertransitionpolicy.Table, usertransitionpolicy.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.TransitionPolicyTable, user.TransitionPolicyColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTransitionConfirmers chains the current query on the "transition_confirmers" edge.
+func (_q *UserQuery) QueryTransitionConfirmers() *UserTransitionConfirmerQuery {
+	query := (&UserTransitionConfirmerClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(usertransitionconfirmer.Table, usertransitionconfirmer.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransitionConfirmersTable, user.TransitionConfirmersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAliveChecks chains the current query on the "alive_checks" edge.
+func (_q *UserQuery) QueryAliveChecks() *UserAliveCheckQuery {
+	query := (&UserAliveCheckClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(useralivecheck.Table, useralivecheck.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AliveChecksTable, user.AliveChecksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTransitionCases chains the current query on the "transition_cases" edge.
+func (_q *UserQuery) QueryTransitionCases() *UserTransitionCaseQuery {
+	query := (&UserTransitionCaseClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(usertransitioncase.Table, usertransitioncase.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransitionCasesTable, user.TransitionCasesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -367,16 +463,20 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:                _q.config,
-		ctx:                   _q.ctx.Clone(),
-		order:                 append([]user.OrderOption{}, _q.order...),
-		inters:                append([]Interceptor{}, _q.inters...),
-		predicates:            append([]predicate.User{}, _q.predicates...),
-		withStakeholders:      _q.withStakeholders.Clone(),
-		withStakeholderGroups: _q.withStakeholderGroups.Clone(),
-		withLegacies:          _q.withLegacies.Clone(),
-		withLastWords:         _q.withLastWords.Clone(),
-		withUserConfig:        _q.withUserConfig.Clone(),
+		config:                   _q.config,
+		ctx:                      _q.ctx.Clone(),
+		order:                    append([]user.OrderOption{}, _q.order...),
+		inters:                   append([]Interceptor{}, _q.inters...),
+		predicates:               append([]predicate.User{}, _q.predicates...),
+		withStakeholders:         _q.withStakeholders.Clone(),
+		withStakeholderGroups:    _q.withStakeholderGroups.Clone(),
+		withLegacies:             _q.withLegacies.Clone(),
+		withLastWords:            _q.withLastWords.Clone(),
+		withUserConfig:           _q.withUserConfig.Clone(),
+		withTransitionPolicy:     _q.withTransitionPolicy.Clone(),
+		withTransitionConfirmers: _q.withTransitionConfirmers.Clone(),
+		withAliveChecks:          _q.withAliveChecks.Clone(),
+		withTransitionCases:      _q.withTransitionCases.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -435,6 +535,50 @@ func (_q *UserQuery) WithUserConfig(opts ...func(*UserConfigQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withUserConfig = query
+	return _q
+}
+
+// WithTransitionPolicy tells the query-builder to eager-load the nodes that are connected to
+// the "transition_policy" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithTransitionPolicy(opts ...func(*UserTransitionPolicyQuery)) *UserQuery {
+	query := (&UserTransitionPolicyClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransitionPolicy = query
+	return _q
+}
+
+// WithTransitionConfirmers tells the query-builder to eager-load the nodes that are connected to
+// the "transition_confirmers" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithTransitionConfirmers(opts ...func(*UserTransitionConfirmerQuery)) *UserQuery {
+	query := (&UserTransitionConfirmerClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransitionConfirmers = query
+	return _q
+}
+
+// WithAliveChecks tells the query-builder to eager-load the nodes that are connected to
+// the "alive_checks" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithAliveChecks(opts ...func(*UserAliveCheckQuery)) *UserQuery {
+	query := (&UserAliveCheckClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAliveChecks = query
+	return _q
+}
+
+// WithTransitionCases tells the query-builder to eager-load the nodes that are connected to
+// the "transition_cases" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithTransitionCases(opts ...func(*UserTransitionCaseQuery)) *UserQuery {
+	query := (&UserTransitionCaseClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransitionCases = query
 	return _q
 }
 
@@ -516,12 +660,16 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [9]bool{
 			_q.withStakeholders != nil,
 			_q.withStakeholderGroups != nil,
 			_q.withLegacies != nil,
 			_q.withLastWords != nil,
 			_q.withUserConfig != nil,
+			_q.withTransitionPolicy != nil,
+			_q.withTransitionConfirmers != nil,
+			_q.withAliveChecks != nil,
+			_q.withTransitionCases != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -574,6 +722,35 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadUserConfig(ctx, query, nodes,
 			func(n *User) { n.Edges.UserConfig = []*UserConfig{} },
 			func(n *User, e *UserConfig) { n.Edges.UserConfig = append(n.Edges.UserConfig, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransitionPolicy; query != nil {
+		if err := _q.loadTransitionPolicy(ctx, query, nodes, nil,
+			func(n *User, e *UserTransitionPolicy) { n.Edges.TransitionPolicy = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransitionConfirmers; query != nil {
+		if err := _q.loadTransitionConfirmers(ctx, query, nodes,
+			func(n *User) { n.Edges.TransitionConfirmers = []*UserTransitionConfirmer{} },
+			func(n *User, e *UserTransitionConfirmer) {
+				n.Edges.TransitionConfirmers = append(n.Edges.TransitionConfirmers, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAliveChecks; query != nil {
+		if err := _q.loadAliveChecks(ctx, query, nodes,
+			func(n *User) { n.Edges.AliveChecks = []*UserAliveCheck{} },
+			func(n *User, e *UserAliveCheck) { n.Edges.AliveChecks = append(n.Edges.AliveChecks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransitionCases; query != nil {
+		if err := _q.loadTransitionCases(ctx, query, nodes,
+			func(n *User) { n.Edges.TransitionCases = []*UserTransitionCase{} },
+			func(n *User, e *UserTransitionCase) { n.Edges.TransitionCases = append(n.Edges.TransitionCases, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -730,6 +907,126 @@ func (_q *UserQuery) loadUserConfig(ctx context.Context, query *UserConfigQuery,
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_user_config" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadTransitionPolicy(ctx context.Context, query *UserTransitionPolicyQuery, nodes []*User, init func(*User), assign func(*User, *UserTransitionPolicy)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.UserTransitionPolicy(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.TransitionPolicyColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_transition_policy
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_transition_policy" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_transition_policy" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadTransitionConfirmers(ctx context.Context, query *UserTransitionConfirmerQuery, nodes []*User, init func(*User), assign func(*User, *UserTransitionConfirmer)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UserTransitionConfirmer(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.TransitionConfirmersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_transition_confirmers
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_transition_confirmers" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_transition_confirmers" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadAliveChecks(ctx context.Context, query *UserAliveCheckQuery, nodes []*User, init func(*User), assign func(*User, *UserAliveCheck)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(useralivecheck.FieldUserID)
+	}
+	query.Where(predicate.UserAliveCheck(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.AliveChecksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadTransitionCases(ctx context.Context, query *UserTransitionCaseQuery, nodes []*User, init func(*User), assign func(*User, *UserTransitionCase)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UserTransitionCase(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.TransitionCasesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_transition_cases
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_transition_cases" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_transition_cases" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

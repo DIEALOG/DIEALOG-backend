@@ -9,6 +9,15 @@ import (
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
 
+// AccountHandlingEvent is the predicate function for accounthandlingevent builders.
+type AccountHandlingEvent func(*sql.Selector)
+
+// AccountHandlingTask is the predicate function for accounthandlingtask builders.
+type AccountHandlingTask func(*sql.Selector)
+
+// AccountHandlingTaskAssignee is the predicate function for accounthandlingtaskassignee builders.
+type AccountHandlingTaskAssignee func(*sql.Selector)
+
 // LastWord is the predicate function for lastword builders.
 type LastWord func(*sql.Selector)
 
@@ -24,5 +33,20 @@ type StakeholderGroup func(*sql.Selector)
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 
+// UserAliveCheck is the predicate function for useralivecheck builders.
+type UserAliveCheck func(*sql.Selector)
+
 // UserConfig is the predicate function for userconfig builders.
 type UserConfig func(*sql.Selector)
+
+// UserTransitionCase is the predicate function for usertransitioncase builders.
+type UserTransitionCase func(*sql.Selector)
+
+// UserTransitionConfirmation is the predicate function for usertransitionconfirmation builders.
+type UserTransitionConfirmation func(*sql.Selector)
+
+// UserTransitionConfirmer is the predicate function for usertransitionconfirmer builders.
+type UserTransitionConfirmer func(*sql.Selector)
+
+// UserTransitionPolicy is the predicate function for usertransitionpolicy builders.
+type UserTransitionPolicy func(*sql.Selector)

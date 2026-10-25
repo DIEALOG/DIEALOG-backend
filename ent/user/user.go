@@ -37,6 +37,14 @@ const (
 	EdgeLastWords = "last_words"
 	// EdgeUserConfig holds the string denoting the user_config edge name in mutations.
 	EdgeUserConfig = "user_config"
+	// EdgeTransitionPolicy holds the string denoting the transition_policy edge name in mutations.
+	EdgeTransitionPolicy = "transition_policy"
+	// EdgeTransitionConfirmers holds the string denoting the transition_confirmers edge name in mutations.
+	EdgeTransitionConfirmers = "transition_confirmers"
+	// EdgeAliveChecks holds the string denoting the alive_checks edge name in mutations.
+	EdgeAliveChecks = "alive_checks"
+	// EdgeTransitionCases holds the string denoting the transition_cases edge name in mutations.
+	EdgeTransitionCases = "transition_cases"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// StakeholdersTable is the table that holds the stakeholders relation/edge.
@@ -74,6 +82,34 @@ const (
 	UserConfigInverseTable = "user_configs"
 	// UserConfigColumn is the table column denoting the user_config relation/edge.
 	UserConfigColumn = "user_user_config"
+	// TransitionPolicyTable is the table that holds the transition_policy relation/edge.
+	TransitionPolicyTable = "user_transition_policies"
+	// TransitionPolicyInverseTable is the table name for the UserTransitionPolicy entity.
+	// It exists in this package in order to avoid circular dependency with the "usertransitionpolicy" package.
+	TransitionPolicyInverseTable = "user_transition_policies"
+	// TransitionPolicyColumn is the table column denoting the transition_policy relation/edge.
+	TransitionPolicyColumn = "user_transition_policy"
+	// TransitionConfirmersTable is the table that holds the transition_confirmers relation/edge.
+	TransitionConfirmersTable = "user_transition_confirmers"
+	// TransitionConfirmersInverseTable is the table name for the UserTransitionConfirmer entity.
+	// It exists in this package in order to avoid circular dependency with the "usertransitionconfirmer" package.
+	TransitionConfirmersInverseTable = "user_transition_confirmers"
+	// TransitionConfirmersColumn is the table column denoting the transition_confirmers relation/edge.
+	TransitionConfirmersColumn = "user_transition_confirmers"
+	// AliveChecksTable is the table that holds the alive_checks relation/edge.
+	AliveChecksTable = "user_alive_checks"
+	// AliveChecksInverseTable is the table name for the UserAliveCheck entity.
+	// It exists in this package in order to avoid circular dependency with the "useralivecheck" package.
+	AliveChecksInverseTable = "user_alive_checks"
+	// AliveChecksColumn is the table column denoting the alive_checks relation/edge.
+	AliveChecksColumn = "user_id"
+	// TransitionCasesTable is the table that holds the transition_cases relation/edge.
+	TransitionCasesTable = "user_transition_cases"
+	// TransitionCasesInverseTable is the table name for the UserTransitionCase entity.
+	// It exists in this package in order to avoid circular dependency with the "usertransitioncase" package.
+	TransitionCasesInverseTable = "user_transition_cases"
+	// TransitionCasesColumn is the table column denoting the transition_cases relation/edge.
+	TransitionCasesColumn = "user_transition_cases"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -219,6 +255,55 @@ func ByUserConfig(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTransitionPolicyField orders the results by transition_policy field.
+func ByTransitionPolicyField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransitionPolicyStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTransitionConfirmersCount orders the results by transition_confirmers count.
+func ByTransitionConfirmersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTransitionConfirmersStep(), opts...)
+	}
+}
+
+// ByTransitionConfirmers orders the results by transition_confirmers terms.
+func ByTransitionConfirmers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransitionConfirmersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAliveChecksCount orders the results by alive_checks count.
+func ByAliveChecksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAliveChecksStep(), opts...)
+	}
+}
+
+// ByAliveChecks orders the results by alive_checks terms.
+func ByAliveChecks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAliveChecksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByTransitionCasesCount orders the results by transition_cases count.
+func ByTransitionCasesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTransitionCasesStep(), opts...)
+	}
+}
+
+// ByTransitionCases orders the results by transition_cases terms.
+func ByTransitionCases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransitionCasesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStakeholdersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -252,5 +337,33 @@ func newUserConfigStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserConfigInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, UserConfigTable, UserConfigColumn),
+	)
+}
+func newTransitionPolicyStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransitionPolicyInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, TransitionPolicyTable, TransitionPolicyColumn),
+	)
+}
+func newTransitionConfirmersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransitionConfirmersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TransitionConfirmersTable, TransitionConfirmersColumn),
+	)
+}
+func newAliveChecksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AliveChecksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AliveChecksTable, AliveChecksColumn),
+	)
+}
+func newTransitionCasesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransitionCasesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TransitionCasesTable, TransitionCasesColumn),
 	)
 }

@@ -18,29 +18,6 @@ type User struct {
 	CreatedAt         time.Time          `json:"created_at"`
 }
 
-type CreateLastWordRequest struct {
-	Title            string `json:"title"`
-	Message          string `json:"message"`
-	ReceiverIDs      []ID   `json:"receiver_ids"`
-	ReceiverGroupIDs []ID   `json:"receiver_group_ids"`
-}
-
-type UpdateLastWordRequest struct {
-	Title            string `json:"title"`
-	Message          string `json:"message"`
-	ReceiverIDs      []ID   `json:"receiver_ids"`
-	ReceiverGroupIDs []ID   `json:"receiver_group_ids"`
-}
-
-type LastWord struct {
-	ID             ID                 `json:"id"`
-	UserID         ID                 `json:"user_id"`
-	Receiver       []Stakeholder      `json:"receiver"`
-	ReceiverGroups []StakeholderGroup `json:"receiver_groups"`
-	Title          string             `json:"title"`
-	Message        string             `json:"message"`
-}
-
 type Stakeholder struct {
 	ID           ID                 `json:"id"`
 	UserID       ID                 `json:"user_id"`
@@ -68,14 +45,122 @@ type StakeholderGroup struct {
 }
 
 type UserConfig struct {
-	ID                                      ID                       `json:"id"`
-	UserID                                  ID                       `json:"user_id"`
-	LockByFaceID                            bool                     `json:"lock_by_face_id"`
-	CertificationBeforeSensitiveInformation bool                     `json:"certification_before_sensitive_information"`
-	Verifier                                []Stakeholder            `json:"verifier"`
-	ConversionCriteria                      ConfigConversionCriteria `json:"conversion_criteria"`
-	SurvivalCheckIntervalDays               int                      `json:"survival_check_interval_days"`
+	ID                                      ID   `json:"id"`
+	UserID                                  ID   `json:"user_id"`
+	LockByFaceID                            bool `json:"lock_by_face_id"`
+	CertificationBeforeSensitiveInformation bool `json:"certification_before_sensitive_information"`
 }
+
+type UserTransitionConfirmer struct {
+	ID            ID  `json:"id"`
+	UserID        ID  `json:"user_id"`
+	StakeholderID *ID `json:"stakeholder_id,omitempty"`
+
+	Name  string  `json:"name"`
+	Email *string `json:"email,omitempty"`
+	Phone *string `json:"phone,omitempty"`
+
+	Status     UserTransitionConfirmerStatus `json:"status"`
+	InvitedAt  *time.Time                    `json:"invited_at,omitempty"`
+	AcceptedAt *time.Time                    `json:"accepted_at,omitempty"`
+	RevokedAt  *time.Time                    `json:"revoked_at,omitempty"`
+
+	InviteTokenHash    string     `json:"-"`
+	InviteExpiresAt    *time.Time `json:"invite_expires_at,omitempty"`
+	AuthTokenHash      string     `json:"-"`
+	AuthTokenExpiresAt *time.Time `json:"auth_token_expires_at,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserTransitionConfirmerStatus string
+
+const (
+	UserTransitionConfirmerStatusPending  UserTransitionConfirmerStatus = "pending"
+	UserTransitionConfirmerStatusAccepted UserTransitionConfirmerStatus = "accepted"
+	UserTransitionConfirmerStatusDeclined UserTransitionConfirmerStatus = "declined"
+	UserTransitionConfirmerStatusRevoked  UserTransitionConfirmerStatus = "revoked"
+	UserTransitionConfirmerStatusExpired  UserTransitionConfirmerStatus = "expired"
+)
+
+type UserTransitionPolicy struct {
+	ID                     ID        `json:"id"`
+	UserID                 ID        `json:"user_id"`
+	MinimumConfirmers      int       `json:"minimum_confirmers"`
+	WaitingPeriodDays      int       `json:"waiting_period_days"`
+	AliveCheckIntervalDays int       `json:"alive_check_interval_days"`
+	CreatedAt              time.Time `json:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at"`
+}
+
+type UserAliveCheck struct {
+	ID          ID                   `json:"id"`
+	UserID      ID                   `json:"user_id"`
+	Sequence    int                  `json:"sequence"`
+	ScheduledAt time.Time            `json:"scheduled_at"`
+	DueAt       time.Time            `json:"due_at"`
+	RespondedAt *time.Time           `json:"responded_at,omitempty"`
+	Status      UserAliveCheckStatus `json:"status"`
+	CreatedAt   time.Time            `json:"created_at"`
+}
+
+type UserAliveCheckStatus string
+
+const (
+	UserAliveCheckStatusScheduled UserAliveCheckStatus = "scheduled"
+	UserAliveCheckStatusPending   UserAliveCheckStatus = "pending"
+	UserAliveCheckStatusResponded UserAliveCheckStatus = "responded"
+	UserAliveCheckStatusOverdue   UserAliveCheckStatus = "overdue"
+	UserAliveCheckStatusCancelled UserAliveCheckStatus = "cancelled"
+)
+
+type UserTransitionCase struct {
+	ID     ID `json:"id"`
+	UserID ID `json:"user_id"`
+
+	Status UserTransitionCaseStatus `json:"status"`
+
+	MinimumConfirmersSnapshot int `json:"minimum_confirmers_snapshot"`
+	WaitingPeriodDaysSnapshot int `json:"waiting_period_days_snapshot"`
+
+	RequestedAt      time.Time  `json:"requested_at"`
+	WaitingStartedAt *time.Time `json:"waiting_started_at,omitempty"`
+	EligibleAt       *time.Time `json:"eligible_at,omitempty"`
+	ConfirmedAt      *time.Time `json:"confirmed_at,omitempty"`
+	CancelledAt      *time.Time `json:"cancelled_at,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserTransitionCaseStatus string
+
+const (
+	UserTransitionCaseStatusPending   UserTransitionCaseStatus = "pending_confirmation"
+	UserTransitionCaseStatusWaiting   UserTransitionCaseStatus = "waiting_period"
+	UserTransitionCaseStatusConfirmed UserTransitionCaseStatus = "confirmed"
+	UserTransitionCaseStatusCancelled UserTransitionCaseStatus = "cancelled"
+)
+
+type UserTransitionConfirmation struct {
+	ID                    ID `json:"id"`
+	TransitionCaseID      ID `json:"transition_case_id"`
+	TransitionConfirmerID ID `json:"transition_confirmer_id"`
+
+	Decision    UserTransitionDecision `json:"decision"`
+	Comment     *string                `json:"comment,omitempty"`
+	RespondedAt *time.Time             `json:"responded_at,omitempty"`
+	CreatedAt   time.Time              `json:"created_at"`
+}
+
+type UserTransitionDecision string
+
+const (
+	UserTransitionDecisionAgree    UserTransitionDecision = "agree"
+	UserTransitionDecisionDisagree UserTransitionDecision = "disagree"
+	UserTransitionDecisionAbstain  UserTransitionDecision = "abstain"
+)
 
 type ConfigConversionCriteria string
 
@@ -121,22 +206,6 @@ type StakeholderGroupUseCase interface {
 	Update(c context.Context, id *ID, group *StakeholderGroup, userID *ID) (*StakeholderGroup, error)
 	Delete(c context.Context, id *ID, userID *ID) error
 	ListByIDs(c context.Context, ids []ID, userID *ID) ([]*StakeholderGroup, error)
-}
-
-type LastWordRepository interface {
-	Create(c context.Context, lastWord *LastWord) (*LastWord, error)
-	FindAllByUserID(c context.Context, userID *ID) ([]*LastWord, error)
-	FindByID(c context.Context, id *ID, userID *ID) (*LastWord, error)
-	Update(c context.Context, id *ID, lastWord *LastWord, userID *ID) (*LastWord, error)
-	Delete(c context.Context, id *ID, userID *ID) error
-}
-
-type LastWordUseCase interface {
-	Create(c context.Context, lastWord *LastWord) (*LastWord, error)
-	ListByUserID(c context.Context, userID *ID) ([]*LastWord, error)
-	GetByID(c context.Context, id *ID, userID *ID) (*LastWord, error)
-	Update(c context.Context, id *ID, lastWord *LastWord, userID *ID) (*LastWord, error)
-	Delete(c context.Context, id *ID, userID *ID) error
 }
 
 type UserConfigRepository interface {

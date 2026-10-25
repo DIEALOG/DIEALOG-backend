@@ -38,6 +38,8 @@ const (
 	EdgeStakeholders = "stakeholders"
 	// EdgeStakeholderGroups holds the string denoting the stakeholder_groups edge name in mutations.
 	EdgeStakeholderGroups = "stakeholder_groups"
+	// EdgeHandlingTasks holds the string denoting the handling_tasks edge name in mutations.
+	EdgeHandlingTasks = "handling_tasks"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// LegacyTable is the table that holds the legacy relation/edge.
@@ -57,6 +59,13 @@ const (
 	// StakeholderGroupsInverseTable is the table name for the StakeholderGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "stakeholdergroup" package.
 	StakeholderGroupsInverseTable = "stakeholder_groups"
+	// HandlingTasksTable is the table that holds the handling_tasks relation/edge.
+	HandlingTasksTable = "account_handling_tasks"
+	// HandlingTasksInverseTable is the table name for the AccountHandlingTask entity.
+	// It exists in this package in order to avoid circular dependency with the "accounthandlingtask" package.
+	HandlingTasksInverseTable = "account_handling_tasks"
+	// HandlingTasksColumn is the table column denoting the handling_tasks relation/edge.
+	HandlingTasksColumn = "account_id"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -254,6 +263,20 @@ func ByStakeholderGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newStakeholderGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByHandlingTasksCount orders the results by handling_tasks count.
+func ByHandlingTasksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newHandlingTasksStep(), opts...)
+	}
+}
+
+// ByHandlingTasks orders the results by handling_tasks terms.
+func ByHandlingTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHandlingTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newLegacyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -273,5 +296,12 @@ func newStakeholderGroupsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StakeholderGroupsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, StakeholderGroupsTable, StakeholderGroupsPrimaryKey...),
+	)
+}
+func newHandlingTasksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HandlingTasksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, HandlingTasksTable, HandlingTasksColumn),
 	)
 }

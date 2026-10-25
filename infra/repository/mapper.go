@@ -121,6 +121,12 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 			a.Stakeholders[i] = *toDomainStakeholder(s)
 		}
 	}
+	if entity.Edges.StakeholderGroups != nil {
+		a.StakeholderGroups = make([]domain.StakeholderGroup, len(entity.Edges.StakeholderGroups))
+		for i, g := range entity.Edges.StakeholderGroups {
+			a.StakeholderGroups[i] = *toDomainStakeholderGroup(g)
+		}
+	}
 	return a
 }
 
@@ -157,19 +163,10 @@ func toDomainUserConfig(entity *ent.UserConfig) *domain.UserConfig {
 		ID:                                      entity.ID,
 		LockByFaceID:                            entity.LockByFaceID,
 		CertificationBeforeSensitiveInformation: entity.CertificationBeforeSensitiveInformation,
-		ConversionCriteria:                      domain.ConfigConversionCriteria(entity.ConversionCriteria),
-		SurvivalCheckIntervalDays:               entity.SurvivalCheckIntervalDays,
 	}
 
 	if entity.Edges.User != nil {
 		config.UserID = entity.Edges.User.ID
-	}
-
-	if entity.Edges.Verifier != nil {
-		config.Verifier = make([]domain.Stakeholder, len(entity.Edges.Verifier))
-		for i, s := range entity.Edges.Verifier {
-			config.Verifier[i] = *toDomainStakeholder(s)
-		}
 	}
 
 	return config

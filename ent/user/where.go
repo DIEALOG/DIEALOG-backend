@@ -576,6 +576,98 @@ func HasUserConfigWith(preds ...predicate.UserConfig) predicate.User {
 	})
 }
 
+// HasTransitionPolicy applies the HasEdge predicate on the "transition_policy" edge.
+func HasTransitionPolicy() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, TransitionPolicyTable, TransitionPolicyColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTransitionPolicyWith applies the HasEdge predicate on the "transition_policy" edge with a given conditions (other predicates).
+func HasTransitionPolicyWith(preds ...predicate.UserTransitionPolicy) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newTransitionPolicyStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTransitionConfirmers applies the HasEdge predicate on the "transition_confirmers" edge.
+func HasTransitionConfirmers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TransitionConfirmersTable, TransitionConfirmersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTransitionConfirmersWith applies the HasEdge predicate on the "transition_confirmers" edge with a given conditions (other predicates).
+func HasTransitionConfirmersWith(preds ...predicate.UserTransitionConfirmer) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newTransitionConfirmersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAliveChecks applies the HasEdge predicate on the "alive_checks" edge.
+func HasAliveChecks() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AliveChecksTable, AliveChecksColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAliveChecksWith applies the HasEdge predicate on the "alive_checks" edge with a given conditions (other predicates).
+func HasAliveChecksWith(preds ...predicate.UserAliveCheck) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAliveChecksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTransitionCases applies the HasEdge predicate on the "transition_cases" edge.
+func HasTransitionCases() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TransitionCasesTable, TransitionCasesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTransitionCasesWith applies the HasEdge predicate on the "transition_cases" edge with a given conditions (other predicates).
+func HasTransitionCasesWith(preds ...predicate.UserTransitionCase) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newTransitionCasesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

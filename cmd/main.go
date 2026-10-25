@@ -37,6 +37,10 @@ import (
 // @in header
 // @name Authorization
 // @description Enter your JWT token with the `Bearer ` prefix.
+// @securityDefinitions.apikey ConfirmerAuth
+// @in header
+// @name X-Confirmer-Token
+// @description Enter the confirmer token returned when an invitation is accepted.
 func main() {
 	config.NewEnv()
 
@@ -99,6 +103,13 @@ func main() {
 	stakeholderGroupRepository := repository.NewStakeholderGroupRepository(client)
 	lastWordRepository := repository.NewLastWordRepository(client)
 	userConfigRepository := repository.NewUserConfigRepository(client)
+	transitionPolicyRepository := repository.NewUserTransitionPolicyRepository(client)
+	transitionConfirmerRepository := repository.NewUserTransitionConfirmerRepository(client)
+	aliveCheckRepository := repository.NewUserAliveCheckRepository(client)
+	transitionCaseRepository := repository.NewUserTransitionCaseRepository(client)
+	transitionConfirmationRepository := repository.NewUserTransitionConfirmationRepository(client)
+	accountTaskRepository := repository.NewAccountHandlingTaskRepository(client)
+	accountEventRepository := repository.NewAccountHandlingEventRepository(client)
 
 	// usecase
 	profileUseCase := usecase.NewProfileUseCase(userRepository, userConfigRepository, timeout)
@@ -108,6 +119,18 @@ func main() {
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
 	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
 	lastWordUseCase := usecase.NewLastWordUseCase(lastWordRepository, timeout)
+	transitionPolicyUseCase := usecase.NewUserTransitionPolicyUseCase(transitionPolicyRepository, userConfigRepository, timeout)
+	transitionConfirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(transitionConfirmerRepository, stakeholderRepository, timeout)
+	aliveCheckUseCase := usecase.NewUserAliveCheckUseCase(aliveCheckRepository, transitionPolicyUseCase, timeout)
+	transitionCaseUseCase := usecase.NewUserTransitionCaseUseCase(transitionCaseRepository, transitionConfirmationRepository, transitionPolicyUseCase, timeout)
+	transitionConfirmationUseCase := usecase.NewUserTransitionConfirmationUseCase(transitionConfirmationRepository, transitionCaseRepository, transitionCaseUseCase, timeout)
+	accountHandlingUseCase := usecase.NewAccountHandlingUseCase(
+		accountTaskRepository,
+		accountEventRepository,
+		legacyRepository,
+		transitionCaseUseCase,
+		timeout,
+	)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
@@ -117,6 +140,15 @@ func main() {
 	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase, stakeholderUseCase, stakeholderGroupUseCase)
 	route.NewLastWordRouter(api.Group("/last-word"), lastWordUseCase, stakeholderUseCase, stakeholderGroupUseCase)
 	route.NewStakeholderRouter(api.Group("/stakeholder"), stakeholderUseCase, stakeholderGroupUseCase)
+	route.NewTransitionRouter(
+		api.Group("/transition"),
+		transitionPolicyUseCase,
+		transitionConfirmerUseCase,
+		aliveCheckUseCase,
+		transitionCaseUseCase,
+		transitionConfirmationUseCase,
+		accountHandlingUseCase,
+	)
 
 	// Static files must be registered before the catch-all 404 route.
 	app.Get("/public/*", static.New("./public"))

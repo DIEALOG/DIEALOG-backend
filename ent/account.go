@@ -50,9 +50,11 @@ type AccountEdges struct {
 	Stakeholders []*Stakeholder `json:"stakeholders,omitempty"`
 	// StakeholderGroups holds the value of the stakeholder_groups edge.
 	StakeholderGroups []*StakeholderGroup `json:"stakeholder_groups,omitempty"`
+	// HandlingTasks holds the value of the handling_tasks edge.
+	HandlingTasks []*AccountHandlingTask `json:"handling_tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // LegacyOrErr returns the Legacy value or an error if the edge
@@ -82,6 +84,15 @@ func (e AccountEdges) StakeholderGroupsOrErr() ([]*StakeholderGroup, error) {
 		return e.StakeholderGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "stakeholder_groups"}
+}
+
+// HandlingTasksOrErr returns the HandlingTasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) HandlingTasksOrErr() ([]*AccountHandlingTask, error) {
+	if e.loadedTypes[3] {
+		return e.HandlingTasks, nil
+	}
+	return nil, &NotLoadedError{edge: "handling_tasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -203,6 +214,11 @@ func (_m *Account) QueryStakeholders() *StakeholderQuery {
 // QueryStakeholderGroups queries the "stakeholder_groups" edge of the Account entity.
 func (_m *Account) QueryStakeholderGroups() *StakeholderGroupQuery {
 	return NewAccountClient(_m.config).QueryStakeholderGroups(_m)
+}
+
+// QueryHandlingTasks queries the "handling_tasks" edge of the Account entity.
+func (_m *Account) QueryHandlingTasks() *AccountHandlingTaskQuery {
+	return NewAccountClient(_m.config).QueryHandlingTasks(_m)
 }
 
 // Update returns a builder for updating this Account.
