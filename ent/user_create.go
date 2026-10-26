@@ -15,7 +15,11 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
 
@@ -152,19 +156,87 @@ func (_c *UserCreate) AddLastWords(v ...*LastWord) *UserCreate {
 	return _c.AddLastWordIDs(ids...)
 }
 
-// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
-func (_c *UserCreate) AddUserConfigIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddUserConfigIDs(ids...)
+// SetUserConfigID sets the "user_config" edge to the UserConfig entity by ID.
+func (_c *UserCreate) SetUserConfigID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetUserConfigID(id)
 	return _c
 }
 
-// AddUserConfig adds the "user_config" edges to the UserConfig entity.
-func (_c *UserCreate) AddUserConfig(v ...*UserConfig) *UserCreate {
+// SetNillableUserConfigID sets the "user_config" edge to the UserConfig entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillableUserConfigID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetUserConfigID(*id)
+	}
+	return _c
+}
+
+// SetUserConfig sets the "user_config" edge to the UserConfig entity.
+func (_c *UserCreate) SetUserConfig(v *UserConfig) *UserCreate {
+	return _c.SetUserConfigID(v.ID)
+}
+
+// SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
+func (_c *UserCreate) SetTransitionPolicyID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetTransitionPolicyID(id)
+	return _c
+}
+
+// SetNillableTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillableTransitionPolicyID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetTransitionPolicyID(*id)
+	}
+	return _c
+}
+
+// SetTransitionPolicy sets the "transition_policy" edge to the UserTransitionPolicy entity.
+func (_c *UserCreate) SetTransitionPolicy(v *UserTransitionPolicy) *UserCreate {
+	return _c.SetTransitionPolicyID(v.ID)
+}
+
+// AddTransitionConfirmerIDs adds the "transition_confirmers" edge to the UserTransitionConfirmer entity by IDs.
+func (_c *UserCreate) AddTransitionConfirmerIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddTransitionConfirmerIDs(ids...)
+	return _c
+}
+
+// AddTransitionConfirmers adds the "transition_confirmers" edges to the UserTransitionConfirmer entity.
+func (_c *UserCreate) AddTransitionConfirmers(v ...*UserTransitionConfirmer) *UserCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddUserConfigIDs(ids...)
+	return _c.AddTransitionConfirmerIDs(ids...)
+}
+
+// AddAliveCheckIDs adds the "alive_checks" edge to the UserAliveCheck entity by IDs.
+func (_c *UserCreate) AddAliveCheckIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddAliveCheckIDs(ids...)
+	return _c
+}
+
+// AddAliveChecks adds the "alive_checks" edges to the UserAliveCheck entity.
+func (_c *UserCreate) AddAliveChecks(v ...*UserAliveCheck) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAliveCheckIDs(ids...)
+}
+
+// AddTransitionCaseIDs adds the "transition_cases" edge to the UserTransitionCase entity by IDs.
+func (_c *UserCreate) AddTransitionCaseIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddTransitionCaseIDs(ids...)
+	return _c
+}
+
+// AddTransitionCases adds the "transition_cases" edges to the UserTransitionCase entity.
+func (_c *UserCreate) AddTransitionCases(v ...*UserTransitionCase) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTransitionCaseIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -374,13 +446,77 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.UserConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TransitionPolicyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TransitionPolicyTable,
+			Columns: []string{user.TransitionPolicyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionpolicy.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TransitionConfirmersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionConfirmersTable,
+			Columns: []string{user.TransitionConfirmersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitionconfirmer.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AliveChecksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AliveChecksTable,
+			Columns: []string{user.AliveChecksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(useralivecheck.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TransitionCasesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransitionCasesTable,
+			Columns: []string{user.TransitionCasesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usertransitioncase.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
-	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
@@ -22,13 +20,12 @@ import (
 // UserConfigQuery is the builder for querying UserConfig entities.
 type UserConfigQuery struct {
 	config
-	ctx          *QueryContext
-	order        []userconfig.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.UserConfig
-	withVerifier *StakeholderQuery
-	withUser     *UserQuery
-	withFKs      bool
+	ctx        *QueryContext
+	order      []userconfig.OrderOption
+	inters     []Interceptor
+	predicates []predicate.UserConfig
+	withUser   *UserQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -65,28 +62,6 @@ func (_q *UserConfigQuery) Order(o ...userconfig.OrderOption) *UserConfigQuery {
 	return _q
 }
 
-// QueryVerifier chains the current query on the "verifier" edge.
-func (_q *UserConfigQuery) QueryVerifier() *StakeholderQuery {
-	query := (&StakeholderClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userconfig.Table, userconfig.FieldID, selector),
-			sqlgraph.To(stakeholder.Table, stakeholder.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userconfig.VerifierTable, userconfig.VerifierPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryUser chains the current query on the "user" edge.
 func (_q *UserConfigQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: _q.config}).Query()
@@ -101,7 +76,7 @@ func (_q *UserConfigQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(userconfig.Table, userconfig.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, userconfig.UserTable, userconfig.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, userconfig.UserTable, userconfig.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -296,28 +271,16 @@ func (_q *UserConfigQuery) Clone() *UserConfigQuery {
 		return nil
 	}
 	return &UserConfigQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]userconfig.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.UserConfig{}, _q.predicates...),
-		withVerifier: _q.withVerifier.Clone(),
-		withUser:     _q.withUser.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]userconfig.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.UserConfig{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithVerifier tells the query-builder to eager-load the nodes that are connected to
-// the "verifier" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserConfigQuery) WithVerifier(opts ...func(*StakeholderQuery)) *UserConfigQuery {
-	query := (&StakeholderClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withVerifier = query
-	return _q
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
@@ -410,8 +373,7 @@ func (_q *UserConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*U
 		nodes       = []*UserConfig{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
-			_q.withVerifier != nil,
+		loadedTypes = [1]bool{
 			_q.withUser != nil,
 		}
 	)
@@ -439,13 +401,6 @@ func (_q *UserConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*U
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withVerifier; query != nil {
-		if err := _q.loadVerifier(ctx, query, nodes,
-			func(n *UserConfig) { n.Edges.Verifier = []*Stakeholder{} },
-			func(n *UserConfig, e *Stakeholder) { n.Edges.Verifier = append(n.Edges.Verifier, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withUser; query != nil {
 		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *UserConfig, e *User) { n.Edges.User = e }); err != nil {
@@ -455,67 +410,6 @@ func (_q *UserConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*U
 	return nodes, nil
 }
 
-func (_q *UserConfigQuery) loadVerifier(ctx context.Context, query *StakeholderQuery, nodes []*UserConfig, init func(*UserConfig), assign func(*UserConfig, *Stakeholder)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*UserConfig)
-	nids := make(map[uuid.UUID]map[*UserConfig]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(userconfig.VerifierTable)
-		s.Join(joinT).On(s.C(stakeholder.FieldID), joinT.C(userconfig.VerifierPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(userconfig.VerifierPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(userconfig.VerifierPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*UserConfig]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Stakeholder](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "verifier" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (_q *UserConfigQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*UserConfig, init func(*UserConfig), assign func(*UserConfig, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserConfig)

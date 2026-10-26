@@ -600,6 +600,29 @@ func HasStakeholderGroupsWith(preds ...predicate.StakeholderGroup) predicate.Acc
 	})
 }
 
+// HasHandlingTasks applies the HasEdge predicate on the "handling_tasks" edge.
+func HasHandlingTasks() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HandlingTasksTable, HandlingTasksColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHandlingTasksWith applies the HasEdge predicate on the "handling_tasks" edge with a given conditions (other predicates).
+func HasHandlingTasksWith(preds ...predicate.AccountHandlingTask) predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := newHandlingTasksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Account) predicate.Account {
 	return predicate.Account(sql.AndPredicates(predicates...))

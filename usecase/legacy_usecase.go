@@ -108,19 +108,21 @@ func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Accoun
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
-	if password != nil {
-		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
-		if err != nil {
-			return nil, domain.NewInternalServerError(err)
-		}
-	}
-
 	acc, err := lu.legacyRepository.CreateAccount(ctx, account, legacyID, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
 		}
 		return nil, domain.NewInternalServerError(err)
+	}
+
+	// Store the password only after the account row exists, so a failed
+	// account creation cannot leave an orphaned credential behind.
+	if password != nil {
+		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
+		if err != nil {
+			return nil, domain.NewInternalServerError(err)
+		}
 	}
 
 	return acc, nil
@@ -138,7 +140,7 @@ func (lu *legacyUseCase) GetAccountPassword(c context.Context, userID *domain.ID
 	return pwd, nil
 }
 
-func (lu *legacyUseCase) GetAccountByID(c context.Context, id *domain.ID, userID *domain.ID) (*domain.Account, *string, error) {
+func (lu *legacyUseCase) GetAccountByID(c context.Context, legacyID *domain.ID, id *domain.ID, userID *domain.ID) (*domain.Account, *string, error) {
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
@@ -148,6 +150,11 @@ func (lu *legacyUseCase) GetAccountByID(c context.Context, id *domain.ID, userID
 			return nil, nil, domain.NewNotFoundError(err)
 		}
 		return nil, nil, domain.NewInternalServerError(err)
+	}
+
+	// The route nests the account under a legacy; reject a mismatched parent.
+	if acc.LegacyID != *legacyID {
+		return nil, nil, domain.NewNotFoundError(errors.New("account not found"))
 	}
 
 	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, acc.Name)
@@ -162,7 +169,19 @@ func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, 
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
-	err := lu.legacyRepository.DeleteAccount(ctx, accountID, legacyID, userID)
+	// 계정의 패스워드 Credential 삭제 (삭제 전 패스워드 제거)
+	acc, err := lu.legacyRepository.FindAccountById(ctx, accountID, userID)
+	if err != nil {
+		return domain.NewInternalServerError(err)
+	}
+
+	err = lu.credentialUseCase.DeletePassword(ctx, userID, acc.Name)
+	if err != nil {
+		return domain.NewInternalServerError(err)
+	}
+
+	// 계정 DB 삭제
+	err = lu.legacyRepository.DeleteAccount(ctx, accountID, legacyID, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return domain.NewNotFoundError(err)

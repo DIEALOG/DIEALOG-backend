@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +11,9 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/config"
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 )
+
+// The crypto service mounts its credential routes under /api/credentials.
+const credentialsPath = "/api/credentials"
 
 type Client struct {
 	httpClient *http.Client
@@ -28,16 +30,17 @@ func NewClient(httpClient *http.Client, apiKey string) *Client {
 func (c *Client) Store(ctx context.Context, dto domain.StoreCredentialRequest) error {
 	reqBody, err := json.Marshal(dto)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+"/store", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+credentialsPath+"/store", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-	req.Header.Set("Accept", "application/xml, application/json, text/xml, */*")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Internal-Secret-Key", c.apiKey)
 
 	resp, err := c.httpClient.Do(req)
@@ -46,7 +49,10 @@ func (c *Client) Store(ctx context.Context, dto domain.StoreCredentialRequest) e
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf(
@@ -62,17 +68,18 @@ func (c *Client) Store(ctx context.Context, dto domain.StoreCredentialRequest) e
 func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*string, error) {
 	reqBody, err := json.Marshal(dto)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+"/retrieve", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+credentialsPath+"/retrieve", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-	req.Header.Set("Accept", "application/xml, application/json, text/xml, */*")
-	req.Header.Set("X-Internal-Secret-Key", config.E.InternalSecretKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-Internal-Secret-Key", c.apiKey)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -80,12 +87,16 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
+	if resp.StatusCode == http.StatusNotFound {
+		// No credential has been stored for this account yet.
+		return nil, nil
+	}
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode != http.StatusNotFound {
-			return nil, nil
-		}
 		return nil, fmt.Errorf(
 			"unexpected status code: %d\nbody: %s",
 			resp.StatusCode,
@@ -97,7 +108,7 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*
 		AccountName string  `json:"account_name"`
 		Password    *string `json:"password"`
 	}
-	if err := xml.Unmarshal(body, &res); err != nil {
+	if err := json.Unmarshal(body, &res); err != nil {
 		return nil, err
 	}
 
@@ -110,4 +121,42 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*
 	}
 
 	return res.Password, nil
+}
+
+func (c *Client) Delete(ctx context.Context, dto domain.DeleteCredentialRequest) error {
+	reqBody, err := json.Marshal(dto)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, config.E.InternalCryptoUrl+credentialsPath+"/delete", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-Internal-Secret-Key", c.apiKey)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf(
+			"unexpected status code: %d\nbody: %s",
+			resp.StatusCode,
+			string(body),
+		)
+	}
+
+	return nil
 }

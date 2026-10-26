@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
@@ -21,11 +22,18 @@ func NewLastWordUseCase(lastWordRepository domain.LastWordRepository, timeout ti
 }
 
 func (l *lastWordUseCase) Create(c context.Context, lastWord *domain.LastWord) (*domain.LastWord, error) {
+	if !lastWord.IsValid() {
+		return nil, domain.NewBadRequestError(errors.New("title and message are required"))
+	}
+
 	ctx, cancel := context.WithTimeout(c, l.contextTimeout)
 	defer cancel()
 
 	lw, err := l.lastWordRepository.Create(ctx, lastWord)
 	if err != nil {
+		if ent.IsConstraintError(err) {
+			return nil, domain.NewBadRequestError(err)
+		}
 		return nil, domain.NewInternalServerError(err)
 	}
 
@@ -60,6 +68,10 @@ func (l *lastWordUseCase) GetByID(c context.Context, id *domain.ID, userID *doma
 }
 
 func (l *lastWordUseCase) Update(c context.Context, id *domain.ID, lastWord *domain.LastWord, userID *domain.ID) (*domain.LastWord, error) {
+	if !lastWord.IsValid() {
+		return nil, domain.NewBadRequestError(errors.New("title and message are required"))
+	}
+
 	ctx, cancel := context.WithTimeout(c, l.contextTimeout)
 	defer cancel()
 
@@ -67,6 +79,9 @@ func (l *lastWordUseCase) Update(c context.Context, id *domain.ID, lastWord *dom
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
+		}
+		if ent.IsConstraintError(err) {
+			return nil, domain.NewBadRequestError(err)
 		}
 		return nil, domain.NewInternalServerError(err)
 	}

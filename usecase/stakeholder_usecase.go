@@ -23,7 +23,7 @@ func NewStakeholderUseCase(stakeholderRepository domain.StakeholderRepository, t
 
 func (su *stakeholderUseCase) Create(c context.Context, s *domain.Stakeholder, userID *domain.ID) (*domain.Stakeholder, error) {
 	if !s.IsValid() {
-		return nil, domain.NewBadRequestError(errors.New("either phone or email must be provided"))
+		return nil, domain.NewBadRequestError(errors.New("name is required; either phone or email must be provided"))
 	}
 
 	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
@@ -31,6 +31,9 @@ func (su *stakeholderUseCase) Create(c context.Context, s *domain.Stakeholder, u
 
 	created, err := su.stakeholderRepository.Create(ctx, s, userID)
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
 		return nil, domain.NewInternalServerError(err)
 	}
 
@@ -66,7 +69,7 @@ func (su *stakeholderUseCase) GetByID(c context.Context, id *domain.ID, userID *
 
 func (su *stakeholderUseCase) Update(c context.Context, id *domain.ID, s *domain.Stakeholder, userID *domain.ID) (*domain.Stakeholder, error) {
 	if !s.IsValid() {
-		return nil, domain.NewBadRequestError(errors.New("either phone or email must be provided"))
+		return nil, domain.NewBadRequestError(errors.New("name is required; either phone or email must be provided"))
 	}
 
 	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
@@ -98,11 +101,11 @@ func (su *stakeholderUseCase) Delete(c context.Context, id *domain.ID, userID *d
 	return nil
 }
 
-func (gu *stakeholderUseCase) ListByIDs(c context.Context, ids []domain.ID, userID *domain.ID) ([]*domain.Stakeholder, error) {
-	ctx, cancel := context.WithTimeout(c, gu.contextTimeout)
+func (su *stakeholderUseCase) ListByIDs(c context.Context, ids []domain.ID, userID *domain.ID) ([]*domain.Stakeholder, error) {
+	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
 	defer cancel()
 
-	stakeholders, err := gu.stakeholderRepository.FindAllByIDs(ctx, ids, userID)
+	stakeholders, err := su.stakeholderRepository.FindAllByIDs(ctx, ids, userID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}

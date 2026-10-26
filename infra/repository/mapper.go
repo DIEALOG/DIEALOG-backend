@@ -12,6 +12,7 @@ func toDomainUser(entity *ent.User) *domain.User {
 		Name:             entity.Name,
 		Email:            entity.Email,
 		Password:         entity.Password,
+		PhoneNumber:      entity.PhoneNumber,
 		ProfileImagePath: entity.ProfileImagePath,
 		CreatedAt:        entity.CreatedAt,
 	}
@@ -104,6 +105,7 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 			Name: entity.TypeName,
 		},
 		AccountID:    entity.AccountID,
+		Name:         entity.Name,
 		DataLocation: entity.DataLocation,
 		Action: domain.AccountAction{
 			ID:      entity.ID,
@@ -119,6 +121,12 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 		a.Stakeholders = make([]domain.Stakeholder, len(entity.Edges.Stakeholders))
 		for i, s := range entity.Edges.Stakeholders {
 			a.Stakeholders[i] = *toDomainStakeholder(s)
+		}
+	}
+	if entity.Edges.StakeholderGroups != nil {
+		a.StakeholderGroups = make([]domain.StakeholderGroup, len(entity.Edges.StakeholderGroups))
+		for i, g := range entity.Edges.StakeholderGroups {
+			a.StakeholderGroups[i] = *toDomainStakeholderGroup(g)
 		}
 	}
 	return a
@@ -157,19 +165,10 @@ func toDomainUserConfig(entity *ent.UserConfig) *domain.UserConfig {
 		ID:                                      entity.ID,
 		LockByFaceID:                            entity.LockByFaceID,
 		CertificationBeforeSensitiveInformation: entity.CertificationBeforeSensitiveInformation,
-		ConversionCriteria:                      domain.ConfigConversionCriteria(entity.ConversionCriteria),
-		SurvivalCheckIntervalDays:               entity.SurvivalCheckIntervalDays,
 	}
 
 	if entity.Edges.User != nil {
 		config.UserID = entity.Edges.User.ID
-	}
-
-	if entity.Edges.Verifier != nil {
-		config.Verifier = make([]domain.Stakeholder, len(entity.Edges.Verifier))
-		for i, s := range entity.Edges.Verifier {
-			config.Verifier[i] = *toDomainStakeholder(s)
-		}
 	}
 
 	return config

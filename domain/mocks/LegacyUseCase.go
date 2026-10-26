@@ -112,9 +112,9 @@ func (_m *LegacyUseCase) DeleteAccount(c context.Context, accountID *uuid.UUID, 
 	return r0
 }
 
-// GetAccountByID provides a mock function with given fields: c, id, userID
-func (_m *LegacyUseCase) GetAccountByID(c context.Context, id *uuid.UUID, userID *uuid.UUID) (*domain.Account, *string, error) {
-	ret := _m.Called(c, id, userID)
+// GetAccountByID provides a mock function with given fields: c, legacyID, id, userID
+func (_m *LegacyUseCase) GetAccountByID(c context.Context, legacyID *uuid.UUID, id *uuid.UUID, userID *uuid.UUID) (*domain.Account, *string, error) {
+	ret := _m.Called(c, legacyID, id, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAccountByID")
@@ -123,27 +123,27 @@ func (_m *LegacyUseCase) GetAccountByID(c context.Context, id *uuid.UUID, userID
 	var r0 *domain.Account
 	var r1 *string
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) (*domain.Account, *string, error)); ok {
-		return rf(c, id, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID, *uuid.UUID) (*domain.Account, *string, error)); ok {
+		return rf(c, legacyID, id, userID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) *domain.Account); ok {
-		r0 = rf(c, id, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID, *uuid.UUID) *domain.Account); ok {
+		r0 = rf(c, legacyID, id, userID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Account)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) *string); ok {
-		r1 = rf(c, id, userID)
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID, *uuid.UUID) *string); ok {
+		r1 = rf(c, legacyID, id, userID)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*string)
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
-		r2 = rf(c, id, userID)
+	if rf, ok := ret.Get(2).(func(context.Context, *uuid.UUID, *uuid.UUID, *uuid.UUID) error); ok {
+		r2 = rf(c, legacyID, id, userID)
 	} else {
 		r2 = ret.Error(2)
 	}

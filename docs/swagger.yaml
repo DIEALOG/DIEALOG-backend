@@ -1,5 +1,14 @@
 basePath: /api
 definitions:
+  domain.AcceptTransitionInvitationResponse:
+    properties:
+      auth_token:
+        type: string
+      confirmer:
+        $ref: '#/definitions/domain.UserTransitionConfirmer'
+      expires_at:
+        type: string
+    type: object
   domain.Account:
     properties:
       account_id:
@@ -68,7 +77,7 @@ definitions:
         type: string
       name:
         type: string
-      stakeholder_group_ids:
+      stakeholder_groups:
         items:
           $ref: '#/definitions/domain.StakeholderGroup'
         type: array
@@ -79,6 +88,151 @@ definitions:
       type:
         $ref: '#/definitions/domain.AccountType'
     type: object
+  domain.AccountHandlingEvent:
+    properties:
+      created_at:
+        type: string
+      event_type:
+        $ref: '#/definitions/domain.AccountHandlingEventType'
+      id:
+        type: string
+      message:
+        type: string
+      task_id:
+        type: string
+    type: object
+  domain.AccountHandlingEventType:
+    enum:
+    - task_created
+    - request_issued
+    - stakeholder_confirmed
+    - stakeholder_reported_failure
+    - task_completed
+    - task_failed
+    type: string
+    x-enum-varnames:
+    - AccountHandlingEventTypeTaskCreated
+    - AccountHandlingEventTypeRequestIssued
+    - AccountHandlingEventTypeStakeholderConfirmed
+    - AccountHandlingEventTypeStakeholderReportedFailed
+    - AccountHandlingEventTypeTaskCompleted
+    - AccountHandlingEventTypeTaskFailed
+  domain.AccountHandlingRequest:
+    properties:
+      assignee_id:
+        type: string
+      email:
+        type: string
+      expires_at:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      stakeholder_id:
+        type: string
+      token:
+        type: string
+    type: object
+  domain.AccountHandlingRequestResponse:
+    properties:
+      requests:
+        items:
+          $ref: '#/definitions/domain.AccountHandlingRequest'
+        type: array
+      task:
+        $ref: '#/definitions/domain.AccountHandlingTask'
+    type: object
+  domain.AccountHandlingTask:
+    properties:
+      account_id:
+        type: string
+      action_message_snapshot:
+        type: string
+      action_snapshot:
+        $ref: '#/definitions/domain.AccountActionField'
+      assignees:
+        items:
+          $ref: '#/definitions/domain.AccountHandlingTaskAssignee'
+        type: array
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/domain.AccountHandlingEvent'
+        type: array
+      failure_reason:
+        type: string
+      id:
+        type: string
+      request_count:
+        type: integer
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.AccountHandlingTaskStatus'
+      transition_case_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.AccountHandlingTaskAssignee:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      request_token_expires_at:
+        type: string
+      requested_at:
+        type: string
+      responded_at:
+        type: string
+      response_message:
+        type: string
+      stakeholder_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.AccountHandlingTaskAssigneeStatus'
+      task_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.AccountHandlingTaskAssigneeStatus:
+    enum:
+    - pending
+    - confirmed
+    - failed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - AccountHandlingTaskAssigneeStatusPending
+    - AccountHandlingTaskAssigneeStatusConfirmed
+    - AccountHandlingTaskAssigneeStatusFailed
+    - AccountHandlingTaskAssigneeStatusCancelled
+  domain.AccountHandlingTaskStatus:
+    enum:
+    - pending
+    - in_progress
+    - completed
+    - failed
+    - skipped
+    type: string
+    x-enum-varnames:
+    - AccountHandlingTaskStatusPending
+    - AccountHandlingTaskStatusInProgress
+    - AccountHandlingTaskStatusCompleted
+    - AccountHandlingTaskStatusFailed
+    - AccountHandlingTaskStatusSkipped
   domain.AccountListResponse:
     properties:
       action:
@@ -162,6 +316,17 @@ definitions:
   domain.ErrorResponse:
     properties:
       message:
+        type: string
+    type: object
+  domain.InviteTransitionConfirmerRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      stakeholder_id:
         type: string
     type: object
   domain.LastWord:
@@ -319,9 +484,39 @@ definitions:
     required:
     - name
     type: object
+  domain.SubmitAccountHandlingResultRequest:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+      token:
+        type: string
+    type: object
+  domain.SubmitTransitionConfirmationRequest:
+    properties:
+      comment:
+        type: string
+      decision:
+        $ref: '#/definitions/domain.UserTransitionDecision'
+    type: object
   domain.SuccessResponse:
     properties:
       message:
+        type: string
+    type: object
+  domain.TransitionInvitationResponse:
+    properties:
+      confirmer:
+        $ref: '#/definitions/domain.UserTransitionConfirmer'
+      expires_at:
+        type: string
+      invitation_token:
+        type: string
+    type: object
+  domain.TransitionInvitationTokenRequest:
+    properties:
+      token:
         type: string
     type: object
   domain.UpdateLastWordRequest:
@@ -339,24 +534,186 @@ definitions:
       title:
         type: string
     type: object
+  domain.UpdateUserTransitionPolicyRequest:
+    properties:
+      alive_check_interval_days:
+        type: integer
+      minimum_confirmers:
+        type: integer
+      waiting_period_days:
+        type: integer
+    type: object
+  domain.UserAliveCheck:
+    properties:
+      created_at:
+        type: string
+      due_at:
+        type: string
+      id:
+        type: string
+      responded_at:
+        type: string
+      scheduled_at:
+        type: string
+      sequence:
+        type: integer
+      status:
+        $ref: '#/definitions/domain.UserAliveCheckStatus'
+      user_id:
+        type: string
+    type: object
+  domain.UserAliveCheckStatus:
+    enum:
+    - scheduled
+    - pending
+    - responded
+    - overdue
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - UserAliveCheckStatusScheduled
+    - UserAliveCheckStatusPending
+    - UserAliveCheckStatusResponded
+    - UserAliveCheckStatusOverdue
+    - UserAliveCheckStatusCancelled
   domain.UserConfig:
     properties:
       certification_before_sensitive_information:
         type: boolean
-      conversion_criteria:
-        type: string
       id:
         type: string
       lock_by_face_id:
         type: boolean
-      survival_check_interval_days:
-        type: integer
       user_id:
         type: string
-      verifier:
-        items:
-          $ref: '#/definitions/domain.Stakeholder'
-        type: array
+    type: object
+  domain.UserTransitionCase:
+    properties:
+      cancelled_at:
+        type: string
+      confirmed_at:
+        type: string
+      created_at:
+        type: string
+      eligible_at:
+        type: string
+      id:
+        type: string
+      minimum_confirmers_snapshot:
+        type: integer
+      requested_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.UserTransitionCaseStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      waiting_period_days_snapshot:
+        type: integer
+      waiting_started_at:
+        type: string
+    type: object
+  domain.UserTransitionCaseStatus:
+    enum:
+    - pending_confirmation
+    - waiting_period
+    - confirmed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - UserTransitionCaseStatusPending
+    - UserTransitionCaseStatusWaiting
+    - UserTransitionCaseStatusConfirmed
+    - UserTransitionCaseStatusCancelled
+  domain.UserTransitionConfirmation:
+    properties:
+      comment:
+        type: string
+      created_at:
+        type: string
+      decision:
+        $ref: '#/definitions/domain.UserTransitionDecision'
+      id:
+        type: string
+      responded_at:
+        type: string
+      transition_case_id:
+        type: string
+      transition_confirmer_id:
+        type: string
+    type: object
+  domain.UserTransitionConfirmer:
+    properties:
+      accepted_at:
+        type: string
+      auth_token_expires_at:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      invite_expires_at:
+        type: string
+      invited_at:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      revoked_at:
+        type: string
+      stakeholder_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.UserTransitionConfirmerStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.UserTransitionConfirmerStatus:
+    enum:
+    - pending
+    - accepted
+    - declined
+    - revoked
+    - expired
+    type: string
+    x-enum-varnames:
+    - UserTransitionConfirmerStatusPending
+    - UserTransitionConfirmerStatusAccepted
+    - UserTransitionConfirmerStatusDeclined
+    - UserTransitionConfirmerStatusRevoked
+    - UserTransitionConfirmerStatusExpired
+  domain.UserTransitionDecision:
+    enum:
+    - agree
+    - disagree
+    - abstain
+    type: string
+    x-enum-varnames:
+    - UserTransitionDecisionAgree
+    - UserTransitionDecisionDisagree
+    - UserTransitionDecisionAbstain
+  domain.UserTransitionPolicy:
+    properties:
+      alive_check_interval_days:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: string
+      minimum_confirmers:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      waiting_period_days:
+        type: integer
     type: object
   handler.UpdateLegacyRequest:
     properties:
@@ -1368,10 +1725,749 @@ paths:
       summary: 관계자 그룹 정보 수정
       tags:
       - Stakeholder Group
+  /transition/confirmer/cases:
+    get:
+      description: 확인자 인증 토큰으로 자신이 확인하는 사용자의 진행 중인 전환 절차를 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전환 절차 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserTransitionCase'
+            type: array
+        "401":
+          description: 확인자 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ConfirmerAuth: []
+      summary: 확인자용 전환 절차 목록 조회
+      tags:
+      - Transition
+    post:
+      description: 수락된 확인자가 사후 전환 절차를 생성합니다. 사용자당 진행 중인 절차는 하나만 허용됩니다.
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 전환 절차 생성 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionCase'
+        "400":
+          description: 이미 진행 중인 절차가 있음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 확인자 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "403":
+          description: 수락되지 않은 확인자
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ConfirmerAuth: []
+      summary: 사후 전환 절차 생성
+      tags:
+      - Transition
+  /transition/confirmer/cases/{id}:
+    get:
+      description: 확인자 인증 토큰으로 전환 절차 상태를 조회합니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전환 절차 상세 조회 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionCase'
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 확인자 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ConfirmerAuth: []
+      summary: 확인자용 전환 절차 상세 조회
+      tags:
+      - Transition
+  /transition/confirmer/cases/{id}/confirmations:
+    post:
+      consumes:
+      - application/json
+      description: 확인자가 전환 절차에 동의, 반대, 보류 의사를 제출합니다. 동의 기준 충족 전에는 변경할 수 있습니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 확인 의사
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SubmitTransitionConfirmationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인 의사 제출 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionConfirmation'
+        "400":
+          description: 잘못된 요청 또는 변경할 수 없는 상태
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 확인자 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "403":
+          description: 수락되지 않은 확인자
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ConfirmerAuth: []
+      summary: 사후 전환 동의/반대 제출
+      tags:
+      - Transition
+  /transition/invitations/accept:
+    post:
+      consumes:
+      - application/json
+      description: 요청 본문의 초대 토큰을 검증하고 확인자 인증 토큰을 발급합니다. 인증 토큰은 한 번만 반환됩니다.
+      parameters:
+      - description: 초대 토큰
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.TransitionInvitationTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 초대 수락 성공
+          schema:
+            $ref: '#/definitions/domain.AcceptTransitionInvitationResponse'
+        "400":
+          description: 만료되었거나 유효하지 않은 초대
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 초대를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: 사후 전환 확인자 초대 수락
+      tags:
+      - Transition
+  /transition/invitations/decline:
+    post:
+      consumes:
+      - application/json
+      description: 요청 본문의 초대 토큰을 검증하고 초대를 거절합니다.
+      parameters:
+      - description: 초대 토큰
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.TransitionInvitationTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 초대 거절 성공
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: 만료되었거나 유효하지 않은 초대
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 초대를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: 사후 전환 확인자 초대 거절
+      tags:
+      - Transition
+  /transition/protected/alive-checks:
+    get:
+      description: 현재 사용자의 생존 확인 일정과 응답 이력을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 생존 확인 이력 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserAliveCheck'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 생존 확인 이력 조회
+      tags:
+      - Transition
+    post:
+      description: 정책의 주기에 따라 다음 생존 확인 일정을 예약합니다.
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 생존 확인 예약 성공
+          schema:
+            $ref: '#/definitions/domain.UserAliveCheck'
+        "400":
+          description: 이미 예약된 일정이 있거나 기한 초과 일정이 있음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 다음 생존 확인 예약
+      tags:
+      - Transition
+  /transition/protected/alive-checks/{id}/respond:
+    post:
+      description: 생존 확인에 응답하고 다음 생존 확인 일정을 예약합니다.
+      parameters:
+      - description: 생존 확인 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 생존 확인 응답 성공
+          schema:
+            $ref: '#/definitions/domain.UserAliveCheck'
+        "400":
+          description: 이미 종료된 일정 또는 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 생존 확인을 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 생존 확인 응답
+      tags:
+      - Transition
+  /transition/protected/cases:
+    get:
+      description: 현재 사용자의 사후 전환 절차 목록을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전환 절차 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserTransitionCase'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 절차 목록 조회
+      tags:
+      - Transition
+  /transition/protected/cases/{id}:
+    get:
+      description: 전환 절차 상태를 조회하고, 확정 조건이 충족되면 확정 처리합니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전환 절차 상세 조회 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionCase'
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 절차 상세 조회
+      tags:
+      - Transition
+  /transition/protected/cases/{id}/cancel:
+    post:
+      description: 확정되지 않은 전환 절차를 취소합니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전환 절차 취소 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionCase'
+        "400":
+          description: 이미 확정된 절차 또는 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 절차 취소
+      tags:
+      - Transition
+  /transition/protected/cases/{id}/confirmations:
+    get:
+      description: 전환 절차에 제출된 확인 의사 목록을 조회합니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인 의사 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserTransitionConfirmation'
+            type: array
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 확인 의사 목록 조회
+      tags:
+      - Transition
+  /transition/protected/cases/{id}/tasks:
+    get:
+      description: 확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 계정 처리 작업 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.AccountHandlingTask'
+            type: array
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 계정 처리 작업 목록 조회
+      tags:
+      - Transition
+  /transition/protected/confirmers:
+    get:
+      description: 현재 사용자가 초대한 사후 전환 확인자 목록을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인자 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserTransitionConfirmer'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 확인자 목록 조회
+      tags:
+      - Transition
+    post:
+      consumes:
+      - application/json
+      description: 확인자를 초대하고 초대 토큰을 한 번만 반환합니다. 실제 이메일/SMS 발송은 아직 구현되지 않았습니다.
+      parameters:
+      - description: 초대할 확인자 정보
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.InviteTransitionConfirmerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 확인자 초대 성공
+          schema:
+            $ref: '#/definitions/domain.TransitionInvitationResponse'
+        "400":
+          description: 잘못된 요청 또는 중복 확인자
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 이해관계자를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 확인자 초대
+      tags:
+      - Transition
+  /transition/protected/confirmers/{id}:
+    delete:
+      description: 확인자 지정을 철회하고 기존 초대/인증 토큰을 무효화합니다.
+      parameters:
+      - description: 확인자 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인자 철회 성공
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 확인자를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 확인자 철회
+      tags:
+      - Transition
+  /transition/protected/confirmers/{id}/resend:
+    post:
+      description: 기존 초대 토큰을 폐기하고 새 초대 토큰을 발급합니다.
+      parameters:
+      - description: 확인자 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 초대 재발송 성공
+          schema:
+            $ref: '#/definitions/domain.TransitionInvitationResponse'
+        "400":
+          description: 재발송할 수 없는 상태 또는 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 확인자를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 확인자 초대 재발송
+      tags:
+      - Transition
+  /transition/protected/policy:
+    get:
+      description: 현재 사용자의 사후 전환 정책을 조회합니다. 정책이 없으면 기본 정책을 생성합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 정책 조회 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionPolicy'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 정책 조회
+      tags:
+      - Transition
+    patch:
+      consumes:
+      - application/json
+      description: 동의자 최소 수, 대기 기간, 생존 확인 주기를 수정합니다.
+      parameters:
+      - description: 수정할 정책
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateUserTransitionPolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 정책 수정 성공
+          schema:
+            $ref: '#/definitions/domain.UserTransitionPolicy'
+        "400":
+          description: 잘못된 요청 또는 정책 값
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 사후 전환 정책 수정
+      tags:
+      - Transition
+  /transition/protected/tasks/{id}/request:
+    post:
+      description: 계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 요청할 때마다 계정의 현재 관계자를 추가로
+        반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.
+      parameters:
+      - description: 계정 처리 작업 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 계정 처리 요청 토큰 발급 결과
+          schema:
+            $ref: '#/definitions/domain.AccountHandlingRequestResponse'
+        "400":
+          description: 요청할 수 없는 상태, 관계자 없음 또는 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 작업을 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 계정 처리 요청 토큰 발급
+      tags:
+      - Transition
+  /transition/stakeholder-tasks/result:
+    post:
+      consumes:
+      - application/json
+      description: 관계자가 계정 처리 요청 토큰으로 실제 처리 성공 또는 실패 여부를 보고합니다.
+      parameters:
+      - description: 처리 결과와 요청 토큰
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SubmitAccountHandlingResultRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 계정 처리 결과 보고 성공
+          schema:
+            $ref: '#/definitions/domain.AccountHandlingTask'
+        "400":
+          description: 잘못된 요청, 만료된 토큰 또는 처리할 수 없는 상태
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: 계정 처리 성공 여부 보고
+      tags:
+      - Transition
 securityDefinitions:
   BearerAuth:
     description: Enter your JWT token with the `Bearer ` prefix.
     in: header
     name: Authorization
+    type: apiKey
+  ConfirmerAuth:
+    description: Enter the confirmer token returned when an invitation is accepted.
+    in: header
+    name: X-Confirmer-Token
     type: apiKey
 swagger: "2.0"

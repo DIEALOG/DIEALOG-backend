@@ -270,13 +270,20 @@ func GetAccount(service domain.LegacyUseCase) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		ctx := c.RequestCtx()
 		userID := c.Locals("id").(*domain.ID)
-		idStr := c.Params("accountId")
-		id, err := domain.StringToID(idStr)
+
+		legacyIDStr := c.Params("id")
+		legacyID, err := domain.StringToID(legacyIDStr)
 		if err != nil {
-			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid id format"})
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid legacy id format"})
 		}
 
-		acc, pwd, err := service.GetAccountByID(ctx, &id, userID)
+		accountIDStr := c.Params("accountId")
+		accountID, err := domain.StringToID(accountIDStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid account id format"})
+		}
+
+		acc, pwd, err := service.GetAccountByID(ctx, &legacyID, &accountID, userID)
 		if err != nil {
 			return RespondError(c, err)
 		}

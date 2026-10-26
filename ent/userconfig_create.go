@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/google/uuid"
@@ -50,34 +49,6 @@ func (_c *UserConfigCreate) SetNillableCertificationBeforeSensitiveInformation(v
 	return _c
 }
 
-// SetConversionCriteria sets the "conversion_criteria" field.
-func (_c *UserConfigCreate) SetConversionCriteria(v string) *UserConfigCreate {
-	_c.mutation.SetConversionCriteria(v)
-	return _c
-}
-
-// SetNillableConversionCriteria sets the "conversion_criteria" field if the given value is not nil.
-func (_c *UserConfigCreate) SetNillableConversionCriteria(v *string) *UserConfigCreate {
-	if v != nil {
-		_c.SetConversionCriteria(*v)
-	}
-	return _c
-}
-
-// SetSurvivalCheckIntervalDays sets the "survival_check_interval_days" field.
-func (_c *UserConfigCreate) SetSurvivalCheckIntervalDays(v int) *UserConfigCreate {
-	_c.mutation.SetSurvivalCheckIntervalDays(v)
-	return _c
-}
-
-// SetNillableSurvivalCheckIntervalDays sets the "survival_check_interval_days" field if the given value is not nil.
-func (_c *UserConfigCreate) SetNillableSurvivalCheckIntervalDays(v *int) *UserConfigCreate {
-	if v != nil {
-		_c.SetSurvivalCheckIntervalDays(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *UserConfigCreate) SetID(v uuid.UUID) *UserConfigCreate {
 	_c.mutation.SetID(v)
@@ -90,21 +61,6 @@ func (_c *UserConfigCreate) SetNillableID(v *uuid.UUID) *UserConfigCreate {
 		_c.SetID(*v)
 	}
 	return _c
-}
-
-// AddVerifierIDs adds the "verifier" edge to the Stakeholder entity by IDs.
-func (_c *UserConfigCreate) AddVerifierIDs(ids ...uuid.UUID) *UserConfigCreate {
-	_c.mutation.AddVerifierIDs(ids...)
-	return _c
-}
-
-// AddVerifier adds the "verifier" edges to the Stakeholder entity.
-func (_c *UserConfigCreate) AddVerifier(v ...*Stakeholder) *UserConfigCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddVerifierIDs(ids...)
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
@@ -161,14 +117,6 @@ func (_c *UserConfigCreate) defaults() {
 		v := userconfig.DefaultCertificationBeforeSensitiveInformation
 		_c.mutation.SetCertificationBeforeSensitiveInformation(v)
 	}
-	if _, ok := _c.mutation.ConversionCriteria(); !ok {
-		v := userconfig.DefaultConversionCriteria
-		_c.mutation.SetConversionCriteria(v)
-	}
-	if _, ok := _c.mutation.SurvivalCheckIntervalDays(); !ok {
-		v := userconfig.DefaultSurvivalCheckIntervalDays
-		_c.mutation.SetSurvivalCheckIntervalDays(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := userconfig.DefaultID()
 		_c.mutation.SetID(v)
@@ -182,17 +130,6 @@ func (_c *UserConfigCreate) check() error {
 	}
 	if _, ok := _c.mutation.CertificationBeforeSensitiveInformation(); !ok {
 		return &ValidationError{Name: "certification_before_sensitive_information", err: errors.New(`ent: missing required field "UserConfig.certification_before_sensitive_information"`)}
-	}
-	if _, ok := _c.mutation.ConversionCriteria(); !ok {
-		return &ValidationError{Name: "conversion_criteria", err: errors.New(`ent: missing required field "UserConfig.conversion_criteria"`)}
-	}
-	if v, ok := _c.mutation.ConversionCriteria(); ok {
-		if err := userconfig.ConversionCriteriaValidator(v); err != nil {
-			return &ValidationError{Name: "conversion_criteria", err: fmt.Errorf(`ent: validator failed for field "UserConfig.conversion_criteria": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.SurvivalCheckIntervalDays(); !ok {
-		return &ValidationError{Name: "survival_check_interval_days", err: errors.New(`ent: missing required field "UserConfig.survival_check_interval_days"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "UserConfig.user"`)}
@@ -240,33 +177,9 @@ func (_c *UserConfigCreate) createSpec() (*UserConfig, *sqlgraph.CreateSpec) {
 		_spec.SetField(userconfig.FieldCertificationBeforeSensitiveInformation, field.TypeBool, value)
 		_node.CertificationBeforeSensitiveInformation = value
 	}
-	if value, ok := _c.mutation.ConversionCriteria(); ok {
-		_spec.SetField(userconfig.FieldConversionCriteria, field.TypeString, value)
-		_node.ConversionCriteria = value
-	}
-	if value, ok := _c.mutation.SurvivalCheckIntervalDays(); ok {
-		_spec.SetField(userconfig.FieldSurvivalCheckIntervalDays, field.TypeInt, value)
-		_node.SurvivalCheckIntervalDays = value
-	}
-	if nodes := _c.mutation.VerifierIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userconfig.VerifierTable,
-			Columns: userconfig.VerifierPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(stakeholder.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   userconfig.UserTable,
 			Columns: []string{userconfig.UserColumn},

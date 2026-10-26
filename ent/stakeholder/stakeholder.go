@@ -35,8 +35,6 @@ const (
 	EdgeAccounts = "accounts"
 	// EdgeLastWords holds the string denoting the last_words edge name in mutations.
 	EdgeLastWords = "last_words"
-	// EdgeUserConfig holds the string denoting the user_config edge name in mutations.
-	EdgeUserConfig = "user_config"
 	// Table holds the table name of the stakeholder in the database.
 	Table = "stakeholders"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -61,11 +59,6 @@ const (
 	// LastWordsInverseTable is the table name for the LastWord entity.
 	// It exists in this package in order to avoid circular dependency with the "lastword" package.
 	LastWordsInverseTable = "last_words"
-	// UserConfigTable is the table that holds the user_config relation/edge. The primary key declared below.
-	UserConfigTable = "user_config_verifier"
-	// UserConfigInverseTable is the table name for the UserConfig entity.
-	// It exists in this package in order to avoid circular dependency with the "userconfig" package.
-	UserConfigInverseTable = "user_configs"
 )
 
 // Columns holds all SQL columns for stakeholder fields.
@@ -95,9 +88,6 @@ var (
 	// LastWordsPrimaryKey and LastWordsColumn2 are the table columns denoting the
 	// primary key for the last_words relation (M2M).
 	LastWordsPrimaryKey = []string{"last_word_id", "stakeholder_id"}
-	// UserConfigPrimaryKey and UserConfigColumn2 are the table columns denoting the
-	// primary key for the user_config relation (M2M).
-	UserConfigPrimaryKey = []string{"user_config_id", "stakeholder_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -212,20 +202,6 @@ func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLastWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByUserConfigCount orders the results by user_config count.
-func ByUserConfigCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserConfigStep(), opts...)
-	}
-}
-
-// ByUserConfig orders the results by user_config terms.
-func ByUserConfig(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -252,12 +228,5 @@ func newLastWordsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LastWordsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, LastWordsTable, LastWordsPrimaryKey...),
-	)
-}
-func newUserConfigStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserConfigInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, UserConfigTable, UserConfigPrimaryKey...),
 	)
 }

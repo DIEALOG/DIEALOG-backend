@@ -64,16 +64,6 @@ func CertificationBeforeSensitiveInformation(v bool) predicate.UserConfig {
 	return predicate.UserConfig(sql.FieldEQ(FieldCertificationBeforeSensitiveInformation, v))
 }
 
-// ConversionCriteria applies equality check predicate on the "conversion_criteria" field. It's identical to ConversionCriteriaEQ.
-func ConversionCriteria(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldEQ(FieldConversionCriteria, v))
-}
-
-// SurvivalCheckIntervalDays applies equality check predicate on the "survival_check_interval_days" field. It's identical to SurvivalCheckIntervalDaysEQ.
-func SurvivalCheckIntervalDays(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldEQ(FieldSurvivalCheckIntervalDays, v))
-}
-
 // LockByFaceIDEQ applies the EQ predicate on the "lock_by_face_id" field.
 func LockByFaceIDEQ(v bool) predicate.UserConfig {
 	return predicate.UserConfig(sql.FieldEQ(FieldLockByFaceID, v))
@@ -94,140 +84,12 @@ func CertificationBeforeSensitiveInformationNEQ(v bool) predicate.UserConfig {
 	return predicate.UserConfig(sql.FieldNEQ(FieldCertificationBeforeSensitiveInformation, v))
 }
 
-// ConversionCriteriaEQ applies the EQ predicate on the "conversion_criteria" field.
-func ConversionCriteriaEQ(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldEQ(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaNEQ applies the NEQ predicate on the "conversion_criteria" field.
-func ConversionCriteriaNEQ(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldNEQ(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaIn applies the In predicate on the "conversion_criteria" field.
-func ConversionCriteriaIn(vs ...string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldIn(FieldConversionCriteria, vs...))
-}
-
-// ConversionCriteriaNotIn applies the NotIn predicate on the "conversion_criteria" field.
-func ConversionCriteriaNotIn(vs ...string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldNotIn(FieldConversionCriteria, vs...))
-}
-
-// ConversionCriteriaGT applies the GT predicate on the "conversion_criteria" field.
-func ConversionCriteriaGT(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldGT(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaGTE applies the GTE predicate on the "conversion_criteria" field.
-func ConversionCriteriaGTE(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldGTE(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaLT applies the LT predicate on the "conversion_criteria" field.
-func ConversionCriteriaLT(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldLT(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaLTE applies the LTE predicate on the "conversion_criteria" field.
-func ConversionCriteriaLTE(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldLTE(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaContains applies the Contains predicate on the "conversion_criteria" field.
-func ConversionCriteriaContains(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldContains(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaHasPrefix applies the HasPrefix predicate on the "conversion_criteria" field.
-func ConversionCriteriaHasPrefix(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldHasPrefix(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaHasSuffix applies the HasSuffix predicate on the "conversion_criteria" field.
-func ConversionCriteriaHasSuffix(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldHasSuffix(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaEqualFold applies the EqualFold predicate on the "conversion_criteria" field.
-func ConversionCriteriaEqualFold(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldEqualFold(FieldConversionCriteria, v))
-}
-
-// ConversionCriteriaContainsFold applies the ContainsFold predicate on the "conversion_criteria" field.
-func ConversionCriteriaContainsFold(v string) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldContainsFold(FieldConversionCriteria, v))
-}
-
-// SurvivalCheckIntervalDaysEQ applies the EQ predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysEQ(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldEQ(FieldSurvivalCheckIntervalDays, v))
-}
-
-// SurvivalCheckIntervalDaysNEQ applies the NEQ predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysNEQ(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldNEQ(FieldSurvivalCheckIntervalDays, v))
-}
-
-// SurvivalCheckIntervalDaysIn applies the In predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysIn(vs ...int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldIn(FieldSurvivalCheckIntervalDays, vs...))
-}
-
-// SurvivalCheckIntervalDaysNotIn applies the NotIn predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysNotIn(vs ...int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldNotIn(FieldSurvivalCheckIntervalDays, vs...))
-}
-
-// SurvivalCheckIntervalDaysGT applies the GT predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysGT(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldGT(FieldSurvivalCheckIntervalDays, v))
-}
-
-// SurvivalCheckIntervalDaysGTE applies the GTE predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysGTE(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldGTE(FieldSurvivalCheckIntervalDays, v))
-}
-
-// SurvivalCheckIntervalDaysLT applies the LT predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysLT(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldLT(FieldSurvivalCheckIntervalDays, v))
-}
-
-// SurvivalCheckIntervalDaysLTE applies the LTE predicate on the "survival_check_interval_days" field.
-func SurvivalCheckIntervalDaysLTE(v int) predicate.UserConfig {
-	return predicate.UserConfig(sql.FieldLTE(FieldSurvivalCheckIntervalDays, v))
-}
-
-// HasVerifier applies the HasEdge predicate on the "verifier" edge.
-func HasVerifier() predicate.UserConfig {
-	return predicate.UserConfig(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, VerifierTable, VerifierPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasVerifierWith applies the HasEdge predicate on the "verifier" edge with a given conditions (other predicates).
-func HasVerifierWith(preds ...predicate.Stakeholder) predicate.UserConfig {
-	return predicate.UserConfig(func(s *sql.Selector) {
-		step := newVerifierStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasUser applies the HasEdge predicate on the "user" edge.
 func HasUser() predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

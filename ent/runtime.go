@@ -6,13 +6,21 @@ import (
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingevent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/schema"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/useralivecheck"
 	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmation"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
 
@@ -34,6 +42,74 @@ func init() {
 	accountDescID := accountFields[0].Descriptor()
 	// account.DefaultID holds the default value on creation for the id field.
 	account.DefaultID = accountDescID.Default.(func() uuid.UUID)
+	accounthandlingeventFields := schema.AccountHandlingEvent{}.Fields()
+	_ = accounthandlingeventFields
+	// accounthandlingeventDescEventType is the schema descriptor for event_type field.
+	accounthandlingeventDescEventType := accounthandlingeventFields[1].Descriptor()
+	// accounthandlingevent.EventTypeValidator is a validator for the "event_type" field. It is called by the builders before save.
+	accounthandlingevent.EventTypeValidator = accounthandlingeventDescEventType.Validators[0].(func(string) error)
+	// accounthandlingeventDescCreatedAt is the schema descriptor for created_at field.
+	accounthandlingeventDescCreatedAt := accounthandlingeventFields[3].Descriptor()
+	// accounthandlingevent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	accounthandlingevent.DefaultCreatedAt = accounthandlingeventDescCreatedAt.Default.(func() time.Time)
+	// accounthandlingeventDescID is the schema descriptor for id field.
+	accounthandlingeventDescID := accounthandlingeventFields[0].Descriptor()
+	// accounthandlingevent.DefaultID holds the default value on creation for the id field.
+	accounthandlingevent.DefaultID = accounthandlingeventDescID.Default.(func() uuid.UUID)
+	accounthandlingtaskFields := schema.AccountHandlingTask{}.Fields()
+	_ = accounthandlingtaskFields
+	// accounthandlingtaskDescActionSnapshot is the schema descriptor for action_snapshot field.
+	accounthandlingtaskDescActionSnapshot := accounthandlingtaskFields[3].Descriptor()
+	// accounthandlingtask.ActionSnapshotValidator is a validator for the "action_snapshot" field. It is called by the builders before save.
+	accounthandlingtask.ActionSnapshotValidator = accounthandlingtaskDescActionSnapshot.Validators[0].(func(string) error)
+	// accounthandlingtaskDescStatus is the schema descriptor for status field.
+	accounthandlingtaskDescStatus := accounthandlingtaskFields[5].Descriptor()
+	// accounthandlingtask.DefaultStatus holds the default value on creation for the status field.
+	accounthandlingtask.DefaultStatus = accounthandlingtaskDescStatus.Default.(string)
+	// accounthandlingtaskDescRequestCount is the schema descriptor for request_count field.
+	accounthandlingtaskDescRequestCount := accounthandlingtaskFields[9].Descriptor()
+	// accounthandlingtask.DefaultRequestCount holds the default value on creation for the request_count field.
+	accounthandlingtask.DefaultRequestCount = accounthandlingtaskDescRequestCount.Default.(int)
+	// accounthandlingtask.RequestCountValidator is a validator for the "request_count" field. It is called by the builders before save.
+	accounthandlingtask.RequestCountValidator = accounthandlingtaskDescRequestCount.Validators[0].(func(int) error)
+	// accounthandlingtaskDescCreatedAt is the schema descriptor for created_at field.
+	accounthandlingtaskDescCreatedAt := accounthandlingtaskFields[10].Descriptor()
+	// accounthandlingtask.DefaultCreatedAt holds the default value on creation for the created_at field.
+	accounthandlingtask.DefaultCreatedAt = accounthandlingtaskDescCreatedAt.Default.(func() time.Time)
+	// accounthandlingtaskDescUpdatedAt is the schema descriptor for updated_at field.
+	accounthandlingtaskDescUpdatedAt := accounthandlingtaskFields[11].Descriptor()
+	// accounthandlingtask.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	accounthandlingtask.DefaultUpdatedAt = accounthandlingtaskDescUpdatedAt.Default.(func() time.Time)
+	// accounthandlingtask.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	accounthandlingtask.UpdateDefaultUpdatedAt = accounthandlingtaskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// accounthandlingtaskDescID is the schema descriptor for id field.
+	accounthandlingtaskDescID := accounthandlingtaskFields[0].Descriptor()
+	// accounthandlingtask.DefaultID holds the default value on creation for the id field.
+	accounthandlingtask.DefaultID = accounthandlingtaskDescID.Default.(func() uuid.UUID)
+	accounthandlingtaskassigneeFields := schema.AccountHandlingTaskAssignee{}.Fields()
+	_ = accounthandlingtaskassigneeFields
+	// accounthandlingtaskassigneeDescName is the schema descriptor for name field.
+	accounthandlingtaskassigneeDescName := accounthandlingtaskassigneeFields[3].Descriptor()
+	// accounthandlingtaskassignee.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	accounthandlingtaskassignee.NameValidator = accounthandlingtaskassigneeDescName.Validators[0].(func(string) error)
+	// accounthandlingtaskassigneeDescStatus is the schema descriptor for status field.
+	accounthandlingtaskassigneeDescStatus := accounthandlingtaskassigneeFields[6].Descriptor()
+	// accounthandlingtaskassignee.DefaultStatus holds the default value on creation for the status field.
+	accounthandlingtaskassignee.DefaultStatus = accounthandlingtaskassigneeDescStatus.Default.(string)
+	// accounthandlingtaskassigneeDescCreatedAt is the schema descriptor for created_at field.
+	accounthandlingtaskassigneeDescCreatedAt := accounthandlingtaskassigneeFields[12].Descriptor()
+	// accounthandlingtaskassignee.DefaultCreatedAt holds the default value on creation for the created_at field.
+	accounthandlingtaskassignee.DefaultCreatedAt = accounthandlingtaskassigneeDescCreatedAt.Default.(func() time.Time)
+	// accounthandlingtaskassigneeDescUpdatedAt is the schema descriptor for updated_at field.
+	accounthandlingtaskassigneeDescUpdatedAt := accounthandlingtaskassigneeFields[13].Descriptor()
+	// accounthandlingtaskassignee.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	accounthandlingtaskassignee.DefaultUpdatedAt = accounthandlingtaskassigneeDescUpdatedAt.Default.(func() time.Time)
+	// accounthandlingtaskassignee.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	accounthandlingtaskassignee.UpdateDefaultUpdatedAt = accounthandlingtaskassigneeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// accounthandlingtaskassigneeDescID is the schema descriptor for id field.
+	accounthandlingtaskassigneeDescID := accounthandlingtaskassigneeFields[0].Descriptor()
+	// accounthandlingtaskassignee.DefaultID holds the default value on creation for the id field.
+	accounthandlingtaskassignee.DefaultID = accounthandlingtaskassigneeDescID.Default.(func() uuid.UUID)
 	lastwordFields := schema.LastWord{}.Fields()
 	_ = lastwordFields
 	// lastwordDescTitle is the schema descriptor for title field.
@@ -120,6 +196,24 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	useralivecheckFields := schema.UserAliveCheck{}.Fields()
+	_ = useralivecheckFields
+	// useralivecheckDescSequence is the schema descriptor for sequence field.
+	useralivecheckDescSequence := useralivecheckFields[2].Descriptor()
+	// useralivecheck.SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
+	useralivecheck.SequenceValidator = useralivecheckDescSequence.Validators[0].(func(int) error)
+	// useralivecheckDescStatus is the schema descriptor for status field.
+	useralivecheckDescStatus := useralivecheckFields[6].Descriptor()
+	// useralivecheck.DefaultStatus holds the default value on creation for the status field.
+	useralivecheck.DefaultStatus = useralivecheckDescStatus.Default.(string)
+	// useralivecheckDescCreatedAt is the schema descriptor for created_at field.
+	useralivecheckDescCreatedAt := useralivecheckFields[7].Descriptor()
+	// useralivecheck.DefaultCreatedAt holds the default value on creation for the created_at field.
+	useralivecheck.DefaultCreatedAt = useralivecheckDescCreatedAt.Default.(func() time.Time)
+	// useralivecheckDescID is the schema descriptor for id field.
+	useralivecheckDescID := useralivecheckFields[0].Descriptor()
+	// useralivecheck.DefaultID holds the default value on creation for the id field.
+	useralivecheck.DefaultID = useralivecheckDescID.Default.(func() uuid.UUID)
 	userconfigFields := schema.UserConfig{}.Fields()
 	_ = userconfigFields
 	// userconfigDescLockByFaceID is the schema descriptor for lock_by_face_id field.
@@ -130,18 +224,108 @@ func init() {
 	userconfigDescCertificationBeforeSensitiveInformation := userconfigFields[2].Descriptor()
 	// userconfig.DefaultCertificationBeforeSensitiveInformation holds the default value on creation for the certification_before_sensitive_information field.
 	userconfig.DefaultCertificationBeforeSensitiveInformation = userconfigDescCertificationBeforeSensitiveInformation.Default.(bool)
-	// userconfigDescConversionCriteria is the schema descriptor for conversion_criteria field.
-	userconfigDescConversionCriteria := userconfigFields[3].Descriptor()
-	// userconfig.DefaultConversionCriteria holds the default value on creation for the conversion_criteria field.
-	userconfig.DefaultConversionCriteria = userconfigDescConversionCriteria.Default.(string)
-	// userconfig.ConversionCriteriaValidator is a validator for the "conversion_criteria" field. It is called by the builders before save.
-	userconfig.ConversionCriteriaValidator = userconfigDescConversionCriteria.Validators[0].(func(string) error)
-	// userconfigDescSurvivalCheckIntervalDays is the schema descriptor for survival_check_interval_days field.
-	userconfigDescSurvivalCheckIntervalDays := userconfigFields[4].Descriptor()
-	// userconfig.DefaultSurvivalCheckIntervalDays holds the default value on creation for the survival_check_interval_days field.
-	userconfig.DefaultSurvivalCheckIntervalDays = userconfigDescSurvivalCheckIntervalDays.Default.(int)
 	// userconfigDescID is the schema descriptor for id field.
 	userconfigDescID := userconfigFields[0].Descriptor()
 	// userconfig.DefaultID holds the default value on creation for the id field.
 	userconfig.DefaultID = userconfigDescID.Default.(func() uuid.UUID)
+	usertransitioncaseFields := schema.UserTransitionCase{}.Fields()
+	_ = usertransitioncaseFields
+	// usertransitioncaseDescStatus is the schema descriptor for status field.
+	usertransitioncaseDescStatus := usertransitioncaseFields[2].Descriptor()
+	// usertransitioncase.DefaultStatus holds the default value on creation for the status field.
+	usertransitioncase.DefaultStatus = usertransitioncaseDescStatus.Default.(string)
+	// usertransitioncaseDescMinimumConfirmersSnapshot is the schema descriptor for minimum_confirmers_snapshot field.
+	usertransitioncaseDescMinimumConfirmersSnapshot := usertransitioncaseFields[3].Descriptor()
+	// usertransitioncase.MinimumConfirmersSnapshotValidator is a validator for the "minimum_confirmers_snapshot" field. It is called by the builders before save.
+	usertransitioncase.MinimumConfirmersSnapshotValidator = usertransitioncaseDescMinimumConfirmersSnapshot.Validators[0].(func(int) error)
+	// usertransitioncaseDescWaitingPeriodDaysSnapshot is the schema descriptor for waiting_period_days_snapshot field.
+	usertransitioncaseDescWaitingPeriodDaysSnapshot := usertransitioncaseFields[4].Descriptor()
+	// usertransitioncase.WaitingPeriodDaysSnapshotValidator is a validator for the "waiting_period_days_snapshot" field. It is called by the builders before save.
+	usertransitioncase.WaitingPeriodDaysSnapshotValidator = usertransitioncaseDescWaitingPeriodDaysSnapshot.Validators[0].(func(int) error)
+	// usertransitioncaseDescRequestedAt is the schema descriptor for requested_at field.
+	usertransitioncaseDescRequestedAt := usertransitioncaseFields[5].Descriptor()
+	// usertransitioncase.DefaultRequestedAt holds the default value on creation for the requested_at field.
+	usertransitioncase.DefaultRequestedAt = usertransitioncaseDescRequestedAt.Default.(func() time.Time)
+	// usertransitioncaseDescCreatedAt is the schema descriptor for created_at field.
+	usertransitioncaseDescCreatedAt := usertransitioncaseFields[10].Descriptor()
+	// usertransitioncase.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usertransitioncase.DefaultCreatedAt = usertransitioncaseDescCreatedAt.Default.(func() time.Time)
+	// usertransitioncaseDescUpdatedAt is the schema descriptor for updated_at field.
+	usertransitioncaseDescUpdatedAt := usertransitioncaseFields[11].Descriptor()
+	// usertransitioncase.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usertransitioncase.DefaultUpdatedAt = usertransitioncaseDescUpdatedAt.Default.(func() time.Time)
+	// usertransitioncase.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usertransitioncase.UpdateDefaultUpdatedAt = usertransitioncaseDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usertransitioncaseDescID is the schema descriptor for id field.
+	usertransitioncaseDescID := usertransitioncaseFields[0].Descriptor()
+	// usertransitioncase.DefaultID holds the default value on creation for the id field.
+	usertransitioncase.DefaultID = usertransitioncaseDescID.Default.(func() uuid.UUID)
+	usertransitionconfirmationFields := schema.UserTransitionConfirmation{}.Fields()
+	_ = usertransitionconfirmationFields
+	// usertransitionconfirmationDescCreatedAt is the schema descriptor for created_at field.
+	usertransitionconfirmationDescCreatedAt := usertransitionconfirmationFields[6].Descriptor()
+	// usertransitionconfirmation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usertransitionconfirmation.DefaultCreatedAt = usertransitionconfirmationDescCreatedAt.Default.(func() time.Time)
+	// usertransitionconfirmationDescID is the schema descriptor for id field.
+	usertransitionconfirmationDescID := usertransitionconfirmationFields[0].Descriptor()
+	// usertransitionconfirmation.DefaultID holds the default value on creation for the id field.
+	usertransitionconfirmation.DefaultID = usertransitionconfirmationDescID.Default.(func() uuid.UUID)
+	usertransitionconfirmerFields := schema.UserTransitionConfirmer{}.Fields()
+	_ = usertransitionconfirmerFields
+	// usertransitionconfirmerDescName is the schema descriptor for name field.
+	usertransitionconfirmerDescName := usertransitionconfirmerFields[1].Descriptor()
+	// usertransitionconfirmer.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	usertransitionconfirmer.NameValidator = usertransitionconfirmerDescName.Validators[0].(func(string) error)
+	// usertransitionconfirmerDescStatus is the schema descriptor for status field.
+	usertransitionconfirmerDescStatus := usertransitionconfirmerFields[4].Descriptor()
+	// usertransitionconfirmer.DefaultStatus holds the default value on creation for the status field.
+	usertransitionconfirmer.DefaultStatus = usertransitionconfirmerDescStatus.Default.(string)
+	// usertransitionconfirmerDescCreatedAt is the schema descriptor for created_at field.
+	usertransitionconfirmerDescCreatedAt := usertransitionconfirmerFields[12].Descriptor()
+	// usertransitionconfirmer.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usertransitionconfirmer.DefaultCreatedAt = usertransitionconfirmerDescCreatedAt.Default.(func() time.Time)
+	// usertransitionconfirmerDescUpdatedAt is the schema descriptor for updated_at field.
+	usertransitionconfirmerDescUpdatedAt := usertransitionconfirmerFields[13].Descriptor()
+	// usertransitionconfirmer.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usertransitionconfirmer.DefaultUpdatedAt = usertransitionconfirmerDescUpdatedAt.Default.(func() time.Time)
+	// usertransitionconfirmer.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usertransitionconfirmer.UpdateDefaultUpdatedAt = usertransitionconfirmerDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usertransitionconfirmerDescID is the schema descriptor for id field.
+	usertransitionconfirmerDescID := usertransitionconfirmerFields[0].Descriptor()
+	// usertransitionconfirmer.DefaultID holds the default value on creation for the id field.
+	usertransitionconfirmer.DefaultID = usertransitionconfirmerDescID.Default.(func() uuid.UUID)
+	usertransitionpolicyFields := schema.UserTransitionPolicy{}.Fields()
+	_ = usertransitionpolicyFields
+	// usertransitionpolicyDescMinimumConfirmers is the schema descriptor for minimum_confirmers field.
+	usertransitionpolicyDescMinimumConfirmers := usertransitionpolicyFields[1].Descriptor()
+	// usertransitionpolicy.DefaultMinimumConfirmers holds the default value on creation for the minimum_confirmers field.
+	usertransitionpolicy.DefaultMinimumConfirmers = usertransitionpolicyDescMinimumConfirmers.Default.(int)
+	// usertransitionpolicy.MinimumConfirmersValidator is a validator for the "minimum_confirmers" field. It is called by the builders before save.
+	usertransitionpolicy.MinimumConfirmersValidator = usertransitionpolicyDescMinimumConfirmers.Validators[0].(func(int) error)
+	// usertransitionpolicyDescWaitingPeriodDays is the schema descriptor for waiting_period_days field.
+	usertransitionpolicyDescWaitingPeriodDays := usertransitionpolicyFields[2].Descriptor()
+	// usertransitionpolicy.DefaultWaitingPeriodDays holds the default value on creation for the waiting_period_days field.
+	usertransitionpolicy.DefaultWaitingPeriodDays = usertransitionpolicyDescWaitingPeriodDays.Default.(int)
+	// usertransitionpolicy.WaitingPeriodDaysValidator is a validator for the "waiting_period_days" field. It is called by the builders before save.
+	usertransitionpolicy.WaitingPeriodDaysValidator = usertransitionpolicyDescWaitingPeriodDays.Validators[0].(func(int) error)
+	// usertransitionpolicyDescAliveCheckIntervalDays is the schema descriptor for alive_check_interval_days field.
+	usertransitionpolicyDescAliveCheckIntervalDays := usertransitionpolicyFields[3].Descriptor()
+	// usertransitionpolicy.DefaultAliveCheckIntervalDays holds the default value on creation for the alive_check_interval_days field.
+	usertransitionpolicy.DefaultAliveCheckIntervalDays = usertransitionpolicyDescAliveCheckIntervalDays.Default.(int)
+	// usertransitionpolicy.AliveCheckIntervalDaysValidator is a validator for the "alive_check_interval_days" field. It is called by the builders before save.
+	usertransitionpolicy.AliveCheckIntervalDaysValidator = usertransitionpolicyDescAliveCheckIntervalDays.Validators[0].(func(int) error)
+	// usertransitionpolicyDescCreatedAt is the schema descriptor for created_at field.
+	usertransitionpolicyDescCreatedAt := usertransitionpolicyFields[4].Descriptor()
+	// usertransitionpolicy.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usertransitionpolicy.DefaultCreatedAt = usertransitionpolicyDescCreatedAt.Default.(func() time.Time)
+	// usertransitionpolicyDescUpdatedAt is the schema descriptor for updated_at field.
+	usertransitionpolicyDescUpdatedAt := usertransitionpolicyFields[5].Descriptor()
+	// usertransitionpolicy.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usertransitionpolicy.DefaultUpdatedAt = usertransitionpolicyDescUpdatedAt.Default.(func() time.Time)
+	// usertransitionpolicy.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usertransitionpolicy.UpdateDefaultUpdatedAt = usertransitionpolicyDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usertransitionpolicyDescID is the schema descriptor for id field.
+	usertransitionpolicyDescID := usertransitionpolicyFields[0].Descriptor()
+	// usertransitionpolicy.DefaultID holds the default value on creation for the id field.
+	usertransitionpolicy.DefaultID = usertransitionpolicyDescID.Default.(func() uuid.UUID)
 }

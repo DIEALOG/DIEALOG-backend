@@ -40,7 +40,6 @@ func (r *userConfigRepository) FindByUserID(
 ) (*domain.UserConfig, error) {
 	config, err := r.client.UserConfig.Query().
 		Where(userconfig.HasUserWith(user.IDEQ(*userID))).
-		WithVerifier().
 		Only(c)
 	if err != nil {
 		return nil, err
@@ -63,28 +62,23 @@ func (r *userConfigRepository) Update(
 		return nil, &ent.NotFoundError{}
 	}
 
-	updated, err := r.client.UserConfig.Update().
+	_, saveErr := r.client.UserConfig.Update().
 		Where(userconfig.HasUserWith(user.IDEQ(config.UserID))).
 		SetLockByFaceID(config.LockByFaceID).
 		SetCertificationBeforeSensitiveInformation(
 			config.CertificationBeforeSensitiveInformation,
 		).
-		SetConversionCriteria(string(config.ConversionCriteria)).
-		SetSurvivalCheckIntervalDays(config.SurvivalCheckIntervalDays).
 		Save(c)
-	if err != nil {
-		return nil, err
+	if saveErr != nil {
+		return nil, saveErr
 	}
 
-	result, err := r.client.UserConfig.Query().
+	result2, err2 := r.client.UserConfig.Query().
 		Where(userconfig.HasUserWith(user.IDEQ(config.UserID))).
-		WithVerifier().
 		Only(c)
-	if err != nil {
-		return nil, err
+	if err2 != nil {
+		return nil, err2
 	}
 
-	_ = updated
-
-	return toDomainUserConfig(result), nil
+	return toDomainUserConfig(result2), nil
 }

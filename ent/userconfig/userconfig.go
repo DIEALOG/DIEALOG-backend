@@ -17,21 +17,10 @@ const (
 	FieldLockByFaceID = "lock_by_face_id"
 	// FieldCertificationBeforeSensitiveInformation holds the string denoting the certification_before_sensitive_information field in the database.
 	FieldCertificationBeforeSensitiveInformation = "certification_before_sensitive_information"
-	// FieldConversionCriteria holds the string denoting the conversion_criteria field in the database.
-	FieldConversionCriteria = "conversion_criteria"
-	// FieldSurvivalCheckIntervalDays holds the string denoting the survival_check_interval_days field in the database.
-	FieldSurvivalCheckIntervalDays = "survival_check_interval_days"
-	// EdgeVerifier holds the string denoting the verifier edge name in mutations.
-	EdgeVerifier = "verifier"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the userconfig in the database.
 	Table = "user_configs"
-	// VerifierTable is the table that holds the verifier relation/edge. The primary key declared below.
-	VerifierTable = "user_config_verifier"
-	// VerifierInverseTable is the table name for the Stakeholder entity.
-	// It exists in this package in order to avoid circular dependency with the "stakeholder" package.
-	VerifierInverseTable = "stakeholders"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "user_configs"
 	// UserInverseTable is the table name for the User entity.
@@ -46,8 +35,6 @@ var Columns = []string{
 	FieldID,
 	FieldLockByFaceID,
 	FieldCertificationBeforeSensitiveInformation,
-	FieldConversionCriteria,
-	FieldSurvivalCheckIntervalDays,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "user_configs"
@@ -55,12 +42,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"user_user_config",
 }
-
-var (
-	// VerifierPrimaryKey and VerifierColumn2 are the table columns denoting the
-	// primary key for the verifier relation (M2M).
-	VerifierPrimaryKey = []string{"user_config_id", "stakeholder_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -82,12 +63,6 @@ var (
 	DefaultLockByFaceID bool
 	// DefaultCertificationBeforeSensitiveInformation holds the default value on creation for the "certification_before_sensitive_information" field.
 	DefaultCertificationBeforeSensitiveInformation bool
-	// DefaultConversionCriteria holds the default value on creation for the "conversion_criteria" field.
-	DefaultConversionCriteria string
-	// ConversionCriteriaValidator is a validator for the "conversion_criteria" field. It is called by the builders before save.
-	ConversionCriteriaValidator func(string) error
-	// DefaultSurvivalCheckIntervalDays holds the default value on creation for the "survival_check_interval_days" field.
-	DefaultSurvivalCheckIntervalDays int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -110,47 +85,16 @@ func ByCertificationBeforeSensitiveInformation(opts ...sql.OrderTermOption) Orde
 	return sql.OrderByField(FieldCertificationBeforeSensitiveInformation, opts...).ToFunc()
 }
 
-// ByConversionCriteria orders the results by the conversion_criteria field.
-func ByConversionCriteria(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldConversionCriteria, opts...).ToFunc()
-}
-
-// BySurvivalCheckIntervalDays orders the results by the survival_check_interval_days field.
-func BySurvivalCheckIntervalDays(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSurvivalCheckIntervalDays, opts...).ToFunc()
-}
-
-// ByVerifierCount orders the results by verifier count.
-func ByVerifierCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newVerifierStep(), opts...)
-	}
-}
-
-// ByVerifier orders the results by verifier terms.
-func ByVerifier(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newVerifierStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByUserField orders the results by user field.
 func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newVerifierStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(VerifierInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, VerifierTable, VerifierPrimaryKey...),
-	)
-}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, UserTable, UserColumn),
 	)
 }

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -173,6 +174,21 @@ func (_c *AccountCreate) AddStakeholderGroups(v ...*StakeholderGroup) *AccountCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddStakeholderGroupIDs(ids...)
+}
+
+// AddHandlingTaskIDs adds the "handling_tasks" edge to the AccountHandlingTask entity by IDs.
+func (_c *AccountCreate) AddHandlingTaskIDs(ids ...uuid.UUID) *AccountCreate {
+	_c.mutation.AddHandlingTaskIDs(ids...)
+	return _c
+}
+
+// AddHandlingTasks adds the "handling_tasks" edges to the AccountHandlingTask entity.
+func (_c *AccountCreate) AddHandlingTasks(v ...*AccountHandlingTask) *AccountCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddHandlingTaskIDs(ids...)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -365,6 +381,22 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stakeholdergroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.HandlingTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.HandlingTasksTable,
+			Columns: []string{account.HandlingTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(accounthandlingtask.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

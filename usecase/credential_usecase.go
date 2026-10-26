@@ -28,3 +28,10 @@ func (u *credentialUseCase) GetPassword(ctx context.Context, userID *domain.ID, 
 		AccountName: accountName,
 	})
 }
+
+func (u *credentialUseCase) DeletePassword(ctx context.Context, userID *domain.ID, accountName string) error {
+	return u.cryptoClient.Delete(ctx, domain.DeleteCredentialRequest{
+		UserID:      *userID,
+		AccountName: accountName,
+	})
+}

@@ -49,7 +49,5 @@ func (Stakeholder) Edges() []ent.Edge {
 			Ref("stakeholders"),
 		edge.From("last_words", LastWord.Type).
 			Ref("receiver"),
-		edge.From("user_config", UserConfig.Type).
-			Ref("verifier"),
 	}
 }

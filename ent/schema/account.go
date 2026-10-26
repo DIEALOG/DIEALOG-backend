@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -69,5 +70,7 @@ func (Account) Edges() []ent.Edge {
 			Immutable(),
 		edge.To("stakeholders", Stakeholder.Type),
 		edge.To("stakeholder_groups", StakeholderGroup.Type),
+		edge.To("handling_tasks", AccountHandlingTask.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

@@ -80,6 +80,32 @@ Authorization: Bearer <accessToken>
 | Stakeholder | `/api/stakeholder/protected/{id}` | `GET`, `PUT`, `DELETE` |
 | Stakeholder group | `/api/stakeholder/protected/group` | `POST`, `GET` |
 | Stakeholder group | `/api/stakeholder/protected/group/{id}` | `GET`, `PUT`, `DELETE` |
+| Transition policy | `/api/transition/protected/policy` | `GET`, `PATCH` |
+| Transition confirmer | `/api/transition/protected/confirmers` | `POST`, `GET` |
+| Transition confirmer | `/api/transition/protected/confirmers/{id}` | `DELETE` |
+| Transition confirmer | `/api/transition/protected/confirmers/{id}/resend` | `POST` |
+| Alive check | `/api/transition/protected/alive-checks` | `POST`, `GET` |
+| Alive check | `/api/transition/protected/alive-checks/{id}/respond` | `POST` |
+| Transition case | `/api/transition/protected/cases` | `GET` |
+| Transition case | `/api/transition/protected/cases/{id}` | `GET` |
+| Transition case | `/api/transition/protected/cases/{id}/cancel` | `POST` |
+| Transition case | `/api/transition/protected/cases/{id}/confirmations` | `GET` |
+| Transition case | `/api/transition/protected/cases/{id}/tasks` | `GET` |
+| Account handling task | `/api/transition/protected/tasks/{id}/request` | `POST` |
+| Stakeholder task result | `/api/transition/stakeholder-tasks/result` | `POST` (JSON body `token`, `success`) |
+| Confirmer flow | `/api/transition/confirmer/cases` | `POST`, `GET` |
+| Confirmer flow | `/api/transition/confirmer/cases/{id}` | `GET` |
+| Confirmer flow | `/api/transition/confirmer/cases/{id}/confirmations` | `POST` |
+| Invitation | `/api/transition/invitations/accept` | `POST` (JSON body `token`) |
+| Invitation | `/api/transition/invitations/decline` | `POST` (JSON body `token`) |
+
+Confirmer routes require the token returned by the invitation acceptance flow:
+
+```http
+X-Confirmer-Token: <confirmerToken>
+```
+
+Invitation, confirmer auth, and stakeholder request tokens are returned only in the response that issues them because no email/SMS delivery service is configured. Only their SHA-256 hashes are stored. Stakeholder request tokens are bearer credentials; there is no stakeholder login yet, so identity is assumed from token possession. `Account.Action` is an instruction for the account's designated stakeholders, not an operation the backend performs: after the owner sends a request with `POST /api/transition/protected/tasks/{id}/request`, a stakeholder reports success or failure with `POST /api/transition/stakeholder-tasks/result`. Even the `remain` action stays pending until a stakeholder reports success. Any one assigned stakeholder result settles the task; the other pending requests are cancelled. Each request additively refreshes assignees from the account's current direct stakeholders and stakeholder-group members, retains existing assignees, and rotates tokens for non-confirmed assignees. There is no background scheduler or worker: alive-check status is advanced when checks are read, scheduled, or answered, and account handling requests are issued manually. Current implementation defaults are a 7-day invitation lifetime, a 30-day confirmer auth-token lifetime, a 7-day stakeholder request lifetime, and a 7-day alive-check response window; these are placeholders until product policy is finalized.
 
 Interactive documentation:
 

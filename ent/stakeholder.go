@@ -48,11 +48,9 @@ type StakeholderEdges struct {
 	Accounts []*Account `json:"accounts,omitempty"`
 	// LastWords holds the value of the last_words edge.
 	LastWords []*LastWord `json:"last_words,omitempty"`
-	// UserConfig holds the value of the user_config edge.
-	UserConfig []*UserConfig `json:"user_config,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -91,15 +89,6 @@ func (e StakeholderEdges) LastWordsOrErr() ([]*LastWord, error) {
 		return e.LastWords, nil
 	}
 	return nil, &NotLoadedError{edge: "last_words"}
-}
-
-// UserConfigOrErr returns the UserConfig value or an error if the edge
-// was not loaded in eager-loading.
-func (e StakeholderEdges) UserConfigOrErr() ([]*UserConfig, error) {
-	if e.loadedTypes[4] {
-		return e.UserConfig, nil
-	}
-	return nil, &NotLoadedError{edge: "user_config"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -213,11 +202,6 @@ func (_m *Stakeholder) QueryAccounts() *AccountQuery {
 // QueryLastWords queries the "last_words" edge of the Stakeholder entity.
 func (_m *Stakeholder) QueryLastWords() *LastWordQuery {
 	return NewStakeholderClient(_m.config).QueryLastWords(_m)
-}
-
-// QueryUserConfig queries the "user_config" edge of the Stakeholder entity.
-func (_m *Stakeholder) QueryUserConfig() *UserConfigQuery {
-	return NewStakeholderClient(_m.config).QueryUserConfig(_m)
 }
 
 // Update returns a builder for updating this Stakeholder.

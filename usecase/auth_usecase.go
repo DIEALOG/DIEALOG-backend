@@ -69,6 +69,11 @@ func (u *authUseCase) Register(c context.Context, name, email, password, phoneNu
 		PhoneNumber: phoneNumber,
 	})
 	if err != nil {
+		// A concurrent signup can slip past the FindByEmail pre-check and
+		// surface as a unique-constraint violation on email.
+		if ent.IsConstraintError(err) {
+			return nil, domain.NewBadRequestError(errors.New("email already exists"))
+		}
 		return nil, domain.NewInternalServerError(err)
 	}
 
@@ -92,7 +97,7 @@ func (u *authUseCase) Login(c context.Context, email, password string) (*domain.
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return nil, domain.NewBadRequestError(errors.New("invalid credentials"))
+		return nil, domain.NewUnauthorizedError(errors.New("invalid credentials"))
 	}
 
 	return user, nil

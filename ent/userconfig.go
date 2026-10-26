@@ -22,10 +22,6 @@ type UserConfig struct {
 	LockByFaceID bool `json:"lock_by_face_id,omitempty"`
 	// CertificationBeforeSensitiveInformation holds the value of the "certification_before_sensitive_information" field.
 	CertificationBeforeSensitiveInformation bool `json:"certification_before_sensitive_information,omitempty"`
-	// ConversionCriteria holds the value of the "conversion_criteria" field.
-	ConversionCriteria string `json:"conversion_criteria,omitempty"`
-	// SurvivalCheckIntervalDays holds the value of the "survival_check_interval_days" field.
-	SurvivalCheckIntervalDays int `json:"survival_check_interval_days,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserConfigQuery when eager-loading is set.
 	Edges            UserConfigEdges `json:"edges"`
@@ -35,22 +31,11 @@ type UserConfig struct {
 
 // UserConfigEdges holds the relations/edges for other nodes in the graph.
 type UserConfigEdges struct {
-	// Verifier holds the value of the verifier edge.
-	Verifier []*Stakeholder `json:"verifier,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// VerifierOrErr returns the Verifier value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserConfigEdges) VerifierOrErr() ([]*Stakeholder, error) {
-	if e.loadedTypes[0] {
-		return e.Verifier, nil
-	}
-	return nil, &NotLoadedError{edge: "verifier"}
+	loadedTypes [1]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -58,7 +43,7 @@ func (e UserConfigEdges) VerifierOrErr() ([]*Stakeholder, error) {
 func (e UserConfigEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[0] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -71,10 +56,6 @@ func (*UserConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case userconfig.FieldLockByFaceID, userconfig.FieldCertificationBeforeSensitiveInformation:
 			values[i] = new(sql.NullBool)
-		case userconfig.FieldSurvivalCheckIntervalDays:
-			values[i] = new(sql.NullInt64)
-		case userconfig.FieldConversionCriteria:
-			values[i] = new(sql.NullString)
 		case userconfig.FieldID:
 			values[i] = new(uuid.UUID)
 		case userconfig.ForeignKeys[0]: // user_user_config
@@ -112,18 +93,6 @@ func (_m *UserConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CertificationBeforeSensitiveInformation = value.Bool
 			}
-		case userconfig.FieldConversionCriteria:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field conversion_criteria", values[i])
-			} else if value.Valid {
-				_m.ConversionCriteria = value.String
-			}
-		case userconfig.FieldSurvivalCheckIntervalDays:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field survival_check_interval_days", values[i])
-			} else if value.Valid {
-				_m.SurvivalCheckIntervalDays = int(value.Int64)
-			}
 		case userconfig.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_user_config", values[i])
@@ -142,11 +111,6 @@ func (_m *UserConfig) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *UserConfig) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
-}
-
-// QueryVerifier queries the "verifier" edge of the UserConfig entity.
-func (_m *UserConfig) QueryVerifier() *StakeholderQuery {
-	return NewUserConfigClient(_m.config).QueryVerifier(_m)
 }
 
 // QueryUser queries the "user" edge of the UserConfig entity.
@@ -182,12 +146,6 @@ func (_m *UserConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("certification_before_sensitive_information=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CertificationBeforeSensitiveInformation))
-	builder.WriteString(", ")
-	builder.WriteString("conversion_criteria=")
-	builder.WriteString(_m.ConversionCriteria)
-	builder.WriteString(", ")
-	builder.WriteString("survival_check_interval_days=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SurvivalCheckIntervalDays))
 	builder.WriteByte(')')
 	return builder.String()
 }

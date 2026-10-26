@@ -10,6 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
+	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
 
@@ -47,10 +49,18 @@ type UserEdges struct {
 	// LastWords holds the value of the last_words edge.
 	LastWords []*LastWord `json:"last_words,omitempty"`
 	// UserConfig holds the value of the user_config edge.
-	UserConfig []*UserConfig `json:"user_config,omitempty"`
+	UserConfig *UserConfig `json:"user_config,omitempty"`
+	// TransitionPolicy holds the value of the transition_policy edge.
+	TransitionPolicy *UserTransitionPolicy `json:"transition_policy,omitempty"`
+	// TransitionConfirmers holds the value of the transition_confirmers edge.
+	TransitionConfirmers []*UserTransitionConfirmer `json:"transition_confirmers,omitempty"`
+	// AliveChecks holds the value of the alive_checks edge.
+	AliveChecks []*UserAliveCheck `json:"alive_checks,omitempty"`
+	// TransitionCases holds the value of the transition_cases edge.
+	TransitionCases []*UserTransitionCase `json:"transition_cases,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [9]bool
 }
 
 // StakeholdersOrErr returns the Stakeholders value or an error if the edge
@@ -90,12 +100,52 @@ func (e UserEdges) LastWordsOrErr() ([]*LastWord, error) {
 }
 
 // UserConfigOrErr returns the UserConfig value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) UserConfigOrErr() ([]*UserConfig, error) {
-	if e.loadedTypes[4] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) UserConfigOrErr() (*UserConfig, error) {
+	if e.UserConfig != nil {
 		return e.UserConfig, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: userconfig.Label}
 	}
 	return nil, &NotLoadedError{edge: "user_config"}
+}
+
+// TransitionPolicyOrErr returns the TransitionPolicy value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) TransitionPolicyOrErr() (*UserTransitionPolicy, error) {
+	if e.TransitionPolicy != nil {
+		return e.TransitionPolicy, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: usertransitionpolicy.Label}
+	}
+	return nil, &NotLoadedError{edge: "transition_policy"}
+}
+
+// TransitionConfirmersOrErr returns the TransitionConfirmers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) TransitionConfirmersOrErr() ([]*UserTransitionConfirmer, error) {
+	if e.loadedTypes[6] {
+		return e.TransitionConfirmers, nil
+	}
+	return nil, &NotLoadedError{edge: "transition_confirmers"}
+}
+
+// AliveChecksOrErr returns the AliveChecks value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AliveChecksOrErr() ([]*UserAliveCheck, error) {
+	if e.loadedTypes[7] {
+		return e.AliveChecks, nil
+	}
+	return nil, &NotLoadedError{edge: "alive_checks"}
+}
+
+// TransitionCasesOrErr returns the TransitionCases value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) TransitionCasesOrErr() ([]*UserTransitionCase, error) {
+	if e.loadedTypes[8] {
+		return e.TransitionCases, nil
+	}
+	return nil, &NotLoadedError{edge: "transition_cases"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -203,6 +253,26 @@ func (_m *User) QueryLastWords() *LastWordQuery {
 // QueryUserConfig queries the "user_config" edge of the User entity.
 func (_m *User) QueryUserConfig() *UserConfigQuery {
 	return NewUserClient(_m.config).QueryUserConfig(_m)
+}
+
+// QueryTransitionPolicy queries the "transition_policy" edge of the User entity.
+func (_m *User) QueryTransitionPolicy() *UserTransitionPolicyQuery {
+	return NewUserClient(_m.config).QueryTransitionPolicy(_m)
+}
+
+// QueryTransitionConfirmers queries the "transition_confirmers" edge of the User entity.
+func (_m *User) QueryTransitionConfirmers() *UserTransitionConfirmerQuery {
+	return NewUserClient(_m.config).QueryTransitionConfirmers(_m)
+}
+
+// QueryAliveChecks queries the "alive_checks" edge of the User entity.
+func (_m *User) QueryAliveChecks() *UserAliveCheckQuery {
+	return NewUserClient(_m.config).QueryAliveChecks(_m)
+}
+
+// QueryTransitionCases queries the "transition_cases" edge of the User entity.
+func (_m *User) QueryTransitionCases() *UserTransitionCaseQuery {
+	return NewUserClient(_m.config).QueryTransitionCases(_m)
 }
 
 // Update returns a builder for updating this User.

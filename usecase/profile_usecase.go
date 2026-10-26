@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"mime/multipart"
 	"os"
@@ -56,9 +59,15 @@ func (pu *profileUseCase) GetProfileByID(c context.Context, userID *domain.ID) (
 }
 
 func (pu *profileUseCase) UpdateProfileImage(c context.Context, userID *domain.ID, file *multipart.FileHeader) (*domain.Profile, error) {
-	if file.Size <= 0 || file.Size > maxProfileImageSize {
-		return nil, domain.NewBadRequestError(errors.New("image size must be greater than 5MB"))
+	if file.Size <= 0 {
+		return nil, domain.NewBadRequestError(errors.New("empty image file"))
 	}
+	if file.Size > maxProfileImageSize {
+		return nil, domain.NewBadRequestError(errors.New("image size must be 5MB or less"))
+	}
+
+	ctx, cancel := context.WithTimeout(c, pu.contextTimeout)
+	defer cancel()
 
 	src, err := file.Open()
 	if err != nil {
@@ -113,27 +122,30 @@ func (pu *profileUseCase) UpdateProfileImage(c context.Context, userID *domain.I
 	)
 	closeErr := dst.Close()
 
-	if copyErr != nil || closeErr != nil || written > maxProfileImageSize {
+	if written > maxProfileImageSize {
 		_ = os.Remove(path)
-		return nil, domain.NewInternalServerError(err)
+		return nil, domain.NewBadRequestError(errors.New("image size must be 5MB or less"))
+	}
+	if copyErr != nil || closeErr != nil {
+		_ = os.Remove(path)
+		return nil, domain.NewInternalServerError(errors.Join(copyErr, closeErr))
 	}
 
 	imagePath := fmt.Sprintf("/public/profiles/%s", filename)
 
-	user, err := pu.userRepository.FindByID(c, userID)
+	user, err := pu.userRepository.FindByID(ctx, userID)
 	if err != nil {
+		_ = os.Remove(path)
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), pu.contextTimeout)
-	defer cancel()
-
 	user.ProfileImagePath = &imagePath
 	user, err = pu.userRepository.Update(ctx, user)
 	if err != nil {
+		_ = os.Remove(path)
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
 		}

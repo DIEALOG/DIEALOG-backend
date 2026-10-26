@@ -63,6 +63,24 @@ func (_m *CredentialUseCase) StorePassword(ctx context.Context, userID *uuid.UUI
 	return r0
 }
 
+// DeletePassword provides a mock function with given fields: ctx, userID, accountName
+func (_m *CredentialUseCase) DeletePassword(ctx context.Context, userID *uuid.UUID, accountName string) error {
+	ret := _m.Called(ctx, userID, accountName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeletePassword")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) error); ok {
+		r0 = rf(ctx, userID, accountName)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewCredentialUseCase creates a new instance of CredentialUseCase. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewCredentialUseCase(t interface {

@@ -21,6 +21,42 @@ func (f AccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountMutation", m)
 }
 
+// The AccountHandlingEventFunc type is an adapter to allow the use of ordinary
+// function as AccountHandlingEvent mutator.
+type AccountHandlingEventFunc func(context.Context, *ent.AccountHandlingEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AccountHandlingEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AccountHandlingEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountHandlingEventMutation", m)
+}
+
+// The AccountHandlingTaskFunc type is an adapter to allow the use of ordinary
+// function as AccountHandlingTask mutator.
+type AccountHandlingTaskFunc func(context.Context, *ent.AccountHandlingTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AccountHandlingTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AccountHandlingTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountHandlingTaskMutation", m)
+}
+
+// The AccountHandlingTaskAssigneeFunc type is an adapter to allow the use of ordinary
+// function as AccountHandlingTaskAssignee mutator.
+type AccountHandlingTaskAssigneeFunc func(context.Context, *ent.AccountHandlingTaskAssigneeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AccountHandlingTaskAssigneeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AccountHandlingTaskAssigneeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AccountHandlingTaskAssigneeMutation", m)
+}
+
 // The LastWordFunc type is an adapter to allow the use of ordinary
 // function as LastWord mutator.
 type LastWordFunc func(context.Context, *ent.LastWordMutation) (ent.Value, error)
@@ -81,6 +117,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The UserAliveCheckFunc type is an adapter to allow the use of ordinary
+// function as UserAliveCheck mutator.
+type UserAliveCheckFunc func(context.Context, *ent.UserAliveCheckMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserAliveCheckFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserAliveCheckMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserAliveCheckMutation", m)
+}
+
 // The UserConfigFunc type is an adapter to allow the use of ordinary
 // function as UserConfig mutator.
 type UserConfigFunc func(context.Context, *ent.UserConfigMutation) (ent.Value, error)
@@ -91,6 +139,54 @@ func (f UserConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserConfigMutation", m)
+}
+
+// The UserTransitionCaseFunc type is an adapter to allow the use of ordinary
+// function as UserTransitionCase mutator.
+type UserTransitionCaseFunc func(context.Context, *ent.UserTransitionCaseMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserTransitionCaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserTransitionCaseMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserTransitionCaseMutation", m)
+}
+
+// The UserTransitionConfirmationFunc type is an adapter to allow the use of ordinary
+// function as UserTransitionConfirmation mutator.
+type UserTransitionConfirmationFunc func(context.Context, *ent.UserTransitionConfirmationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserTransitionConfirmationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserTransitionConfirmationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserTransitionConfirmationMutation", m)
+}
+
+// The UserTransitionConfirmerFunc type is an adapter to allow the use of ordinary
+// function as UserTransitionConfirmer mutator.
+type UserTransitionConfirmerFunc func(context.Context, *ent.UserTransitionConfirmerMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserTransitionConfirmerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserTransitionConfirmerMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserTransitionConfirmerMutation", m)
+}
+
+// The UserTransitionPolicyFunc type is an adapter to allow the use of ordinary
+// function as UserTransitionPolicy mutator.
+type UserTransitionPolicyFunc func(context.Context, *ent.UserTransitionPolicyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserTransitionPolicyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserTransitionPolicyMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserTransitionPolicyMutation", m)
 }
 
 // Condition is a hook condition function.
