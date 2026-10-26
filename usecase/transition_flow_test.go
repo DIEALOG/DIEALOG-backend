@@ -35,7 +35,7 @@ func TestTransitionFlow(t *testing.T) {
 	taskRepo := repository.NewAccountHandlingTaskRepository(client)
 	eventRepo := repository.NewAccountHandlingEventRepository(client)
 
-	policyUseCase := usecase.NewUserTransitionPolicyUseCase(policyRepo, repository.NewUserConfigRepository(client), timeout)
+	policyUseCase := usecase.NewUserTransitionPolicyUseCase(policyRepo, timeout)
 	confirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(confirmerRepo, stakeholderRepo, timeout)
 	aliveUseCase := usecase.NewUserAliveCheckUseCase(aliveRepo, policyUseCase, timeout)
 	caseUseCase := usecase.NewUserTransitionCaseUseCase(caseRepo, confirmationRepo, policyUseCase, timeout)
@@ -49,6 +49,11 @@ func TestTransitionFlow(t *testing.T) {
 		PhoneNumber: "010-1234-5678",
 	})
 	require.NoError(t, err)
+	_, _ = policyRepo.Create(ctx, &domain.UserTransitionPolicy{
+		MinimumConfirmers:      2,
+		WaitingPeriodDays:      7,
+		AliveCheckIntervalDays: 90,
+	}, &owner.ID)
 
 	t.Run("default policy and validation", func(t *testing.T) {
 		policy, err := policyUseCase.Get(ctx, &owner.ID)

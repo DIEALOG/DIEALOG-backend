@@ -119,7 +119,7 @@ func main() {
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
 	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
 	lastWordUseCase := usecase.NewLastWordUseCase(lastWordRepository, timeout)
-	transitionPolicyUseCase := usecase.NewUserTransitionPolicyUseCase(transitionPolicyRepository, userConfigRepository, timeout)
+	transitionPolicyUseCase := usecase.NewUserTransitionPolicyUseCase(transitionPolicyRepository, timeout)
 	transitionConfirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(transitionConfirmerRepository, stakeholderRepository, timeout)
 	aliveCheckUseCase := usecase.NewUserAliveCheckUseCase(aliveCheckRepository, transitionPolicyUseCase, timeout)
 	transitionCaseUseCase := usecase.NewUserTransitionCaseUseCase(transitionCaseRepository, transitionConfirmationRepository, transitionPolicyUseCase, timeout)

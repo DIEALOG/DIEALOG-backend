@@ -299,6 +299,19 @@ func (u *userTransitionConfirmerUseCase) Decline(c context.Context, token string
 	if item.Status != domain.UserTransitionConfirmerStatusPending {
 		return domain.NewBadRequestError(errors.New("invitation is no longer active"))
 	}
+	now := time.Now()
+	if item.InviteExpiresAt != nil && now.After(*item.InviteExpiresAt) {
+		item.Status = domain.UserTransitionConfirmerStatusExpired
+		item.InviteTokenHash = ""
+		item.InviteExpiresAt = nil
+		if _, err := u.repository.Update(ctx, item, &item.UserID); err != nil {
+			if errors.Is(err, domain.ErrInvalidTransitionState) {
+				return domain.NewBadRequestError(errors.New("invitation is no longer active"))
+			}
+			return domain.NewInternalServerError(err)
+		}
+		return domain.NewBadRequestError(domain.ErrInvitationExpired)
+	}
 
 	item.Status = domain.UserTransitionConfirmerStatusDeclined
 	item.InviteTokenHash = ""

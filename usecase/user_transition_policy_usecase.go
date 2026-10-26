@@ -16,16 +16,14 @@ const (
 )
 
 type userTransitionPolicyUseCase struct {
-	repository           domain.UserTransitionPolicyRepository
-	userConfigRepository domain.UserConfigRepository
-	contextTimeout       time.Duration
+	repository domain.UserTransitionPolicyRepository
+	contextTimeout time.Duration
 }
 
-func NewUserTransitionPolicyUseCase(repository domain.UserTransitionPolicyRepository, userConfigRepository domain.UserConfigRepository, timeout time.Duration) domain.UserTransitionPolicyUseCase {
+func NewUserTransitionPolicyUseCase(repository domain.UserTransitionPolicyRepository, timeout time.Duration) domain.UserTransitionPolicyUseCase {
 	return &userTransitionPolicyUseCase{
-		repository:           repository,
-		userConfigRepository: userConfigRepository,
-		contextTimeout:       timeout,
+		repository: repository,
+		contextTimeout: timeout,
 	}
 }
 
@@ -41,7 +39,7 @@ func (u *userTransitionPolicyUseCase) Get(c context.Context, userID *domain.ID) 
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	return u.createDefault(ctx, userID)
+	return nil, domain.NewNotFoundError(errors.New("transition policy not found"))
 }
 
 func (u *userTransitionPolicyUseCase) Update(c context.Context, request *domain.UpdateUserTransitionPolicyRequest, userID *domain.ID) (*domain.UserTransitionPolicy, error) {
@@ -89,12 +87,6 @@ func (u *userTransitionPolicyUseCase) Update(c context.Context, request *domain.
 
 func (u *userTransitionPolicyUseCase) createDefault(c context.Context, userID *domain.ID) (*domain.UserTransitionPolicy, error) {
 	aliveCheckIntervalDays := defaultAliveCheckIntervalDays
-	if u.userConfigRepository != nil {
-		userConfig, err := u.userConfigRepository.FindByUserID(c, userID)
-		if err == nil && userConfig.SurvivalCheckIntervalDays > 0 {
-			aliveCheckIntervalDays = userConfig.SurvivalCheckIntervalDays
-		}
-	}
 
 	policy, err := u.repository.Create(c, &domain.UserTransitionPolicy{
 		MinimumConfirmers:      defaultMinimumConfirmers,
