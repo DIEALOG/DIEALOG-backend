@@ -9,20 +9,14 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 )
 
-const (
-	defaultMinimumConfirmers      = 2
-	defaultWaitingPeriodDays      = 7
-	defaultAliveCheckIntervalDays = 90
-)
-
 type userTransitionPolicyUseCase struct {
-	repository domain.UserTransitionPolicyRepository
+	repository     domain.UserTransitionPolicyRepository
 	contextTimeout time.Duration
 }
 
 func NewUserTransitionPolicyUseCase(repository domain.UserTransitionPolicyRepository, timeout time.Duration) domain.UserTransitionPolicyUseCase {
 	return &userTransitionPolicyUseCase{
-		repository: repository,
+		repository:     repository,
 		contextTimeout: timeout,
 	}
 }
@@ -83,24 +77,4 @@ func (u *userTransitionPolicyUseCase) Update(c context.Context, request *domain.
 		return nil, domain.NewInternalServerError(err)
 	}
 	return updated, nil
-}
-
-func (u *userTransitionPolicyUseCase) createDefault(c context.Context, userID *domain.ID) (*domain.UserTransitionPolicy, error) {
-	aliveCheckIntervalDays := defaultAliveCheckIntervalDays
-
-	policy, err := u.repository.Create(c, &domain.UserTransitionPolicy{
-		MinimumConfirmers:      defaultMinimumConfirmers,
-		WaitingPeriodDays:      defaultWaitingPeriodDays,
-		AliveCheckIntervalDays: aliveCheckIntervalDays,
-	}, userID)
-	if err != nil {
-		if ent.IsConstraintError(err) {
-			existing, findErr := u.repository.FindByUserID(c, userID)
-			if findErr == nil {
-				return existing, nil
-			}
-		}
-		return nil, domain.NewInternalServerError(err)
-	}
-	return policy, nil
 }

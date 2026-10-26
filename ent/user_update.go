@@ -173,19 +173,23 @@ func (_u *UserUpdate) AddLastWords(v ...*LastWord) *UserUpdate {
 	return _u.AddLastWordIDs(ids...)
 }
 
-// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
-func (_u *UserUpdate) AddUserConfigIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.AddUserConfigIDs(ids...)
+// SetUserConfigID sets the "user_config" edge to the UserConfig entity by ID.
+func (_u *UserUpdate) SetUserConfigID(id uuid.UUID) *UserUpdate {
+	_u.mutation.SetUserConfigID(id)
 	return _u
 }
 
-// AddUserConfig adds the "user_config" edges to the UserConfig entity.
-func (_u *UserUpdate) AddUserConfig(v ...*UserConfig) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableUserConfigID sets the "user_config" edge to the UserConfig entity by ID if the given value is not nil.
+func (_u *UserUpdate) SetNillableUserConfigID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		_u = _u.SetUserConfigID(*id)
 	}
-	return _u.AddUserConfigIDs(ids...)
+	return _u
+}
+
+// SetUserConfig sets the "user_config" edge to the UserConfig entity.
+func (_u *UserUpdate) SetUserConfig(v *UserConfig) *UserUpdate {
+	return _u.SetUserConfigID(v.ID)
 }
 
 // SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
@@ -341,25 +345,10 @@ func (_u *UserUpdate) RemoveLastWords(v ...*LastWord) *UserUpdate {
 	return _u.RemoveLastWordIDs(ids...)
 }
 
-// ClearUserConfig clears all "user_config" edges to the UserConfig entity.
+// ClearUserConfig clears the "user_config" edge to the UserConfig entity.
 func (_u *UserUpdate) ClearUserConfig() *UserUpdate {
 	_u.mutation.ClearUserConfig()
 	return _u
-}
-
-// RemoveUserConfigIDs removes the "user_config" edge to UserConfig entities by IDs.
-func (_u *UserUpdate) RemoveUserConfigIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.RemoveUserConfigIDs(ids...)
-	return _u
-}
-
-// RemoveUserConfig removes "user_config" edges to UserConfig entities.
-func (_u *UserUpdate) RemoveUserConfig(v ...*UserConfig) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserConfigIDs(ids...)
 }
 
 // ClearTransitionPolicy clears the "transition_policy" edge to the UserTransitionPolicy entity.
@@ -695,7 +684,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.UserConfigCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},
@@ -703,28 +692,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserConfigIDs(); len(nodes) > 0 && !_u.mutation.UserConfigCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.UserConfigTable,
-			Columns: []string{user.UserConfigColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.UserConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},
@@ -1058,19 +1031,23 @@ func (_u *UserUpdateOne) AddLastWords(v ...*LastWord) *UserUpdateOne {
 	return _u.AddLastWordIDs(ids...)
 }
 
-// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
-func (_u *UserUpdateOne) AddUserConfigIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.AddUserConfigIDs(ids...)
+// SetUserConfigID sets the "user_config" edge to the UserConfig entity by ID.
+func (_u *UserUpdateOne) SetUserConfigID(id uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetUserConfigID(id)
 	return _u
 }
 
-// AddUserConfig adds the "user_config" edges to the UserConfig entity.
-func (_u *UserUpdateOne) AddUserConfig(v ...*UserConfig) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableUserConfigID sets the "user_config" edge to the UserConfig entity by ID if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableUserConfigID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		_u = _u.SetUserConfigID(*id)
 	}
-	return _u.AddUserConfigIDs(ids...)
+	return _u
+}
+
+// SetUserConfig sets the "user_config" edge to the UserConfig entity.
+func (_u *UserUpdateOne) SetUserConfig(v *UserConfig) *UserUpdateOne {
+	return _u.SetUserConfigID(v.ID)
 }
 
 // SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
@@ -1226,25 +1203,10 @@ func (_u *UserUpdateOne) RemoveLastWords(v ...*LastWord) *UserUpdateOne {
 	return _u.RemoveLastWordIDs(ids...)
 }
 
-// ClearUserConfig clears all "user_config" edges to the UserConfig entity.
+// ClearUserConfig clears the "user_config" edge to the UserConfig entity.
 func (_u *UserUpdateOne) ClearUserConfig() *UserUpdateOne {
 	_u.mutation.ClearUserConfig()
 	return _u
-}
-
-// RemoveUserConfigIDs removes the "user_config" edge to UserConfig entities by IDs.
-func (_u *UserUpdateOne) RemoveUserConfigIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.RemoveUserConfigIDs(ids...)
-	return _u
-}
-
-// RemoveUserConfig removes "user_config" edges to UserConfig entities.
-func (_u *UserUpdateOne) RemoveUserConfig(v ...*UserConfig) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserConfigIDs(ids...)
 }
 
 // ClearTransitionPolicy clears the "transition_policy" edge to the UserTransitionPolicy entity.
@@ -1610,7 +1572,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.UserConfigCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},
@@ -1618,28 +1580,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserConfigIDs(); len(nodes) > 0 && !_u.mutation.UserConfigCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.UserConfigTable,
-			Columns: []string{user.UserConfigColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userconfig.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.UserConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},

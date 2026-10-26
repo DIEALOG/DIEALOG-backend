@@ -84,7 +84,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer client.Close()
 
 	if err = client.Schema.Create(context.Background()); err != nil {
 		panic(err)
@@ -165,5 +164,13 @@ func main() {
 		})
 	})
 
-	log.Fatal(app.Listen(config.E.ServerAddress))
+	// Listen returns on graceful shutdown; close the DB client explicitly
+	// because log.Fatal (os.Exit) would skip any deferred close.
+	if err := app.Listen(config.E.ServerAddress); err != nil {
+		log.Printf("server stopped: %v", err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Printf("failed to close database client: %v", err)
+	}
 }

@@ -12,6 +12,7 @@ func toDomainUser(entity *ent.User) *domain.User {
 		Name:             entity.Name,
 		Email:            entity.Email,
 		Password:         entity.Password,
+		PhoneNumber:      entity.PhoneNumber,
 		ProfileImagePath: entity.ProfileImagePath,
 		CreatedAt:        entity.CreatedAt,
 	}
@@ -104,6 +105,7 @@ func toDomainAccount(entity *ent.Account) *domain.Account {
 			Name: entity.TypeName,
 		},
 		AccountID:    entity.AccountID,
+		Name:         entity.Name,
 		DataLocation: entity.DataLocation,
 		Action: domain.AccountAction{
 			ID:      entity.ID,

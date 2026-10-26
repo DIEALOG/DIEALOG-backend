@@ -93,16 +93,6 @@ func (r *lastWordRepository) FindByID(c context.Context, id *domain.ID, userID *
 }
 
 func (r *lastWordRepository) Update(c context.Context, id *domain.ID, lastWord *domain.LastWord, userID *domain.ID) (*domain.LastWord, error) {
-	exists, err := r.client.LastWord.Query().Where(
-		lastword.IDEQ(*id),
-	).Exist(c)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, &ent.NotFoundError{}
-	}
-
 	receiverIDs := collections.ToIterable(lastWord.Receiver).Map(func(s domain.Stakeholder) domain.ID {
 		return s.ID
 	})
@@ -111,19 +101,29 @@ func (r *lastWordRepository) Update(c context.Context, id *domain.ID, lastWord *
 		return s.ID
 	})
 
-	_, err = r.client.LastWord.UpdateOneID(*id).
+	n, err := r.client.LastWord.Update().
+		Where(
+			lastword.IDEQ(*id),
+			lastword.HasOwnerWith(user.IDEQ(*userID)),
+		).
 		SetTitle(lastWord.Title).
 		SetMessage(lastWord.Message).
+		ClearReceiver().
 		AddReceiverIDs(receiverIDs...).
+		ClearReceiverGroups().
 		AddReceiverGroupIDs(receiverGroupIDs...).
 		Save(c)
 	if err != nil {
 		return nil, err
 	}
+	if n == 0 {
+		return nil, &ent.NotFoundError{}
+	}
 
 	loaded, err := r.client.LastWord.Query().
 		Where(
 			lastword.IDEQ(*id),
+			lastword.HasOwnerWith(user.IDEQ(*userID)),
 		).
 		WithReceiver().
 		WithReceiverGroups().

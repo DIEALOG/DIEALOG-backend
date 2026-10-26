@@ -31,6 +31,9 @@ func (gu *stakeholderGroupUseCase) Create(c context.Context, g *domain.Stakehold
 
 	created, err := gu.groupRepository.Create(ctx, g, userID)
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
 		return nil, domain.NewInternalServerError(err)
 	}
 

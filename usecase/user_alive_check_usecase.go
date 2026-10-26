@@ -132,6 +132,13 @@ func (u *userAliveCheckUseCase) Respond(c context.Context, id *domain.ID, userID
 		return nil, domain.NewBadRequestError(errors.New("alive check has already been closed"))
 	}
 
+	// Fetch the policy before mutating anything so a policy failure cannot
+	// leave the response persisted without a follow-up check.
+	policy, err := u.policyUseCase.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now()
 	item.Status = domain.UserAliveCheckStatusResponded
 	item.RespondedAt = &now
@@ -143,10 +150,6 @@ func (u *userAliveCheckUseCase) Respond(c context.Context, id *domain.ID, userID
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	policy, err := u.policyUseCase.Get(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
 	if _, err := u.createNext(ctx, userID, policy, updated, now); err != nil {
 		return nil, err
 	}

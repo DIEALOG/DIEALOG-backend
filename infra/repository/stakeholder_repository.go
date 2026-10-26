@@ -6,6 +6,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/janghanul090801/collections"
 )
@@ -36,7 +37,13 @@ func (r *stakeholderRepository) Create(c context.Context, s *domain.Stakeholder,
 		builder.SetMessage(*s.Message)
 	}
 	if len(s.GroupIDs) > 0 {
-		builder.AddGroupIDs(s.GroupIDs...)
+		groupIDs, err := r.ownedGroupIDs(c, s.GroupIDs, userID)
+		if err != nil {
+			return nil, err
+		}
+		if len(groupIDs) > 0 {
+			builder.AddGroupIDs(groupIDs...)
+		}
 	}
 
 	entity, err := builder.Save(c)
@@ -134,9 +141,13 @@ func (r *stakeholderRepository) Update(c context.Context, id *domain.ID, s *doma
 	}
 
 	if s.GroupIDs != nil {
+		groupIDs, err := r.ownedGroupIDs(c, s.GroupIDs, userID)
+		if err != nil {
+			return nil, err
+		}
 		builder.ClearGroups()
-		if len(s.GroupIDs) > 0 {
-			builder.AddGroupIDs(s.GroupIDs...)
+		if len(groupIDs) > 0 {
+			builder.AddGroupIDs(groupIDs...)
 		}
 	}
 
@@ -194,4 +205,33 @@ func (r *stakeholderRepository) FindAllByIDs(c context.Context, ids []domain.ID,
 	}
 
 	return collections.ToIterable(stakeholders).Map(toDomainStakeholder), nil
+}
+
+// ownedGroupIDs filters the client-supplied group IDs down to the ones owned by
+// userID. Requesting a group that does not exist or belongs to another user is
+// rejected so that a caller can never link someone else's stakeholder group.
+func (r *stakeholderRepository) ownedGroupIDs(c context.Context, ids []domain.ID, userID *domain.ID) ([]domain.ID, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	owned, err := r.client.StakeholderGroup.Query().
+		Where(
+			stakeholdergroup.IDIn(ids...),
+			stakeholdergroup.HasOwnerWith(user.IDEQ(*userID)),
+		).
+		IDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	distinct := make(map[domain.ID]struct{}, len(ids))
+	for _, id := range ids {
+		distinct[id] = struct{}{}
+	}
+	if len(owned) != len(distinct) {
+		return nil, &ent.NotFoundError{}
+	}
+
+	return owned, nil
 }

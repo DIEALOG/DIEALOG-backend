@@ -279,7 +279,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "lock_by_face_id", Type: field.TypeBool, Default: true},
 		{Name: "certification_before_sensitive_information", Type: field.TypeBool, Default: true},
-		{Name: "user_user_config", Type: field.TypeUUID},
+		{Name: "user_user_config", Type: field.TypeUUID, Unique: true},
 	}
 	// UserConfigsTable holds the schema information for the "user_configs" table.
 	UserConfigsTable = &schema.Table{

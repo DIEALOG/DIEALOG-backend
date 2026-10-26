@@ -42,6 +42,10 @@ func (r *legacyRepository) FindAllByUserID(c context.Context, userID *domain.ID)
 	entities, err := query.
 		WithAccounts(func(q *ent.AccountQuery) {
 			q.WithStakeholders()
+			q.WithStakeholderGroups(func(gq *ent.StakeholderGroupQuery) {
+				gq.WithStakeholders()
+			})
+			q.WithLegacy()
 		}).
 		Order(ent.Desc(legacy.FieldCreatedAt)).
 		All(c)
@@ -67,6 +71,10 @@ func (r *legacyRepository) FindByID(c context.Context, id *domain.ID, userID *do
 		).
 		WithAccounts(func(q *ent.AccountQuery) {
 			q.WithStakeholders()
+			q.WithStakeholderGroups(func(gq *ent.StakeholderGroupQuery) {
+				gq.WithStakeholders()
+			})
+			q.WithLegacy()
 		}).
 		Only(c)
 
@@ -179,9 +187,7 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 		WithStakeholders().
 		Only(c)
 	if err != nil {
-		result := toDomainAccount(loaded)
-		result.LegacyID = *legacyID
-		return result, nil
+		return nil, err
 	}
 
 	result := toDomainAccount(loaded)
@@ -216,6 +222,7 @@ func (r *legacyRepository) DeleteAccount(c context.Context, accountID *domain.ID
 		Where(
 			account.IDEQ(*accountID),
 			account.HasLegacyWith(
+				legacy.IDEQ(*legacyID),
 				legacy.HasOwnerWith(user.IDEQ(*userID)),
 			),
 		).

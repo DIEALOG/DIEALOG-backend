@@ -3,19 +3,19 @@ package domain
 import "context"
 
 type LoginRequest struct {
-	Email    string `form:"email" binding:"required,email"`
-	Password string `form:"password" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 type SignupRequest struct {
-	Name        string `form:"name" binding:"required"`
-	Email       string `form:"email" binding:"required,email"`
-	Password    string `form:"password" binding:"required"`
-	PhoneNumber string `form:"phone_number" binding:"required,phone_number"`
+	Name        string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
 type RefreshTokenRequest struct {
-	RefreshToken string `form:"refreshToken" binding:"required"`
+	RefreshToken string `json:"refreshToken" binding:"required"`
 }
 
 type AuthResponse struct {

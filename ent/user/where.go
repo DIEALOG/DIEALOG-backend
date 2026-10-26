@@ -558,7 +558,7 @@ func HasUserConfig() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserConfigTable, UserConfigColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, UserConfigTable, UserConfigColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

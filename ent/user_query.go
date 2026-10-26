@@ -180,7 +180,7 @@ func (_q *UserQuery) QueryUserConfig() *UserConfigQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(userconfig.Table, userconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.UserConfigTable, user.UserConfigColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.UserConfigTable, user.UserConfigColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -719,9 +719,8 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		}
 	}
 	if query := _q.withUserConfig; query != nil {
-		if err := _q.loadUserConfig(ctx, query, nodes,
-			func(n *User) { n.Edges.UserConfig = []*UserConfig{} },
-			func(n *User, e *UserConfig) { n.Edges.UserConfig = append(n.Edges.UserConfig, e) }); err != nil {
+		if err := _q.loadUserConfig(ctx, query, nodes, nil,
+			func(n *User, e *UserConfig) { n.Edges.UserConfig = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -887,9 +886,6 @@ func (_q *UserQuery) loadUserConfig(ctx context.Context, query *UserConfigQuery,
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	query.withFKs = true
 	query.Where(predicate.UserConfig(func(s *sql.Selector) {

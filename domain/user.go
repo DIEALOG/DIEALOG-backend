@@ -32,7 +32,12 @@ type Stakeholder struct {
 }
 
 func (s Stakeholder) IsValid() bool {
-	return s.Phone != nil || s.Email != nil
+	if s.Name == "" {
+		return false
+	}
+	phoneProvided := s.Phone != nil && *s.Phone != ""
+	emailProvided := s.Email != nil && *s.Email != ""
+	return phoneProvided || emailProvided
 }
 
 type StakeholderGroup struct {
@@ -161,8 +166,6 @@ const (
 	UserTransitionDecisionDisagree UserTransitionDecision = "disagree"
 	UserTransitionDecisionAbstain  UserTransitionDecision = "abstain"
 )
-
-type ConfigConversionCriteria string
 
 type UserRepository interface {
 	Create(c context.Context, user *User) (*User, error)

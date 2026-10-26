@@ -179,7 +179,7 @@ func (_c *UserConfigCreate) createSpec() (*UserConfig, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   userconfig.UserTable,
 			Columns: []string{userconfig.UserColumn},

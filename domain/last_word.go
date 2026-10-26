@@ -1,6 +1,9 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"strings"
+)
 
 type CreateLastWordRequest struct {
 	Title            string `json:"title"`
@@ -23,6 +26,10 @@ type LastWord struct {
 	ReceiverGroups []StakeholderGroup `json:"receiver_groups"`
 	Title          string             `json:"title"`
 	Message        string             `json:"message"`
+}
+
+func (l LastWord) IsValid() bool {
+	return strings.TrimSpace(l.Title) != "" && strings.TrimSpace(l.Message) != ""
 }
 
 type LastWordRepository interface {

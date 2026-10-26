@@ -6985,8 +6985,7 @@ type UserMutation struct {
 	last_words                   map[uuid.UUID]struct{}
 	removedlast_words            map[uuid.UUID]struct{}
 	clearedlast_words            bool
-	user_config                  map[uuid.UUID]struct{}
-	removeduser_config           map[uuid.UUID]struct{}
+	user_config                  *uuid.UUID
 	cleareduser_config           bool
 	transition_policy            *uuid.UUID
 	clearedtransition_policy     bool
@@ -7553,14 +7552,9 @@ func (m *UserMutation) ResetLastWords() {
 	m.removedlast_words = nil
 }
 
-// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by ids.
-func (m *UserMutation) AddUserConfigIDs(ids ...uuid.UUID) {
-	if m.user_config == nil {
-		m.user_config = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user_config[ids[i]] = struct{}{}
-	}
+// SetUserConfigID sets the "user_config" edge to the UserConfig entity by id.
+func (m *UserMutation) SetUserConfigID(id uuid.UUID) {
+	m.user_config = &id
 }
 
 // ClearUserConfig clears the "user_config" edge to the UserConfig entity.
@@ -7573,29 +7567,20 @@ func (m *UserMutation) UserConfigCleared() bool {
 	return m.cleareduser_config
 }
 
-// RemoveUserConfigIDs removes the "user_config" edge to the UserConfig entity by IDs.
-func (m *UserMutation) RemoveUserConfigIDs(ids ...uuid.UUID) {
-	if m.removeduser_config == nil {
-		m.removeduser_config = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.user_config, ids[i])
-		m.removeduser_config[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUserConfig returns the removed IDs of the "user_config" edge to the UserConfig entity.
-func (m *UserMutation) RemovedUserConfigIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser_config {
-		ids = append(ids, id)
+// UserConfigID returns the "user_config" edge ID in the mutation.
+func (m *UserMutation) UserConfigID() (id uuid.UUID, exists bool) {
+	if m.user_config != nil {
+		return *m.user_config, true
 	}
 	return
 }
 
 // UserConfigIDs returns the "user_config" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserConfigID instead. It exists only for internal usage by the builders.
 func (m *UserMutation) UserConfigIDs() (ids []uuid.UUID) {
-	for id := range m.user_config {
-		ids = append(ids, id)
+	if id := m.user_config; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -7604,7 +7589,6 @@ func (m *UserMutation) UserConfigIDs() (ids []uuid.UUID) {
 func (m *UserMutation) ResetUserConfig() {
 	m.user_config = nil
 	m.cleareduser_config = false
-	m.removeduser_config = nil
 }
 
 // SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by id.
@@ -8095,11 +8079,9 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case user.EdgeUserConfig:
-		ids := make([]ent.Value, 0, len(m.user_config))
-		for id := range m.user_config {
-			ids = append(ids, id)
+		if id := m.user_config; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case user.EdgeTransitionPolicy:
 		if id := m.transition_policy; id != nil {
 			return []ent.Value{*id}
@@ -8141,9 +8123,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedlast_words != nil {
 		edges = append(edges, user.EdgeLastWords)
 	}
-	if m.removeduser_config != nil {
-		edges = append(edges, user.EdgeUserConfig)
-	}
 	if m.removedtransition_confirmers != nil {
 		edges = append(edges, user.EdgeTransitionConfirmers)
 	}
@@ -8181,12 +8160,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeLastWords:
 		ids := make([]ent.Value, 0, len(m.removedlast_words))
 		for id := range m.removedlast_words {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUserConfig:
-		ids := make([]ent.Value, 0, len(m.removeduser_config))
-		for id := range m.removeduser_config {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8275,6 +8248,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeUserConfig:
+		m.ClearUserConfig()
+		return nil
 	case user.EdgeTransitionPolicy:
 		m.ClearTransitionPolicy()
 		return nil

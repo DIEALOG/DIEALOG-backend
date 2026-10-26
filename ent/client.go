@@ -1938,7 +1938,7 @@ func (c *UserClient) QueryUserConfig(_m *User) *UserConfigQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(userconfig.Table, userconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.UserConfigTable, user.UserConfigColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.UserConfigTable, user.UserConfigColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2300,7 +2300,7 @@ func (c *UserConfigClient) QueryUser(_m *UserConfig) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(userconfig.Table, userconfig.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, userconfig.UserTable, userconfig.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, userconfig.UserTable, userconfig.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

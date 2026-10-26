@@ -76,7 +76,7 @@ func (_q *UserConfigQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(userconfig.Table, userconfig.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, userconfig.UserTable, userconfig.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, userconfig.UserTable, userconfig.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil

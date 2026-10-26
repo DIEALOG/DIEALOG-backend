@@ -242,17 +242,10 @@ func ByLastWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByUserConfigCount orders the results by user_config count.
-func ByUserConfigCount(opts ...sql.OrderTermOption) OrderOption {
+// ByUserConfigField orders the results by user_config field.
+func ByUserConfigField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserConfigStep(), opts...)
-	}
-}
-
-// ByUserConfig orders the results by user_config terms.
-func ByUserConfig(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newUserConfigStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -336,7 +329,7 @@ func newUserConfigStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserConfigInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, UserConfigTable, UserConfigColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, UserConfigTable, UserConfigColumn),
 	)
 }
 func newTransitionPolicyStep() *sqlgraph.Step {

@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
+	"github.com/DIEALOG/DIEALOG-backend/ent/userconfig"
 	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionpolicy"
 	"github.com/google/uuid"
 )
@@ -48,7 +49,7 @@ type UserEdges struct {
 	// LastWords holds the value of the last_words edge.
 	LastWords []*LastWord `json:"last_words,omitempty"`
 	// UserConfig holds the value of the user_config edge.
-	UserConfig []*UserConfig `json:"user_config,omitempty"`
+	UserConfig *UserConfig `json:"user_config,omitempty"`
 	// TransitionPolicy holds the value of the transition_policy edge.
 	TransitionPolicy *UserTransitionPolicy `json:"transition_policy,omitempty"`
 	// TransitionConfirmers holds the value of the transition_confirmers edge.
@@ -99,10 +100,12 @@ func (e UserEdges) LastWordsOrErr() ([]*LastWord, error) {
 }
 
 // UserConfigOrErr returns the UserConfig value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) UserConfigOrErr() ([]*UserConfig, error) {
-	if e.loadedTypes[4] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) UserConfigOrErr() (*UserConfig, error) {
+	if e.UserConfig != nil {
 		return e.UserConfig, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: userconfig.Label}
 	}
 	return nil, &NotLoadedError{edge: "user_config"}
 }

@@ -156,19 +156,23 @@ func (_c *UserCreate) AddLastWords(v ...*LastWord) *UserCreate {
 	return _c.AddLastWordIDs(ids...)
 }
 
-// AddUserConfigIDs adds the "user_config" edge to the UserConfig entity by IDs.
-func (_c *UserCreate) AddUserConfigIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddUserConfigIDs(ids...)
+// SetUserConfigID sets the "user_config" edge to the UserConfig entity by ID.
+func (_c *UserCreate) SetUserConfigID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetUserConfigID(id)
 	return _c
 }
 
-// AddUserConfig adds the "user_config" edges to the UserConfig entity.
-func (_c *UserCreate) AddUserConfig(v ...*UserConfig) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableUserConfigID sets the "user_config" edge to the UserConfig entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillableUserConfigID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetUserConfigID(*id)
 	}
-	return _c.AddUserConfigIDs(ids...)
+	return _c
+}
+
+// SetUserConfig sets the "user_config" edge to the UserConfig entity.
+func (_c *UserCreate) SetUserConfig(v *UserConfig) *UserCreate {
+	return _c.SetUserConfigID(v.ID)
 }
 
 // SetTransitionPolicyID sets the "transition_policy" edge to the UserTransitionPolicy entity by ID.
@@ -442,7 +446,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.UserConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.UserConfigTable,
 			Columns: []string{user.UserConfigColumn},

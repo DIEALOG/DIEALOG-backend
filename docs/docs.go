@@ -2836,7 +2836,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "stakeholder_group_ids": {
+                "stakeholder_groups": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.StakeholderGroup"
@@ -3577,26 +3577,14 @@ const docTemplate = `{
                 "certification_before_sensitive_information": {
                     "type": "boolean"
                 },
-                "conversion_criteria": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "lock_by_face_id": {
                     "type": "boolean"
                 },
-                "survival_check_interval_days": {
-                    "type": "integer"
-                },
                 "user_id": {
                     "type": "string"
-                },
-                "verifier": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.Stakeholder"
-                    }
                 }
             }
         },
