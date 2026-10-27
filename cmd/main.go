@@ -11,6 +11,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/config"
 	_ "github.com/DIEALOG/DIEALOG-backend/docs"
 	"github.com/DIEALOG/DIEALOG-backend/infra/client/crypto"
+	"github.com/DIEALOG/DIEALOG-backend/infra/client/twilio"
 	"github.com/DIEALOG/DIEALOG-backend/infra/database"
 	"github.com/DIEALOG/DIEALOG-backend/infra/repository"
 	"github.com/DIEALOG/DIEALOG-backend/internal/httpclient"
@@ -94,6 +95,7 @@ func main() {
 	// client
 	httpClient := httpclient.NewHTTPClient()
 	cryptoClient := crypto.NewClient(httpClient, config.E.InternalSecretKey)
+	twilioClient := twilio.NewMockPhoneVerificationClient()
 
 	// repository
 	userRepository := repository.NewUserRepository(client)
@@ -130,6 +132,7 @@ func main() {
 		transitionCaseUseCase,
 		timeout,
 	)
+	phoneVerificationUseCase := usecase.NewPhoneVerificationUseCase(twilioClient)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
@@ -148,6 +151,7 @@ func main() {
 		transitionConfirmationUseCase,
 		accountHandlingUseCase,
 	)
+	route.NewPhoneVerificationRoute(api.Group("/phone-verification"), phoneVerificationUseCase)
 
 	// Static files must be registered before the catch-all 404 route.
 	app.Get("/public/*", static.New("./public"))

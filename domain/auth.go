@@ -23,6 +23,10 @@ type AuthResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type PhoneNumberVerificationRequest struct {
+	PhoneNumber string `json:"phoneNumber" binding:"required"`
+}
+
 type AuthUseCase interface {
 	Register(c context.Context, name, email, password, phoneNumber string) (*User, error)
 	Login(c context.Context, email, password string) (*User, error)

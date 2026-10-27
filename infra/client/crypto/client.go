@@ -12,7 +12,6 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 )
 
-// The crypto service mounts its credential routes under /api/credentials.
 const credentialsPath = "/api/credentials"
 
 type Client struct {
