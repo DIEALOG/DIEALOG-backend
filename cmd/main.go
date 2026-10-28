@@ -111,6 +111,7 @@ func main() {
 	transitionConfirmationRepository := repository.NewUserTransitionConfirmationRepository(client)
 	accountTaskRepository := repository.NewAccountHandlingTaskRepository(client)
 	accountEventRepository := repository.NewAccountHandlingEventRepository(client)
+	notificationRepository := repository.NewNotificationRepository(client)
 
 	// usecase
 	profileUseCase := usecase.NewProfileUseCase(userRepository, userConfigRepository, timeout)
@@ -133,6 +134,7 @@ func main() {
 		timeout,
 	)
 	phoneVerificationUseCase := usecase.NewPhoneVerificationUseCase(twilioClient)
+	notificationUseCase := usecase.NewNotificationUseCase(notificationRepository, timeout)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
@@ -152,6 +154,7 @@ func main() {
 		accountHandlingUseCase,
 	)
 	route.NewPhoneVerificationRoute(api.Group("/phone-verification"), phoneVerificationUseCase)
+	route.NewNotificationRoute(api.Group("/notification"), notificationUseCase)
 
 	// Static files must be registered before the catch-all 404 route.
 	app.Get("/public/*", static.New("./public"))

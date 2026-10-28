@@ -18,6 +18,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/notification"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
@@ -93,6 +94,7 @@ func checkColumn(t, c string) error {
 			accounthandlingtaskassignee.Table: accounthandlingtaskassignee.ValidColumn,
 			lastword.Table:                    lastword.ValidColumn,
 			legacy.Table:                      legacy.ValidColumn,
+			notification.Table:                notification.ValidColumn,
 			stakeholder.Table:                 stakeholder.ValidColumn,
 			stakeholdergroup.Table:            stakeholdergroup.ValidColumn,
 			user.Table:                        user.ValidColumn,

@@ -180,6 +180,22 @@ var (
 			},
 		},
 	}
+	// NotificationsColumns holds the columns for the "notifications" table.
+	NotificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "receiver_id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString},
+		{Name: "message", Type: field.TypeString},
+		{Name: "metadata", Type: field.TypeString},
+		{Name: "is_read", Type: field.TypeBool},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// NotificationsTable holds the schema information for the "notifications" table.
+	NotificationsTable = &schema.Table{
+		Name:       "notifications",
+		Columns:    NotificationsColumns,
+		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+	}
 	// StakeholdersColumns holds the columns for the "stakeholders" table.
 	StakeholdersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -576,6 +592,7 @@ var (
 		AccountHandlingTaskAssigneesTable,
 		LastWordsTable,
 		LegaciesTable,
+		NotificationsTable,
 		StakeholdersTable,
 		StakeholderGroupsTable,
 		UsersTable,

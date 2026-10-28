@@ -11,6 +11,7 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/notification"
 	"github.com/DIEALOG/DIEALOG-backend/ent/schema"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
 	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
@@ -138,6 +139,16 @@ func init() {
 	legacyDescID := legacyFields[0].Descriptor()
 	// legacy.DefaultID holds the default value on creation for the id field.
 	legacy.DefaultID = legacyDescID.Default.(func() uuid.UUID)
+	notificationFields := schema.Notification{}.Fields()
+	_ = notificationFields
+	// notificationDescCreatedAt is the schema descriptor for created_at field.
+	notificationDescCreatedAt := notificationFields[6].Descriptor()
+	// notification.DefaultCreatedAt holds the default value on creation for the created_at field.
+	notification.DefaultCreatedAt = notificationDescCreatedAt.Default.(func() time.Time)
+	// notificationDescID is the schema descriptor for id field.
+	notificationDescID := notificationFields[0].Descriptor()
+	// notification.DefaultID holds the default value on creation for the id field.
+	notification.DefaultID = notificationDescID.Default.(func() uuid.UUID)
 	stakeholderFields := schema.Stakeholder{}.Fields()
 	_ = stakeholderFields
 	// stakeholderDescName is the schema descriptor for name field.

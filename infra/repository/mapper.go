@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"encoding/json/v2"
+
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
@@ -172,6 +174,36 @@ func toDomainUserConfig(entity *ent.UserConfig) *domain.UserConfig {
 	}
 
 	return config
+}
+
+func toDomainNotification(e *ent.Notification) *domain.Notification {
+	typeMap := map[string]domain.NotificationType{
+		"transition": domain.NotificationTypeTransition,
+		"legacy":     domain.NotificationTypeDiealog,
+		"invite":     domain.NotificationTypeInvite,
+	}
+
+	nt, ok := typeMap[e.Type]
+	if !ok {
+		nt = domain.NotificationType(e.Type)
+	}
+
+	metadata := make(map[string]any)
+	if e.Metadata != "" {
+		if err := json.Unmarshal([]byte(e.Metadata), &metadata); err != nil {
+			metadata = make(map[string]any)
+		}
+	}
+
+	return &domain.Notification{
+		ID:         e.ID,
+		ReceiverID: e.ReceiverID,
+		Type:       nt,
+		Message:    e.Message,
+		Metadata:   metadata,
+		IsRead:     e.IsRead,
+		CreatedAt:  e.CreatedAt,
+	}
 }
 
 func toEntAccountType(t domain.AccountTypeField) account.Type {

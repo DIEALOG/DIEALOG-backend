@@ -81,6 +81,18 @@ func (f LegacyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LegacyMutation", m)
 }
 
+// The NotificationFunc type is an adapter to allow the use of ordinary
+// function as Notification mutator.
+type NotificationFunc func(context.Context, *ent.NotificationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NotificationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationMutation", m)
+}
+
 // The StakeholderFunc type is an adapter to allow the use of ordinary
 // function as Stakeholder mutator.
 type StakeholderFunc func(context.Context, *ent.StakeholderMutation) (ent.Value, error)

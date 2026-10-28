@@ -24,6 +24,9 @@ type LastWord func(*sql.Selector)
 // Legacy is the predicate function for legacy builders.
 type Legacy func(*sql.Selector)
 
+// Notification is the predicate function for notification builders.
+type Notification func(*sql.Selector)
+
 // Stakeholder is the predicate function for stakeholder builders.
 type Stakeholder func(*sql.Selector)
 

@@ -24,6 +24,8 @@ type Tx struct {
 	LastWord *LastWordClient
 	// Legacy is the client for interacting with the Legacy builders.
 	Legacy *LegacyClient
+	// Notification is the client for interacting with the Notification builders.
+	Notification *NotificationClient
 	// Stakeholder is the client for interacting with the Stakeholder builders.
 	Stakeholder *StakeholderClient
 	// StakeholderGroup is the client for interacting with the StakeholderGroup builders.
@@ -179,6 +181,7 @@ func (tx *Tx) init() {
 	tx.AccountHandlingTaskAssignee = NewAccountHandlingTaskAssigneeClient(tx.config)
 	tx.LastWord = NewLastWordClient(tx.config)
 	tx.Legacy = NewLegacyClient(tx.config)
+	tx.Notification = NewNotificationClient(tx.config)
 	tx.Stakeholder = NewStakeholderClient(tx.config)
 	tx.StakeholderGroup = NewStakeholderGroupClient(tx.config)
 	tx.User = NewUserClient(tx.config)
