@@ -34,11 +34,28 @@ func TestTransitionFlow(t *testing.T) {
 	confirmationRepo := repository.NewUserTransitionConfirmationRepository(client)
 	taskRepo := repository.NewAccountHandlingTaskRepository(client)
 	eventRepo := repository.NewAccountHandlingEventRepository(client)
+	notificationRepo := repository.NewNotificationRepository(client)
 
+	notificationUseCase := usecase.NewNotificationUseCase(notificationRepo, timeout)
 	policyUseCase := usecase.NewUserTransitionPolicyUseCase(policyRepo, timeout)
-	confirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(confirmerRepo, stakeholderRepo, timeout)
+	confirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(
+		confirmerRepo,
+		stakeholderRepo,
+		userRepo,
+		notificationUseCase,
+		timeout,
+	)
 	aliveUseCase := usecase.NewUserAliveCheckUseCase(aliveRepo, policyUseCase, timeout)
-	caseUseCase := usecase.NewUserTransitionCaseUseCase(caseRepo, confirmationRepo, policyUseCase, timeout)
+	caseUseCase := usecase.NewUserTransitionCaseUseCase(
+		caseRepo,
+		confirmationRepo,
+		policyUseCase,
+		confirmerRepo,
+		stakeholderRepo,
+		userRepo,
+		notificationUseCase,
+		timeout,
+	)
 	confirmationUseCase := usecase.NewUserTransitionConfirmationUseCase(confirmationRepo, caseRepo, caseUseCase, timeout)
 	accountUseCase := usecase.NewAccountHandlingUseCase(taskRepo, eventRepo, legacyRepo, caseUseCase, timeout)
 

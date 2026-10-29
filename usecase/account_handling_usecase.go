@@ -16,11 +16,12 @@ import (
 const accountHandlingRequestTTL = 7 * 24 * time.Hour
 
 type accountHandlingUseCase struct {
-	taskRepository   domain.AccountHandlingTaskRepository
-	eventRepository  domain.AccountHandlingEventRepository
-	legacyRepository domain.LegacyRepository
-	caseUseCase      domain.UserTransitionCaseUseCase
-	contextTimeout   time.Duration
+	taskRepository      domain.AccountHandlingTaskRepository
+	eventRepository     domain.AccountHandlingEventRepository
+	legacyRepository    domain.LegacyRepository
+	caseUseCase         domain.UserTransitionCaseUseCase
+	notificationUseCase domain.NotificationUseCase
+	contextTimeout      time.Duration
 }
 
 func NewAccountHandlingUseCase(
@@ -28,14 +29,17 @@ func NewAccountHandlingUseCase(
 	eventRepository domain.AccountHandlingEventRepository,
 	legacyRepository domain.LegacyRepository,
 	caseUseCase domain.UserTransitionCaseUseCase,
+	notificationUseCase domain.NotificationUseCase,
 	timeout time.Duration,
 ) domain.AccountHandlingUseCase {
+
 	return &accountHandlingUseCase{
-		taskRepository:   taskRepository,
-		eventRepository:  eventRepository,
-		legacyRepository: legacyRepository,
-		caseUseCase:      caseUseCase,
-		contextTimeout:   timeout,
+		taskRepository:      taskRepository,
+		eventRepository:     eventRepository,
+		legacyRepository:    legacyRepository,
+		caseUseCase:         caseUseCase,
+		notificationUseCase: notificationUseCase,
+		contextTimeout:      timeout,
 	}
 }
 
@@ -69,6 +73,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
+	previousStatus := task.Status
 
 	transitionCase, err := u.caseUseCase.GetByID(ctx, &task.TransitionCaseID, userID)
 	if err != nil {
@@ -156,10 +161,15 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
+
 	if updated.Status == domain.AccountHandlingTaskStatusCompleted {
-		// A concurrent result settled the task before the request was stored.
-		// Do not report that tokens were issued.
 		return &domain.AccountHandlingRequestResponse{Task: updated}, nil
+	}
+
+	if previousStatus != updated.Status {
+		if err := u.notifyTaskStatusChanged(ctx, updated); err != nil {
+			return nil, domain.NewInternalServerError(err)
+		}
 	}
 
 	message := fmt.Sprintf("account handling request token issued for %d stakeholder(s)", len(requests))
@@ -185,10 +195,14 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	}, nil
 }
 
-func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain.SubmitAccountHandlingResultRequest) (*domain.AccountHandlingTask, error) {
+func (u *accountHandlingUseCase) SubmitResult(
+	c context.Context,
+	request *domain.SubmitAccountHandlingResultRequest,
+) (*domain.AccountHandlingTask, error) {
 	if request == nil {
 		return nil, domain.NewBadRequestError(errors.New("request is required"))
 	}
+
 	token := strings.TrimSpace(request.Token)
 	if token == "" {
 		return nil, domain.NewBadRequestError(errors.New("account handling request token is required"))
@@ -200,7 +214,10 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	task, assignee, err := u.taskRepository.FindByAssigneeTokenHash(ctx, securetoken.Hash(token))
+	task, assignee, err := u.taskRepository.FindByAssigneeTokenHash(
+		ctx,
+		securetoken.Hash(token),
+	)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewBadRequestError(errors.New("invalid account handling request token"))
@@ -208,16 +225,16 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	// A stakeholder may retry after a network failure. Once this token has
-	// already been used, replaying the same result returns the settled task
-	// instead of creating a second event or changing the outcome.
-	if assignee.Status == domain.AccountHandlingTaskAssigneeStatusConfirmed && task.Status == domain.AccountHandlingTaskStatusCompleted {
+	if assignee.Status == domain.AccountHandlingTaskAssigneeStatusConfirmed &&
+		task.Status == domain.AccountHandlingTaskStatusCompleted {
 		if *request.Success {
 			return task, nil
 		}
 		return nil, domain.NewBadRequestError(errors.New("account handling result has already been reported"))
 	}
-	if assignee.Status == domain.AccountHandlingTaskAssigneeStatusFailed && task.Status == domain.AccountHandlingTaskStatusFailed {
+
+	if assignee.Status == domain.AccountHandlingTaskAssigneeStatusFailed &&
+		task.Status == domain.AccountHandlingTaskStatusFailed {
 		if !*request.Success {
 			return task, nil
 		}
@@ -230,10 +247,13 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 	if assignee.Status != domain.AccountHandlingTaskAssigneeStatusPending {
 		return nil, domain.NewBadRequestError(errors.New("account handling request is no longer active"))
 	}
+
 	now := time.Now()
 	if assignee.RequestTokenExpiresAt == nil || !now.Before(*assignee.RequestTokenExpiresAt) {
 		return nil, domain.NewBadRequestError(errors.New("account handling request token expired"))
 	}
+
+	previousStatus := task.Status
 
 	message := normalizeOptionalString(request.Message)
 	assignee.RespondedAt = &now
@@ -248,6 +268,7 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 		assignee.Status = domain.AccountHandlingTaskAssigneeStatusFailed
 		task.Status = domain.AccountHandlingTaskStatusFailed
 		task.CompletedAt = nil
+
 		reason := "stakeholder reported account handling failure"
 		if message != nil && *message != "" {
 			reason = *message
@@ -255,7 +276,12 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 		task.FailureReason = &reason
 	}
 
-	updated, err := u.taskRepository.SaveResult(ctx, task, assignee, &task.UserID)
+	updated, err := u.taskRepository.SaveResult(
+		ctx,
+		task,
+		assignee,
+		&task.UserID,
+	)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidTransitionState) {
 			return nil, domain.NewBadRequestError(errors.New("account handling task state changed; refresh and retry"))
@@ -263,44 +289,81 @@ func (u *accountHandlingUseCase) SubmitResult(c context.Context, request *domain
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	persistCtx, persistCancel := context.WithTimeout(context.WithoutCancel(c), u.contextTimeout)
+	// Persist events and notifications even if the client disconnects.
+	persistCtx, persistCancel := context.WithTimeout(
+		context.WithoutCancel(c),
+		u.contextTimeout,
+	)
 	defer persistCancel()
 
 	resultType := domain.AccountHandlingEventTypeStakeholderConfirmed
-	resultMessage := fmt.Sprintf("stakeholder %s confirmed account handling success", assignee.Name)
+	resultMessage := fmt.Sprintf(
+		"stakeholder %s confirmed account handling success",
+		assignee.Name,
+	)
+
 	if !*request.Success {
 		resultType = domain.AccountHandlingEventTypeStakeholderReportedFailed
-		resultMessage = fmt.Sprintf("stakeholder %s reported account handling failure", assignee.Name)
+		resultMessage = fmt.Sprintf(
+			"stakeholder %s reported account handling failure",
+			assignee.Name,
+		)
 		if message != nil && *message != "" {
-			resultMessage = fmt.Sprintf("stakeholder %s reported account handling failure: %s", assignee.Name, *message)
+			resultMessage = fmt.Sprintf(
+				"stakeholder %s reported account handling failure: %s",
+				assignee.Name,
+				*message,
+			)
 		}
 	}
-	if _, err := u.eventRepository.Create(persistCtx, &domain.AccountHandlingEvent{
-		TaskID:    updated.ID,
-		EventType: resultType,
-		Message:   &resultMessage,
-	}, &task.UserID); err != nil {
+
+	if _, err := u.eventRepository.Create(
+		persistCtx,
+		&domain.AccountHandlingEvent{
+			TaskID:    updated.ID,
+			EventType: resultType,
+			Message:   &resultMessage,
+		},
+		&task.UserID,
+	); err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
 
 	taskEventType := domain.AccountHandlingEventTypeTaskCompleted
 	taskEventMessage := "account handling task completed by stakeholder confirmation"
+
 	if !*request.Success {
 		taskEventType = domain.AccountHandlingEventTypeTaskFailed
 		taskEventMessage = "account handling task failed by stakeholder report"
 	}
-	if _, err := u.eventRepository.Create(persistCtx, &domain.AccountHandlingEvent{
-		TaskID:    updated.ID,
-		EventType: taskEventType,
-		Message:   &taskEventMessage,
-	}, &task.UserID); err != nil {
+
+	if _, err := u.eventRepository.Create(
+		persistCtx,
+		&domain.AccountHandlingEvent{
+			TaskID:    updated.ID,
+			EventType: taskEventType,
+			Message:   &taskEventMessage,
+		},
+		&task.UserID,
+	); err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	final, err := u.taskRepository.FindByID(persistCtx, &updated.ID, &task.UserID)
+	if previousStatus != updated.Status {
+		if err := u.notifyTaskStatusChanged(persistCtx, updated); err != nil {
+			return nil, domain.NewInternalServerError(err)
+		}
+	}
+
+	final, err := u.taskRepository.FindByID(
+		persistCtx,
+		&updated.ID,
+		&task.UserID,
+	)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
+
 	return final, nil
 }
 
@@ -351,4 +414,41 @@ func normalizeOptionalString(value *string) *string {
 		return nil
 	}
 	return &normalized
+}
+
+func (u *accountHandlingUseCase) notifyTaskStatusChanged(
+	ctx context.Context,
+	task *domain.AccountHandlingTask,
+) error {
+
+	var message string
+
+	switch task.Status {
+	case domain.AccountHandlingTaskStatusInProgress:
+		message = "계정 처리 작업이 시작되었습니다."
+	case domain.AccountHandlingTaskStatusCompleted:
+		message = "계정 처리 작업이 완료되었습니다."
+	case domain.AccountHandlingTaskStatusFailed:
+		message = "계정 처리 작업에 실패했습니다."
+	default:
+		return nil
+	}
+
+	notification := &domain.Notification{
+		ReceiverID: task.UserID,
+		Type:       domain.NotificationTypeTransition,
+		Message:    message,
+		Metadata: map[string]any{
+			"task_id":    task.ID.String(),
+			"account_id": task.AccountID.String(),
+			"status":     string(task.Status),
+		},
+		IsRead: false,
+	}
+
+	if _, err := u.notificationUseCase.Create(ctx, notification); err != nil {
+		return fmt.Errorf("failed to create account handling notification: %w", err)
+	}
+
+	return nil
 }

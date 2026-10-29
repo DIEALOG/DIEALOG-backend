@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
@@ -13,14 +14,31 @@ type userTransitionCaseUseCase struct {
 	repository             domain.UserTransitionCaseRepository
 	confirmationRepository domain.UserTransitionConfirmationRepository
 	policyUseCase          domain.UserTransitionPolicyUseCase
+	confirmerRepository    domain.UserTransitionConfirmerRepository
+	stakeholderRepository  domain.StakeholderRepository
+	userRepository         domain.UserRepository
+	notificationUseCase    domain.NotificationUseCase
 	contextTimeout         time.Duration
 }
 
-func NewUserTransitionCaseUseCase(repository domain.UserTransitionCaseRepository, confirmationRepository domain.UserTransitionConfirmationRepository, policyUseCase domain.UserTransitionPolicyUseCase, timeout time.Duration) domain.UserTransitionCaseUseCase {
+func NewUserTransitionCaseUseCase(
+	repository domain.UserTransitionCaseRepository,
+	confirmationRepository domain.UserTransitionConfirmationRepository,
+	policyUseCase domain.UserTransitionPolicyUseCase,
+	confirmerRepository domain.UserTransitionConfirmerRepository,
+	stakeholderRepository domain.StakeholderRepository,
+	userRepository domain.UserRepository,
+	notificationUseCase domain.NotificationUseCase,
+	timeout time.Duration,
+) domain.UserTransitionCaseUseCase {
 	return &userTransitionCaseUseCase{
 		repository:             repository,
 		confirmationRepository: confirmationRepository,
 		policyUseCase:          policyUseCase,
+		confirmerRepository:    confirmerRepository,
+		stakeholderRepository:  stakeholderRepository,
+		userRepository:         userRepository,
+		notificationUseCase:    notificationUseCase,
 		contextTimeout:         timeout,
 	}
 }
@@ -62,6 +80,37 @@ func (u *userTransitionCaseUseCase) Start(c context.Context, confirmer *domain.U
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
+
+	if u.notificationUseCase != nil && u.userRepository != nil && u.confirmerRepository != nil {
+		targetUserName := "지인"
+		if targetUser, err := u.userRepository.FindByID(ctx, &confirmer.UserID); err == nil && targetUser != nil && targetUser.Name != "" {
+			targetUserName = targetUser.Name
+		}
+		if confirmers, err := u.confirmerRepository.FindAllByUserID(ctx, &confirmer.UserID); err == nil {
+			notifiedUsers := make(map[domain.ID]bool)
+			for _, conf := range confirmers {
+				if conf.Status != domain.UserTransitionConfirmerStatusAccepted {
+					continue
+				}
+				targetUserConf := findUserByEmailOrPhone(ctx, u.userRepository, conf.Email, conf.Phone)
+				if targetUserConf != nil && !notifiedUsers[targetUserConf.ID] {
+					notifiedUsers[targetUserConf.ID] = true
+					_, _ = u.notificationUseCase.Create(ctx, &domain.Notification{
+						ReceiverID: targetUserConf.ID,
+						Type:       domain.NotificationTypeTransition,
+						Message:    fmt.Sprintf("%s님의 사망 확인 심사가 시작되었습니다. 확인을 진행해 주세요.", targetUserName),
+						Metadata: map[string]any{
+							"type":             "transition_case_started",
+							"case_id":          created.ID,
+							"target_user_id":   confirmer.UserID,
+							"target_user_name": targetUserName,
+						},
+					})
+				}
+			}
+		}
+	}
+
 	return created, nil
 }
 
@@ -226,5 +275,59 @@ func (u *userTransitionCaseUseCase) evaluateCase(c context.Context, item *domain
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
+
+	if u.notificationUseCase != nil && u.userRepository != nil {
+		targetUserName := "지인"
+		if targetUser, err := u.userRepository.FindByID(c, userID); err == nil && targetUser != nil && targetUser.Name != "" {
+			targetUserName = targetUser.Name
+		}
+		notifiedUsers := make(map[domain.ID]bool)
+		if u.confirmerRepository != nil {
+			if confirmers, err := u.confirmerRepository.FindAllByUserID(c, userID); err == nil {
+				for _, conf := range confirmers {
+					if conf.Status != domain.UserTransitionConfirmerStatusAccepted {
+						continue
+					}
+					targetUserConf := findUserByEmailOrPhone(c, u.userRepository, conf.Email, conf.Phone)
+					if targetUserConf != nil && !notifiedUsers[targetUserConf.ID] && targetUserConf.ID != *userID {
+						notifiedUsers[targetUserConf.ID] = true
+						_, _ = u.notificationUseCase.Create(c, &domain.Notification{
+							ReceiverID: targetUserConf.ID,
+							Type:       domain.NotificationTypeTransition,
+							Message:    fmt.Sprintf("%s님의 사망 전환이 확정되었습니다.", targetUserName),
+							Metadata: map[string]any{
+								"type":             "transition_confirmed",
+								"case_id":          confirmed.ID,
+								"target_user_id":   *userID,
+								"target_user_name": targetUserName,
+							},
+						})
+					}
+				}
+			}
+		}
+		if u.stakeholderRepository != nil {
+			if stakeholders, err := u.stakeholderRepository.FindAllByUserID(c, userID); err == nil {
+				for _, s := range stakeholders {
+					targetUserStakeholder := findUserByEmailOrPhone(c, u.userRepository, s.Email, s.Phone)
+					if targetUserStakeholder != nil && !notifiedUsers[targetUserStakeholder.ID] && targetUserStakeholder.ID != *userID {
+						notifiedUsers[targetUserStakeholder.ID] = true
+						_, _ = u.notificationUseCase.Create(c, &domain.Notification{
+							ReceiverID: targetUserStakeholder.ID,
+							Type:       domain.NotificationTypeTransition,
+							Message:    fmt.Sprintf("%s님의 사망 전환이 확정되었습니다.", targetUserName),
+							Metadata: map[string]any{
+								"type":             "transition_confirmed",
+								"case_id":          confirmed.ID,
+								"target_user_id":   *userID,
+								"target_user_name": targetUserName,
+							},
+						})
+					}
+				}
+			}
+		}
+	}
+
 	return confirmed, nil
 }

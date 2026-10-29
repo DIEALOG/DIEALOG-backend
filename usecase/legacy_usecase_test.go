@@ -33,7 +33,7 @@ func TestFetchLegacyByUserID(t *testing.T) {
 			Return(mockListLegacy, nil).
 			Once()
 
-		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, time.Second*2)
+		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, nil, time.Second*2)
 
 		result, err := u.ListByUserID(context.Background(), &userID)
 
@@ -51,7 +51,7 @@ func TestFetchLegacyByUserID(t *testing.T) {
 			Return(nil, errors.New("unexpected")).
 			Once()
 
-		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, time.Second*2)
+		u := usecase.NewLegacyUseCase(mockLegacyRepository, mockCredentialUseCase, nil, time.Second*2)
 
 		list, err := u.ListByUserID(context.Background(), &userID)
 

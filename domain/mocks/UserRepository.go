@@ -136,6 +136,36 @@ func (_m *UserRepository) FindByID(c context.Context, id *uuid.UUID) (*domain.Us
 	return r0, r1
 }
 
+// FindByPhoneNumber provides a mock function with given fields: c, phone
+func (_m *UserRepository) FindByPhoneNumber(c context.Context, phone string) (*domain.User, error) {
+	ret := _m.Called(c, phone)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByPhoneNumber")
+	}
+
+	var r0 *domain.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.User, error)); ok {
+		return rf(c, phone)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.User); ok {
+		r0 = rf(c, phone)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(c, phone)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: c, user
 func (_m *UserRepository) Update(c context.Context, user *domain.User) (*domain.User, error) {
 	ret := _m.Called(c, user)

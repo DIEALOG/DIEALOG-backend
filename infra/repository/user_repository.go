@@ -58,6 +58,17 @@ func (r *userRepository) FindByEmail(c context.Context, email string) (*domain.U
 	return toDomainUser(u), err
 }
 
+func (r *userRepository) FindByPhoneNumber(c context.Context, phone string) (*domain.User, error) {
+	u, err := r.client.User.Query().Where(
+		user.PhoneNumberEQ(phone),
+	).WithStakeholders().Only(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainUser(u), err
+}
+
 func (r *userRepository) FindByID(c context.Context, id *domain.ID) (*domain.User, error) {
 	u, err := r.client.User.Query().Where(
 		user.IDEQ(*id),

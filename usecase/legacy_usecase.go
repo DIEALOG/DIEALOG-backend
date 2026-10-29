@@ -12,13 +12,20 @@ import (
 type legacyUseCase struct {
 	legacyRepository  domain.LegacyRepository
 	credentialUseCase domain.CredentialUseCase
+	userRepository    domain.UserRepository
 	contextTimeout    time.Duration
 }
 
-func NewLegacyUseCase(legacyRepository domain.LegacyRepository, credentialUseCase domain.CredentialUseCase, timeout time.Duration) domain.LegacyUseCase {
+func NewLegacyUseCase(
+	legacyRepository domain.LegacyRepository,
+	credentialUseCase domain.CredentialUseCase,
+	userRepository domain.UserRepository,
+	timeout time.Duration,
+) domain.LegacyUseCase {
 	return &legacyUseCase{
 		legacyRepository:  legacyRepository,
 		credentialUseCase: credentialUseCase,
+		userRepository:    userRepository,
 		contextTimeout:    timeout,
 	}
 }

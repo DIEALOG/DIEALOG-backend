@@ -14,6 +14,24 @@ type CryptoServiceClient struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: ctx, dto
+func (_m *CryptoServiceClient) Delete(ctx context.Context, dto domain.DeleteCredentialRequest) error {
+	ret := _m.Called(ctx, dto)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, domain.DeleteCredentialRequest) error); ok {
+		r0 = rf(ctx, dto)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Retrieve provides a mock function with given fields: ctx, dto
 func (_m *CryptoServiceClient) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*string, error) {
 	ret := _m.Called(ctx, dto)

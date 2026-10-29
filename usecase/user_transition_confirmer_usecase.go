@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -19,13 +20,23 @@ const (
 type userTransitionConfirmerUseCase struct {
 	repository            domain.UserTransitionConfirmerRepository
 	stakeholderRepository domain.StakeholderRepository
+	userRepository        domain.UserRepository
+	notificationUseCase   domain.NotificationUseCase
 	contextTimeout        time.Duration
 }
 
-func NewUserTransitionConfirmerUseCase(repository domain.UserTransitionConfirmerRepository, stakeholderRepository domain.StakeholderRepository, timeout time.Duration) domain.UserTransitionConfirmerUseCase {
+func NewUserTransitionConfirmerUseCase(
+	repository domain.UserTransitionConfirmerRepository,
+	stakeholderRepository domain.StakeholderRepository,
+	userRepository domain.UserRepository,
+	notificationUseCase domain.NotificationUseCase,
+	timeout time.Duration,
+) domain.UserTransitionConfirmerUseCase {
 	return &userTransitionConfirmerUseCase{
 		repository:            repository,
 		stakeholderRepository: stakeholderRepository,
+		userRepository:        userRepository,
+		notificationUseCase:   notificationUseCase,
 		contextTimeout:        timeout,
 	}
 }
@@ -116,6 +127,27 @@ func (u *userTransitionConfirmerUseCase) Invite(c context.Context, request *doma
 		return nil, domain.NewInternalServerError(err)
 	}
 
+	if u.notificationUseCase != nil && u.userRepository != nil {
+		senderName := "지인"
+		if sender, err := u.userRepository.FindByID(ctx, userID); err == nil && sender != nil && sender.Name != "" {
+			senderName = sender.Name
+		}
+		if targetUser := findUserByEmailOrPhone(ctx, u.userRepository, email, phone); targetUser != nil {
+			_, _ = u.notificationUseCase.Create(ctx, &domain.Notification{
+				ReceiverID: targetUser.ID,
+				Type:       domain.NotificationTypeInvite,
+				Message:    fmt.Sprintf("%s님이 회원님을 사망 확인자로 지정하였습니다.", senderName),
+				Metadata: map[string]any{
+					"type":             "confirmer_invitation",
+					"confirmer_id":     created.ID,
+					"owner_id":         *userID,
+					"owner_name":       senderName,
+					"invitation_token": token,
+				},
+			})
+		}
+	}
+
 	return &domain.TransitionInvitationResponse{
 		Confirmer:       created,
 		InvitationToken: token,
@@ -203,6 +235,27 @@ func (u *userTransitionConfirmerUseCase) Resend(c context.Context, id *domain.ID
 		return nil, domain.NewInternalServerError(err)
 	}
 
+	if u.notificationUseCase != nil && u.userRepository != nil {
+		senderName := "지인"
+		if sender, err := u.userRepository.FindByID(ctx, userID); err == nil && sender != nil && sender.Name != "" {
+			senderName = sender.Name
+		}
+		if targetUser := findUserByEmailOrPhone(ctx, u.userRepository, updated.Email, updated.Phone); targetUser != nil {
+			_, _ = u.notificationUseCase.Create(ctx, &domain.Notification{
+				ReceiverID: targetUser.ID,
+				Type:       domain.NotificationTypeInvite,
+				Message:    fmt.Sprintf("%s님이 회원님을 사망 확인자로 재요청하였습니다.", senderName),
+				Metadata: map[string]any{
+					"type":             "confirmer_invitation",
+					"confirmer_id":     updated.ID,
+					"owner_id":         *userID,
+					"owner_name":       senderName,
+					"invitation_token": token,
+				},
+			})
+		}
+	}
+
 	return &domain.TransitionInvitationResponse{
 		Confirmer:       updated,
 		InvitationToken: token,
@@ -281,6 +334,19 @@ func (u *userTransitionConfirmerUseCase) Accept(c context.Context, token string)
 		return nil, domain.NewInternalServerError(err)
 	}
 
+	if u.notificationUseCase != nil {
+		_, _ = u.notificationUseCase.Create(ctx, &domain.Notification{
+			ReceiverID: item.UserID,
+			Type:       domain.NotificationTypeInvite,
+			Message:    fmt.Sprintf("%s님이 사망 확인자 초대를 수락했습니다.", item.Name),
+			Metadata: map[string]any{
+				"type":           "confirmer_invitation_accepted",
+				"confirmer_id":   item.ID,
+				"confirmer_name": item.Name,
+			},
+		})
+	}
+
 	return &domain.AcceptTransitionInvitationResponse{
 		Confirmer: updated,
 		AuthToken: authToken,
@@ -322,6 +388,20 @@ func (u *userTransitionConfirmerUseCase) Decline(c context.Context, token string
 		}
 		return domain.NewInternalServerError(err)
 	}
+
+	if u.notificationUseCase != nil {
+		_, _ = u.notificationUseCase.Create(ctx, &domain.Notification{
+			ReceiverID: item.UserID,
+			Type:       domain.NotificationTypeInvite,
+			Message:    fmt.Sprintf("%s님이 사망 확인자 초대를 거절했습니다.", item.Name),
+			Metadata: map[string]any{
+				"type":           "confirmer_invitation_declined",
+				"confirmer_id":   item.ID,
+				"confirmer_name": item.Name,
+			},
+		})
+	}
+
 	return nil
 }
 

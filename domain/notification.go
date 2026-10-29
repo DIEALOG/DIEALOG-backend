@@ -23,8 +23,8 @@ type NotificationType string
 
 const (
 	NotificationTypeTransition NotificationType = "transition"
-	NotificationTypeDiealog                     = "legacy"
-	NotificationTypeInvite                      = "invite"
+	NotificationTypeDiealog    NotificationType = "legacy"
+	NotificationTypeInvite     NotificationType = "invite"
 )
 
 type NotificationRepository interface {

@@ -114,27 +114,43 @@ func main() {
 	notificationRepository := repository.NewNotificationRepository(client)
 
 	// usecase
+	notificationUseCase := usecase.NewNotificationUseCase(notificationRepository, timeout)
 	profileUseCase := usecase.NewProfileUseCase(userRepository, userConfigRepository, timeout)
 	authUseCase := usecase.NewAuthUseCase(userRepository, userConfigRepository, timeout)
 	credentialUseCase := usecase.NewCredentialUseCase(cryptoClient)
-	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, timeout)
+	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, userRepository, timeout)
 	stakeholderUseCase := usecase.NewStakeholderUseCase(stakeholderRepository, timeout)
 	stakeholderGroupUseCase := usecase.NewStakeholderGroupUseCase(stakeholderGroupRepository, timeout)
 	lastWordUseCase := usecase.NewLastWordUseCase(lastWordRepository, timeout)
 	transitionPolicyUseCase := usecase.NewUserTransitionPolicyUseCase(transitionPolicyRepository, timeout)
-	transitionConfirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(transitionConfirmerRepository, stakeholderRepository, timeout)
+	transitionConfirmerUseCase := usecase.NewUserTransitionConfirmerUseCase(
+		transitionConfirmerRepository,
+		stakeholderRepository,
+		userRepository,
+		notificationUseCase,
+		timeout,
+	)
 	aliveCheckUseCase := usecase.NewUserAliveCheckUseCase(aliveCheckRepository, transitionPolicyUseCase, timeout)
-	transitionCaseUseCase := usecase.NewUserTransitionCaseUseCase(transitionCaseRepository, transitionConfirmationRepository, transitionPolicyUseCase, timeout)
+	transitionCaseUseCase := usecase.NewUserTransitionCaseUseCase(
+		transitionCaseRepository,
+		transitionConfirmationRepository,
+		transitionPolicyUseCase,
+		transitionConfirmerRepository,
+		stakeholderRepository,
+		userRepository,
+		notificationUseCase,
+		timeout,
+	)
 	transitionConfirmationUseCase := usecase.NewUserTransitionConfirmationUseCase(transitionConfirmationRepository, transitionCaseRepository, transitionCaseUseCase, timeout)
 	accountHandlingUseCase := usecase.NewAccountHandlingUseCase(
 		accountTaskRepository,
 		accountEventRepository,
 		legacyRepository,
 		transitionCaseUseCase,
+		notificationUseCase,
 		timeout,
 	)
 	phoneVerificationUseCase := usecase.NewPhoneVerificationUseCase(twilioClient)
-	notificationUseCase := usecase.NewNotificationUseCase(notificationRepository, timeout)
 
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)

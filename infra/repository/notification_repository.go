@@ -30,14 +30,18 @@ func (r *notificationRepository) Create(c context.Context, notification *domain.
 		}
 	}
 
-	entity, err := r.client.Notification.Create().
-		SetID(notification.ID).
+	builder := r.client.Notification.Create().
 		SetReceiverID(notification.ReceiverID).
 		SetType(string(notification.Type)).
 		SetMessage(notification.Message).
 		SetMetadata(metadataString).
-		SetIsRead(notification.IsRead).
-		Save(c)
+		SetIsRead(notification.IsRead)
+
+	if notification.ID != [16]byte{} {
+		builder.SetID(notification.ID)
+	}
+
+	entity, err := builder.Save(c)
 	if err != nil {
 		return nil, err
 	}
