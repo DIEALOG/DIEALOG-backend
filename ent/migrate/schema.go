@@ -203,7 +203,7 @@ var (
 		{Name: "phone", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString, Nullable: true},
 		{Name: "relationship", Type: field.TypeString, Default: ""},
-		{Name: "message", Type: field.TypeString, Nullable: true},
+		{Name: "stakeholder_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "user_stakeholders", Type: field.TypeUUID},
 	}
@@ -218,6 +218,13 @@ var (
 				Columns:    []*schema.Column{StakeholdersColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "stakeholder_stakeholder_id",
+				Unique:  false,
+				Columns: []*schema.Column{StakeholdersColumns[5]},
 			},
 		},
 	}

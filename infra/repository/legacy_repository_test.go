@@ -45,13 +45,11 @@ func TestLegacyRepository(t *testing.T) {
 	// 3. Create Stakeholder
 	phone := "010-1234-5678"
 	email := "sh@example.com"
-	msg := "Thank you"
 	sh, err := stakeholderRepo.Create(ctx, &domain.Stakeholder{
 		Name:         "Stakeholder 1",
 		Phone:        &phone,
 		Email:        &email,
 		Relationship: "Sister",
-		Message:      &msg,
 		GroupIDs:     []domain.ID{grp.ID},
 	}, &user.ID)
 	require.NoError(t, err)

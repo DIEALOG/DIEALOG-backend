@@ -289,8 +289,6 @@ func SubmitAccountHandlingResult(service domain.AccountHandlingUseCase) fiber.Ha
 		if err != nil {
 			return RespondError(c, err)
 		}
-		// The public response must not expose the other assignees' contact
-		// details or the task's internal history.
 		item.Assignees = nil
 		item.Events = nil
 		return c.Status(http.StatusOK).JSON(item)

@@ -27,8 +27,8 @@ type Stakeholder struct {
 	Email *string `json:"email,omitempty"`
 	// Relationship holds the value of the "relationship" field.
 	Relationship string `json:"relationship,omitempty"`
-	// Message holds the value of the "message" field.
-	Message *string `json:"message,omitempty"`
+	// StakeholderID holds the value of the "stakeholder_id" field.
+	StakeholderID *uuid.UUID `json:"stakeholder_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -96,7 +96,9 @@ func (*Stakeholder) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case stakeholder.FieldName, stakeholder.FieldPhone, stakeholder.FieldEmail, stakeholder.FieldRelationship, stakeholder.FieldMessage:
+		case stakeholder.FieldStakeholderID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case stakeholder.FieldName, stakeholder.FieldPhone, stakeholder.FieldEmail, stakeholder.FieldRelationship:
 			values[i] = new(sql.NullString)
 		case stakeholder.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -151,12 +153,12 @@ func (_m *Stakeholder) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Relationship = value.String
 			}
-		case stakeholder.FieldMessage:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field message", values[i])
+		case stakeholder.FieldStakeholderID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field stakeholder_id", values[i])
 			} else if value.Valid {
-				_m.Message = new(string)
-				*_m.Message = value.String
+				_m.StakeholderID = new(uuid.UUID)
+				*_m.StakeholderID = *value.S.(*uuid.UUID)
 			}
 		case stakeholder.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -243,9 +245,9 @@ func (_m *Stakeholder) String() string {
 	builder.WriteString("relationship=")
 	builder.WriteString(_m.Relationship)
 	builder.WriteString(", ")
-	if v := _m.Message; v != nil {
-		builder.WriteString("message=")
-		builder.WriteString(*v)
+	if v := _m.StakeholderID; v != nil {
+		builder.WriteString("stakeholder_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

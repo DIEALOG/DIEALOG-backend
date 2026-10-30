@@ -450,13 +450,13 @@ definitions:
         type: array
       id:
         type: string
-      message:
-        type: string
       name:
         type: string
       phone:
         type: string
       relationship:
+        type: string
+      stakeholder_id:
         type: string
       user_id:
         type: string

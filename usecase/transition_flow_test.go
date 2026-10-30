@@ -57,7 +57,7 @@ func TestTransitionFlow(t *testing.T) {
 		timeout,
 	)
 	confirmationUseCase := usecase.NewUserTransitionConfirmationUseCase(confirmationRepo, caseRepo, caseUseCase, timeout)
-	accountUseCase := usecase.NewAccountHandlingUseCase(taskRepo, eventRepo, legacyRepo, caseUseCase, timeout)
+	accountUseCase := usecase.NewAccountHandlingUseCase(taskRepo, eventRepo, legacyRepo, caseUseCase, notificationUseCase, timeout)
 
 	owner, err := userRepo.Create(ctx, &domain.User{
 		Name:        "owner",

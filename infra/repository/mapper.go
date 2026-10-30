@@ -38,13 +38,13 @@ func toDomainUser(entity *ent.User) *domain.User {
 
 func toDomainStakeholder(entity *ent.Stakeholder) *domain.Stakeholder {
 	s := &domain.Stakeholder{
-		ID:           entity.ID,
-		Name:         entity.Name,
-		Phone:        entity.Phone,
-		Email:        entity.Email,
-		Relationship: entity.Relationship,
-		Message:      entity.Message,
-		CreatedAt:    entity.CreatedAt,
+		ID:            entity.ID,
+		StakeholderID: entity.StakeholderID,
+		Name:          entity.Name,
+		Phone:         entity.Phone,
+		Email:         entity.Email,
+		Relationship:  entity.Relationship,
+		CreatedAt:     entity.CreatedAt,
 	}
 	if entity.Edges.Owner != nil {
 		s.UserID = entity.Edges.Owner.ID

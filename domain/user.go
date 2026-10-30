@@ -19,16 +19,16 @@ type User struct {
 }
 
 type Stakeholder struct {
-	ID           ID                 `json:"id"`
-	UserID       ID                 `json:"user_id"`
-	Name         string             `form:"name" binding:"required" json:"name"`
-	Phone        *string            `form:"phone" json:"phone,omitempty"`
-	Email        *string            `form:"email" json:"email,omitempty"`
-	Relationship string             `form:"relationship" json:"relationship,omitempty"`
-	Message      *string            `form:"message" json:"message,omitempty"`
-	GroupIDs     []ID               `form:"group_ids" json:"group_ids,omitempty"`
-	Groups       []StakeholderGroup `json:"groups,omitempty"`
-	CreatedAt    time.Time          `json:"created_at"`
+	ID            ID                 `json:"id"`
+	UserID        ID                 `json:"user_id"`
+	StakeholderID *ID                `json:"stakeholder_id,omitempty"`
+	Name          string             `form:"name" binding:"required" json:"name"`
+	Phone         *string            `form:"phone" json:"phone,omitempty"`
+	Email         *string            `form:"email" json:"email,omitempty"`
+	Relationship  string             `form:"relationship" json:"relationship,omitempty"`
+	GroupIDs      []ID               `form:"group_ids" json:"group_ids,omitempty"`
+	Groups        []StakeholderGroup `json:"groups,omitempty"`
+	CreatedAt     time.Time          `json:"created_at"`
 }
 
 func (s Stakeholder) IsValid() bool {

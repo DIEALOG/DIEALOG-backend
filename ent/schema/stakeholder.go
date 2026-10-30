@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -28,10 +29,20 @@ func (Stakeholder) Fields() []ent.Field {
 			Nillable(),
 		field.String("relationship").
 			Default(""),
-		field.String("message").
+		// stakeholder_id holds the DIEALOG user this contact belongs to, when the
+		// registered email/phone matches an existing account. It is resolved on
+		// registration; a stakeholder does not have to be a member.
+		field.UUID("stakeholder_id", uuid.UUID{}).
 			Optional().
 			Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
+	}
+}
+
+// Indexes of the Stakeholder.
+func (Stakeholder) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("stakeholder_id"),
 	}
 }
 

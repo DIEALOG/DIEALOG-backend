@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
@@ -33,9 +34,13 @@ func (r *stakeholderRepository) Create(c context.Context, s *domain.Stakeholder,
 	if s.Email != nil {
 		builder.SetEmail(*s.Email)
 	}
-	if s.Message != nil {
-		builder.SetMessage(*s.Message)
+
+	linkedUserID, err := r.linkedUserID(c, s.Email, s.Phone)
+	if err != nil {
+		return nil, err
 	}
+	builder.SetNillableStakeholderID(linkedUserID)
+
 	if len(s.GroupIDs) > 0 {
 		groupIDs, err := r.ownedGroupIDs(c, s.GroupIDs, userID)
 		if err != nil {
@@ -134,10 +139,14 @@ func (r *stakeholderRepository) Update(c context.Context, id *domain.ID, s *doma
 		builder.ClearEmail()
 	}
 
-	if s.Message != nil {
-		builder.SetMessage(*s.Message)
+	linkedUserID, err := r.linkedUserID(c, s.Email, s.Phone)
+	if err != nil {
+		return nil, err
+	}
+	if linkedUserID != nil {
+		builder.SetStakeholderID(*linkedUserID)
 	} else {
-		builder.ClearMessage()
+		builder.ClearStakeholderID()
 	}
 
 	if s.GroupIDs != nil {
@@ -205,6 +214,45 @@ func (r *stakeholderRepository) FindAllByIDs(c context.Context, ids []domain.ID,
 	}
 
 	return collections.ToIterable(stakeholders).Map(toDomainStakeholder), nil
+}
+
+// linkedUserID resolves the stakeholder's contact details to an existing
+// DIEALOG user. A stakeholder is not required to be a member, so a lookup miss
+// simply returns nil.
+func (r *stakeholderRepository) linkedUserID(c context.Context, email *string, phone *string) (*domain.ID, error) {
+	if email != nil {
+		if normalized := strings.TrimSpace(*email); normalized != "" {
+			found, err := r.client.User.Query().
+				Where(user.EmailEqualFold(normalized)).
+				Order(ent.Asc(user.FieldCreatedAt)).
+				First(c)
+			if err == nil {
+				id := domain.ID(found.ID)
+				return &id, nil
+			}
+			if !ent.IsNotFound(err) {
+				return nil, err
+			}
+		}
+	}
+
+	if phone != nil {
+		if normalized := strings.TrimSpace(*phone); normalized != "" {
+			found, err := r.client.User.Query().
+				Where(user.PhoneNumberEQ(normalized)).
+				Order(ent.Asc(user.FieldCreatedAt)).
+				First(c)
+			if err == nil {
+				id := domain.ID(found.ID)
+				return &id, nil
+			}
+			if !ent.IsNotFound(err) {
+				return nil, err
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 // ownedGroupIDs filters the client-supplied group IDs down to the ones owned by

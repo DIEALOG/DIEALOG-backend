@@ -3384,9 +3384,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "message": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -3394,6 +3391,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "relationship": {
+                    "type": "string"
+                },
+                "stakeholder_id": {
                     "type": "string"
                 },
                 "user_id": {

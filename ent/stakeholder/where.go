@@ -76,9 +76,9 @@ func Relationship(v string) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldEQ(FieldRelationship, v))
 }
 
-// Message applies equality check predicate on the "message" field. It's identical to MessageEQ.
-func Message(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldEQ(FieldMessage, v))
+// StakeholderID applies equality check predicate on the "stakeholder_id" field. It's identical to StakeholderIDEQ.
+func StakeholderID(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldStakeholderID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -366,79 +366,54 @@ func RelationshipContainsFold(v string) predicate.Stakeholder {
 	return predicate.Stakeholder(sql.FieldContainsFold(FieldRelationship, v))
 }
 
-// MessageEQ applies the EQ predicate on the "message" field.
-func MessageEQ(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldEQ(FieldMessage, v))
+// StakeholderIDEQ applies the EQ predicate on the "stakeholder_id" field.
+func StakeholderIDEQ(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldEQ(FieldStakeholderID, v))
 }
 
-// MessageNEQ applies the NEQ predicate on the "message" field.
-func MessageNEQ(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldNEQ(FieldMessage, v))
+// StakeholderIDNEQ applies the NEQ predicate on the "stakeholder_id" field.
+func StakeholderIDNEQ(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNEQ(FieldStakeholderID, v))
 }
 
-// MessageIn applies the In predicate on the "message" field.
-func MessageIn(vs ...string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldIn(FieldMessage, vs...))
+// StakeholderIDIn applies the In predicate on the "stakeholder_id" field.
+func StakeholderIDIn(vs ...uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldIn(FieldStakeholderID, vs...))
 }
 
-// MessageNotIn applies the NotIn predicate on the "message" field.
-func MessageNotIn(vs ...string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldNotIn(FieldMessage, vs...))
+// StakeholderIDNotIn applies the NotIn predicate on the "stakeholder_id" field.
+func StakeholderIDNotIn(vs ...uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNotIn(FieldStakeholderID, vs...))
 }
 
-// MessageGT applies the GT predicate on the "message" field.
-func MessageGT(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldGT(FieldMessage, v))
+// StakeholderIDGT applies the GT predicate on the "stakeholder_id" field.
+func StakeholderIDGT(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGT(FieldStakeholderID, v))
 }
 
-// MessageGTE applies the GTE predicate on the "message" field.
-func MessageGTE(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldGTE(FieldMessage, v))
+// StakeholderIDGTE applies the GTE predicate on the "stakeholder_id" field.
+func StakeholderIDGTE(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldGTE(FieldStakeholderID, v))
 }
 
-// MessageLT applies the LT predicate on the "message" field.
-func MessageLT(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldLT(FieldMessage, v))
+// StakeholderIDLT applies the LT predicate on the "stakeholder_id" field.
+func StakeholderIDLT(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLT(FieldStakeholderID, v))
 }
 
-// MessageLTE applies the LTE predicate on the "message" field.
-func MessageLTE(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldLTE(FieldMessage, v))
+// StakeholderIDLTE applies the LTE predicate on the "stakeholder_id" field.
+func StakeholderIDLTE(v uuid.UUID) predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldLTE(FieldStakeholderID, v))
 }
 
-// MessageContains applies the Contains predicate on the "message" field.
-func MessageContains(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldContains(FieldMessage, v))
+// StakeholderIDIsNil applies the IsNil predicate on the "stakeholder_id" field.
+func StakeholderIDIsNil() predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldIsNull(FieldStakeholderID))
 }
 
-// MessageHasPrefix applies the HasPrefix predicate on the "message" field.
-func MessageHasPrefix(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldHasPrefix(FieldMessage, v))
-}
-
-// MessageHasSuffix applies the HasSuffix predicate on the "message" field.
-func MessageHasSuffix(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldHasSuffix(FieldMessage, v))
-}
-
-// MessageIsNil applies the IsNil predicate on the "message" field.
-func MessageIsNil() predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldIsNull(FieldMessage))
-}
-
-// MessageNotNil applies the NotNil predicate on the "message" field.
-func MessageNotNil() predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldNotNull(FieldMessage))
-}
-
-// MessageEqualFold applies the EqualFold predicate on the "message" field.
-func MessageEqualFold(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldEqualFold(FieldMessage, v))
-}
-
-// MessageContainsFold applies the ContainsFold predicate on the "message" field.
-func MessageContainsFold(v string) predicate.Stakeholder {
-	return predicate.Stakeholder(sql.FieldContainsFold(FieldMessage, v))
+// StakeholderIDNotNil applies the NotNil predicate on the "stakeholder_id" field.
+func StakeholderIDNotNil() predicate.Stakeholder {
+	return predicate.Stakeholder(sql.FieldNotNull(FieldStakeholderID))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

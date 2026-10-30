@@ -23,8 +23,8 @@ const (
 	FieldEmail = "email"
 	// FieldRelationship holds the string denoting the relationship field in the database.
 	FieldRelationship = "relationship"
-	// FieldMessage holds the string denoting the message field in the database.
-	FieldMessage = "message"
+	// FieldStakeholderID holds the string denoting the stakeholder_id field in the database.
+	FieldStakeholderID = "stakeholder_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
@@ -68,7 +68,7 @@ var Columns = []string{
 	FieldPhone,
 	FieldEmail,
 	FieldRelationship,
-	FieldMessage,
+	FieldStakeholderID,
 	FieldCreatedAt,
 }
 
@@ -144,9 +144,9 @@ func ByRelationship(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRelationship, opts...).ToFunc()
 }
 
-// ByMessage orders the results by the message field.
-func ByMessage(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMessage, opts...).ToFunc()
+// ByStakeholderID orders the results by the stakeholder_id field.
+func ByStakeholderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStakeholderID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

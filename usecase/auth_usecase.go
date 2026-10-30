@@ -54,6 +54,14 @@ func (u *authUseCase) Register(c context.Context, name, email, password, phoneNu
 		return nil, domain.NewInternalServerError(err)
 	}
 
+	_, err = u.userRepository.FindByPhoneNumber(ctx, phoneNumber)
+	if err == nil {
+		return nil, domain.NewBadRequestError(errors.New("phone number already exists"))
+	}
+	if !ent.IsNotFound(err) {
+		return nil, domain.NewInternalServerError(err)
+	}
+
 	encrypted, err := bcrypt.GenerateFromPassword(
 		[]byte(password),
 		bcrypt.DefaultCost,
@@ -69,10 +77,10 @@ func (u *authUseCase) Register(c context.Context, name, email, password, phoneNu
 		PhoneNumber: phoneNumber,
 	})
 	if err != nil {
-		// A concurrent signup can slip past the FindByEmail pre-check and
-		// surface as a unique-constraint violation on email.
+		// A concurrent signup can slip past the pre-checks above and surface as
+		// a unique-constraint violation on email or phone number.
 		if ent.IsConstraintError(err) {
-			return nil, domain.NewBadRequestError(errors.New("email already exists"))
+			return nil, domain.NewBadRequestError(errors.New("email or phone number already exists"))
 		}
 		return nil, domain.NewInternalServerError(err)
 	}

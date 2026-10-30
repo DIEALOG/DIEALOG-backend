@@ -73,16 +73,16 @@ func (_c *StakeholderCreate) SetNillableRelationship(v *string) *StakeholderCrea
 	return _c
 }
 
-// SetMessage sets the "message" field.
-func (_c *StakeholderCreate) SetMessage(v string) *StakeholderCreate {
-	_c.mutation.SetMessage(v)
+// SetStakeholderID sets the "stakeholder_id" field.
+func (_c *StakeholderCreate) SetStakeholderID(v uuid.UUID) *StakeholderCreate {
+	_c.mutation.SetStakeholderID(v)
 	return _c
 }
 
-// SetNillableMessage sets the "message" field if the given value is not nil.
-func (_c *StakeholderCreate) SetNillableMessage(v *string) *StakeholderCreate {
+// SetNillableStakeholderID sets the "stakeholder_id" field if the given value is not nil.
+func (_c *StakeholderCreate) SetNillableStakeholderID(v *uuid.UUID) *StakeholderCreate {
 	if v != nil {
-		_c.SetMessage(*v)
+		_c.SetStakeholderID(*v)
 	}
 	return _c
 }
@@ -290,9 +290,9 @@ func (_c *StakeholderCreate) createSpec() (*Stakeholder, *sqlgraph.CreateSpec) {
 		_spec.SetField(stakeholder.FieldRelationship, field.TypeString, value)
 		_node.Relationship = value
 	}
-	if value, ok := _c.mutation.Message(); ok {
-		_spec.SetField(stakeholder.FieldMessage, field.TypeString, value)
-		_node.Message = &value
+	if value, ok := _c.mutation.StakeholderID(); ok {
+		_spec.SetField(stakeholder.FieldStakeholderID, field.TypeUUID, value)
+		_node.StakeholderID = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(stakeholder.FieldCreatedAt, field.TypeTime, value)

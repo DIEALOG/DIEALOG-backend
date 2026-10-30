@@ -99,23 +99,23 @@ func (_u *StakeholderUpdate) SetNillableRelationship(v *string) *StakeholderUpda
 	return _u
 }
 
-// SetMessage sets the "message" field.
-func (_u *StakeholderUpdate) SetMessage(v string) *StakeholderUpdate {
-	_u.mutation.SetMessage(v)
+// SetStakeholderID sets the "stakeholder_id" field.
+func (_u *StakeholderUpdate) SetStakeholderID(v uuid.UUID) *StakeholderUpdate {
+	_u.mutation.SetStakeholderID(v)
 	return _u
 }
 
-// SetNillableMessage sets the "message" field if the given value is not nil.
-func (_u *StakeholderUpdate) SetNillableMessage(v *string) *StakeholderUpdate {
+// SetNillableStakeholderID sets the "stakeholder_id" field if the given value is not nil.
+func (_u *StakeholderUpdate) SetNillableStakeholderID(v *uuid.UUID) *StakeholderUpdate {
 	if v != nil {
-		_u.SetMessage(*v)
+		_u.SetStakeholderID(*v)
 	}
 	return _u
 }
 
-// ClearMessage clears the value of the "message" field.
-func (_u *StakeholderUpdate) ClearMessage() *StakeholderUpdate {
-	_u.mutation.ClearMessage()
+// ClearStakeholderID clears the value of the "stakeholder_id" field.
+func (_u *StakeholderUpdate) ClearStakeholderID() *StakeholderUpdate {
+	_u.mutation.ClearStakeholderID()
 	return _u
 }
 
@@ -302,11 +302,11 @@ func (_u *StakeholderUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.Relationship(); ok {
 		_spec.SetField(stakeholder.FieldRelationship, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Message(); ok {
-		_spec.SetField(stakeholder.FieldMessage, field.TypeString, value)
+	if value, ok := _u.mutation.StakeholderID(); ok {
+		_spec.SetField(stakeholder.FieldStakeholderID, field.TypeUUID, value)
 	}
-	if _u.mutation.MessageCleared() {
-		_spec.ClearField(stakeholder.FieldMessage, field.TypeString)
+	if _u.mutation.StakeholderIDCleared() {
+		_spec.ClearField(stakeholder.FieldStakeholderID, field.TypeUUID)
 	}
 	if _u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -531,23 +531,23 @@ func (_u *StakeholderUpdateOne) SetNillableRelationship(v *string) *StakeholderU
 	return _u
 }
 
-// SetMessage sets the "message" field.
-func (_u *StakeholderUpdateOne) SetMessage(v string) *StakeholderUpdateOne {
-	_u.mutation.SetMessage(v)
+// SetStakeholderID sets the "stakeholder_id" field.
+func (_u *StakeholderUpdateOne) SetStakeholderID(v uuid.UUID) *StakeholderUpdateOne {
+	_u.mutation.SetStakeholderID(v)
 	return _u
 }
 
-// SetNillableMessage sets the "message" field if the given value is not nil.
-func (_u *StakeholderUpdateOne) SetNillableMessage(v *string) *StakeholderUpdateOne {
+// SetNillableStakeholderID sets the "stakeholder_id" field if the given value is not nil.
+func (_u *StakeholderUpdateOne) SetNillableStakeholderID(v *uuid.UUID) *StakeholderUpdateOne {
 	if v != nil {
-		_u.SetMessage(*v)
+		_u.SetStakeholderID(*v)
 	}
 	return _u
 }
 
-// ClearMessage clears the value of the "message" field.
-func (_u *StakeholderUpdateOne) ClearMessage() *StakeholderUpdateOne {
-	_u.mutation.ClearMessage()
+// ClearStakeholderID clears the value of the "stakeholder_id" field.
+func (_u *StakeholderUpdateOne) ClearStakeholderID() *StakeholderUpdateOne {
+	_u.mutation.ClearStakeholderID()
 	return _u
 }
 
@@ -764,11 +764,11 @@ func (_u *StakeholderUpdateOne) sqlSave(ctx context.Context) (_node *Stakeholder
 	if value, ok := _u.mutation.Relationship(); ok {
 		_spec.SetField(stakeholder.FieldRelationship, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Message(); ok {
-		_spec.SetField(stakeholder.FieldMessage, field.TypeString, value)
+	if value, ok := _u.mutation.StakeholderID(); ok {
+		_spec.SetField(stakeholder.FieldStakeholderID, field.TypeUUID, value)
 	}
-	if _u.mutation.MessageCleared() {
-		_spec.ClearField(stakeholder.FieldMessage, field.TypeString)
+	if _u.mutation.StakeholderIDCleared() {
+		_spec.ClearField(stakeholder.FieldStakeholderID, field.TypeUUID)
 	}
 	if _u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -5890,7 +5890,7 @@ type StakeholderMutation struct {
 	phone             *string
 	email             *string
 	relationship      *string
-	message           *string
+	stakeholder_id    *uuid.UUID
 	created_at        *time.Time
 	clearedFields     map[string]struct{}
 	owner             *uuid.UUID
@@ -6183,53 +6183,53 @@ func (m *StakeholderMutation) ResetRelationship() {
 	m.relationship = nil
 }
 
-// SetMessage sets the "message" field.
-func (m *StakeholderMutation) SetMessage(s string) {
-	m.message = &s
+// SetStakeholderID sets the "stakeholder_id" field.
+func (m *StakeholderMutation) SetStakeholderID(u uuid.UUID) {
+	m.stakeholder_id = &u
 }
 
-// Message returns the value of the "message" field in the mutation.
-func (m *StakeholderMutation) Message() (r string, exists bool) {
-	v := m.message
+// StakeholderID returns the value of the "stakeholder_id" field in the mutation.
+func (m *StakeholderMutation) StakeholderID() (r uuid.UUID, exists bool) {
+	v := m.stakeholder_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldMessage returns the old "message" field's value of the Stakeholder entity.
+// OldStakeholderID returns the old "stakeholder_id" field's value of the Stakeholder entity.
 // If the Stakeholder object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StakeholderMutation) OldMessage(ctx context.Context) (v *string, err error) {
+func (m *StakeholderMutation) OldStakeholderID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+		return v, errors.New("OldStakeholderID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMessage requires an ID field in the mutation")
+		return v, errors.New("OldStakeholderID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+		return v, fmt.Errorf("querying old value for OldStakeholderID: %w", err)
 	}
-	return oldValue.Message, nil
+	return oldValue.StakeholderID, nil
 }
 
-// ClearMessage clears the value of the "message" field.
-func (m *StakeholderMutation) ClearMessage() {
-	m.message = nil
-	m.clearedFields[stakeholder.FieldMessage] = struct{}{}
+// ClearStakeholderID clears the value of the "stakeholder_id" field.
+func (m *StakeholderMutation) ClearStakeholderID() {
+	m.stakeholder_id = nil
+	m.clearedFields[stakeholder.FieldStakeholderID] = struct{}{}
 }
 
-// MessageCleared returns if the "message" field was cleared in this mutation.
-func (m *StakeholderMutation) MessageCleared() bool {
-	_, ok := m.clearedFields[stakeholder.FieldMessage]
+// StakeholderIDCleared returns if the "stakeholder_id" field was cleared in this mutation.
+func (m *StakeholderMutation) StakeholderIDCleared() bool {
+	_, ok := m.clearedFields[stakeholder.FieldStakeholderID]
 	return ok
 }
 
-// ResetMessage resets all changes to the "message" field.
-func (m *StakeholderMutation) ResetMessage() {
-	m.message = nil
-	delete(m.clearedFields, stakeholder.FieldMessage)
+// ResetStakeholderID resets all changes to the "stakeholder_id" field.
+func (m *StakeholderMutation) ResetStakeholderID() {
+	m.stakeholder_id = nil
+	delete(m.clearedFields, stakeholder.FieldStakeholderID)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -6516,8 +6516,8 @@ func (m *StakeholderMutation) Fields() []string {
 	if m.relationship != nil {
 		fields = append(fields, stakeholder.FieldRelationship)
 	}
-	if m.message != nil {
-		fields = append(fields, stakeholder.FieldMessage)
+	if m.stakeholder_id != nil {
+		fields = append(fields, stakeholder.FieldStakeholderID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, stakeholder.FieldCreatedAt)
@@ -6538,8 +6538,8 @@ func (m *StakeholderMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case stakeholder.FieldRelationship:
 		return m.Relationship()
-	case stakeholder.FieldMessage:
-		return m.Message()
+	case stakeholder.FieldStakeholderID:
+		return m.StakeholderID()
 	case stakeholder.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -6559,8 +6559,8 @@ func (m *StakeholderMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldEmail(ctx)
 	case stakeholder.FieldRelationship:
 		return m.OldRelationship(ctx)
-	case stakeholder.FieldMessage:
-		return m.OldMessage(ctx)
+	case stakeholder.FieldStakeholderID:
+		return m.OldStakeholderID(ctx)
 	case stakeholder.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -6600,12 +6600,12 @@ func (m *StakeholderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRelationship(v)
 		return nil
-	case stakeholder.FieldMessage:
-		v, ok := value.(string)
+	case stakeholder.FieldStakeholderID:
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetMessage(v)
+		m.SetStakeholderID(v)
 		return nil
 	case stakeholder.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6650,8 +6650,8 @@ func (m *StakeholderMutation) ClearedFields() []string {
 	if m.FieldCleared(stakeholder.FieldEmail) {
 		fields = append(fields, stakeholder.FieldEmail)
 	}
-	if m.FieldCleared(stakeholder.FieldMessage) {
-		fields = append(fields, stakeholder.FieldMessage)
+	if m.FieldCleared(stakeholder.FieldStakeholderID) {
+		fields = append(fields, stakeholder.FieldStakeholderID)
 	}
 	return fields
 }
@@ -6673,8 +6673,8 @@ func (m *StakeholderMutation) ClearField(name string) error {
 	case stakeholder.FieldEmail:
 		m.ClearEmail()
 		return nil
-	case stakeholder.FieldMessage:
-		m.ClearMessage()
+	case stakeholder.FieldStakeholderID:
+		m.ClearStakeholderID()
 		return nil
 	}
 	return fmt.Errorf("unknown Stakeholder nullable field %s", name)
@@ -6696,8 +6696,8 @@ func (m *StakeholderMutation) ResetField(name string) error {
 	case stakeholder.FieldRelationship:
 		m.ResetRelationship()
 		return nil
-	case stakeholder.FieldMessage:
-		m.ResetMessage()
+	case stakeholder.FieldStakeholderID:
+		m.ResetStakeholderID()
 		return nil
 	case stakeholder.FieldCreatedAt:
 		m.ResetCreatedAt()
