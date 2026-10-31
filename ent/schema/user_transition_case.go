@@ -20,6 +20,7 @@ func (UserTransitionCase) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("id"),
 		field.String("active_slot").Optional().Nillable().Unique(),
+		field.String("reason").Optional().Nillable(),
 		field.String("status").Default("pending_confirmation"),
 		field.Int("minimum_confirmers_snapshot").Positive(),
 		field.Int("waiting_period_days_snapshot").NonNegative(),

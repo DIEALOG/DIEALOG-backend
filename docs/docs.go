@@ -792,6 +792,331 @@ const docTemplate = `{
                 }
             }
         },
+        "/notification/protected": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 로그인한 사용자의 모든 알림을 조회합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "알림"
+                ],
+                "summary": "현재 사용자의 모든 알림 조회",
+                "responses": {
+                    "200": {
+                        "description": "알림 목록",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Notification"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification/protected/unread-count": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 로그인한 사용자의 읽지 않은 알림 총 개수를 조회합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "알림"
+                ],
+                "summary": "읽지 않은 알림 개수 조회",
+                "responses": {
+                    "200": {
+                        "description": "읽지 않은 알림 개수",
+                        "schema": {
+                            "$ref": "#/definitions/domain.NotificationCountResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notification/protected/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "알림 ID를 이용하여 해당 알림을 삭제합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "알림"
+                ],
+                "summary": "특정 알림 삭제",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "알림 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "성공 응답",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 (예: ID 변환 실패)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "알림 ID를 이용하여 해당 알림을 읽음 상태로 변경합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "알림"
+                ],
+                "summary": "특정 알림 읽음 처리",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "알림 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "성공 응답",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 (예: ID 변환 실패)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/phone-verification/send": {
+            "post": {
+                "description": "지정한 전화번호로 SMS 인증번호 발송을 요청합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PhoneVerification"
+                ],
+                "summary": "전화번호 인증번호 발송",
+                "parameters": [
+                    {
+                        "description": "전화번호 인증 요청",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.SendPhoneVerificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "인증번호 발송 요청 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "인증번호 발송 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/phone-verification/verify": {
+            "post": {
+                "description": "입력한 인증번호를 검증합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PhoneVerification"
+                ],
+                "summary": "전화번호 인증번호 검증",
+                "parameters": [
+                    {
+                        "description": "전화번호 및 인증번호",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.VerifyPhoneVerificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "전화번호 인증 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증번호 불일치",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "인증 처리 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/protected": {
             "get": {
                 "security": [
@@ -1618,6 +1943,9 @@ const docTemplate = `{
                     }
                 ],
                 "description": "수락된 확인자가 사후 전환 절차를 생성합니다. 사용자당 진행 중인 절차는 하나만 허용됩니다.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1625,6 +1953,16 @@ const docTemplate = `{
                     "Transition"
                 ],
                 "summary": "사후 전환 절차 생성",
+                "parameters": [
+                    {
+                        "description": "전환 사유 (선택)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/domain.StartTransitionCaseRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "전환 절차 생성 성공",
@@ -1633,7 +1971,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "이미 진행 중인 절차가 있음",
+                        "description": "잘못된 요청 또는 이미 진행 중인 절차가 있음",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -2396,6 +2734,52 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "이해관계자를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transition/protected/confirmers/designating-users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 사용자의 이메일 또는 전화번호를 확인자로 등록한 사용자(소유자) 목록을 조회합니다. 대기 중이거나 수락된 확인자만 포함합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transition"
+                ],
+                "summary": "나를 사후 전환 확인자로 지정한 사용자 조회",
+                "responses": {
+                    "200": {
+                        "description": "지정한 사용자 목록 조회 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.TransitionDesignatingUser"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "사용자를 찾을 수 없음",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -3291,6 +3675,53 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_read": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object"
+                },
+                "receiver_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.NotificationType"
+                }
+            }
+        },
+        "domain.NotificationCountResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.NotificationType": {
+            "type": "string",
+            "enum": [
+                "transition",
+                "legacy",
+                "invite"
+            ],
+            "x-enum-varnames": [
+                "NotificationTypeTransition",
+                "NotificationTypeDiealog",
+                "NotificationTypeInvite"
+            ]
+        },
         "domain.Profile": {
             "type": "object",
             "properties": {
@@ -3330,6 +3761,14 @@ const docTemplate = `{
             ],
             "properties": {
                 "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SendPhoneVerificationRequest": {
+            "type": "object",
+            "properties": {
+                "phoneNumber": {
                     "type": "string"
                 }
             }
@@ -3433,6 +3872,14 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.StartTransitionCaseRequest": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.SubmitAccountHandlingResultRequest": {
             "type": "object",
             "properties": {
@@ -3462,6 +3909,29 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.TransitionDesignatingUser": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_image_path": {
                     "type": "string"
                 }
             }
@@ -3608,6 +4078,9 @@ const docTemplate = `{
                 },
                 "minimum_confirmers_snapshot": {
                     "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
                 },
                 "requested_at": {
                     "type": "string"
@@ -3770,6 +4243,17 @@ const docTemplate = `{
                 },
                 "waiting_period_days": {
                     "type": "integer"
+                }
+            }
+        },
+        "domain.VerifyPhoneVerificationRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
                 }
             }
         },

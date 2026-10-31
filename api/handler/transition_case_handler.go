@@ -11,17 +11,26 @@ import (
 // @Summary      사후 전환 절차 생성
 // @Description  수락된 확인자가 사후 전환 절차를 생성합니다. 사용자당 진행 중인 절차는 하나만 허용됩니다.
 // @Tags         Transition
+// @Accept       json
 // @Produce      json
 // @Security     ConfirmerAuth
+// @Param        request body domain.StartTransitionCaseRequest false "전환 사유 (선택)"
 // @Success      201 {object} domain.UserTransitionCase "전환 절차 생성 성공"
-// @Failure      400 {object} domain.ErrorResponse "이미 진행 중인 절차가 있음"
+// @Failure      400 {object} domain.ErrorResponse "잘못된 요청 또는 이미 진행 중인 절차가 있음"
 // @Failure      401 {object} domain.ErrorResponse "확인자 인증 실패"
 // @Failure      403 {object} domain.ErrorResponse "수락되지 않은 확인자"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
 // @Router       /transition/confirmer/cases [post]
 func StartTransitionCase(service domain.UserTransitionCaseUseCase) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		item, err := service.Start(c.RequestCtx(), transitionConfirmer(c))
+		var request domain.StartTransitionCaseRequest
+		if len(c.Body()) > 0 {
+			if err := c.Bind().Body(&request); err != nil {
+				return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
+			}
+		}
+
+		item, err := service.Start(c.RequestCtx(), transitionConfirmer(c), &request)
 		if err != nil {
 			return RespondError(c, err)
 		}

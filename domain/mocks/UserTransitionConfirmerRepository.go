@@ -166,6 +166,36 @@ func (_m *UserTransitionConfirmerRepository) FindByInviteTokenHash(c context.Con
 	return r0, r1
 }
 
+// FindOwnersByContacts provides a mock function with given fields: c, email, phone
+func (_m *UserTransitionConfirmerRepository) FindOwnersByContacts(c context.Context, email *string, phone *string) ([]*domain.User, error) {
+	ret := _m.Called(c, email, phone)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindOwnersByContacts")
+	}
+
+	var r0 []*domain.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *string, *string) ([]*domain.User, error)); ok {
+		return rf(c, email, phone)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *string, *string) []*domain.User); ok {
+		r0 = rf(c, email, phone)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *string, *string) error); ok {
+		r1 = rf(c, email, phone)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: c, confirmer, userID
 func (_m *UserTransitionConfirmerRepository) Update(c context.Context, confirmer *domain.UserTransitionConfirmer, userID *uuid.UUID) (*domain.UserTransitionConfirmer, error) {
 	ret := _m.Called(c, confirmer, userID)

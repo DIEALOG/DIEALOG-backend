@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
@@ -43,7 +44,7 @@ func NewUserTransitionCaseUseCase(
 	}
 }
 
-func (u *userTransitionCaseUseCase) Start(c context.Context, confirmer *domain.UserTransitionConfirmer) (*domain.UserTransitionCase, error) {
+func (u *userTransitionCaseUseCase) Start(c context.Context, confirmer *domain.UserTransitionConfirmer, request *domain.StartTransitionCaseRequest) (*domain.UserTransitionCase, error) {
 	if confirmer == nil {
 		return nil, domain.NewUnauthorizedError(errors.New("confirmer is required"))
 	}
@@ -69,6 +70,7 @@ func (u *userTransitionCaseUseCase) Start(c context.Context, confirmer *domain.U
 
 	now := time.Now()
 	created, err := u.repository.Create(ctx, &domain.UserTransitionCase{
+		Reason:                    normalizeTransitionCaseReason(request),
 		Status:                    domain.UserTransitionCaseStatusPending,
 		MinimumConfirmersSnapshot: policy.MinimumConfirmers,
 		WaitingPeriodDaysSnapshot: policy.WaitingPeriodDays,
@@ -217,6 +219,17 @@ func (u *userTransitionCaseUseCase) Evaluate(c context.Context, id *domain.ID, u
 		return nil, domain.NewInternalServerError(err)
 	}
 	return u.evaluateCase(ctx, item, userID)
+}
+
+func normalizeTransitionCaseReason(request *domain.StartTransitionCaseRequest) *string {
+	if request == nil || request.Reason == nil {
+		return nil
+	}
+	reason := strings.TrimSpace(*request.Reason)
+	if reason == "" {
+		return nil
+	}
+	return &reason
 }
 
 func (u *userTransitionCaseUseCase) evaluateCase(c context.Context, item *domain.UserTransitionCase, userID *domain.ID) (*domain.UserTransitionCase, error) {

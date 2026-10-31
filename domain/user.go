@@ -124,6 +124,7 @@ type UserTransitionCase struct {
 	ID     ID `json:"id"`
 	UserID ID `json:"user_id"`
 
+	Reason *string                  `json:"reason,omitempty"`
 	Status UserTransitionCaseStatus `json:"status"`
 
 	MinimumConfirmersSnapshot int `json:"minimum_confirmers_snapshot"`

@@ -51,6 +51,26 @@ func (_u *UserTransitionCaseUpdate) ClearActiveSlot() *UserTransitionCaseUpdate 
 	return _u
 }
 
+// SetReason sets the "reason" field.
+func (_u *UserTransitionCaseUpdate) SetReason(v string) *UserTransitionCaseUpdate {
+	_u.mutation.SetReason(v)
+	return _u
+}
+
+// SetNillableReason sets the "reason" field if the given value is not nil.
+func (_u *UserTransitionCaseUpdate) SetNillableReason(v *string) *UserTransitionCaseUpdate {
+	if v != nil {
+		_u.SetReason(*v)
+	}
+	return _u
+}
+
+// ClearReason clears the value of the "reason" field.
+func (_u *UserTransitionCaseUpdate) ClearReason() *UserTransitionCaseUpdate {
+	_u.mutation.ClearReason()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *UserTransitionCaseUpdate) SetStatus(v string) *UserTransitionCaseUpdate {
 	_u.mutation.SetStatus(v)
@@ -356,6 +376,12 @@ func (_u *UserTransitionCaseUpdate) sqlSave(ctx context.Context) (_node int, err
 	if _u.mutation.ActiveSlotCleared() {
 		_spec.ClearField(usertransitioncase.FieldActiveSlot, field.TypeString)
 	}
+	if value, ok := _u.mutation.Reason(); ok {
+		_spec.SetField(usertransitioncase.FieldReason, field.TypeString, value)
+	}
+	if _u.mutation.ReasonCleared() {
+		_spec.ClearField(usertransitioncase.FieldReason, field.TypeString)
+	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(usertransitioncase.FieldStatus, field.TypeString, value)
 	}
@@ -528,6 +554,26 @@ func (_u *UserTransitionCaseUpdateOne) SetNillableActiveSlot(v *string) *UserTra
 // ClearActiveSlot clears the value of the "active_slot" field.
 func (_u *UserTransitionCaseUpdateOne) ClearActiveSlot() *UserTransitionCaseUpdateOne {
 	_u.mutation.ClearActiveSlot()
+	return _u
+}
+
+// SetReason sets the "reason" field.
+func (_u *UserTransitionCaseUpdateOne) SetReason(v string) *UserTransitionCaseUpdateOne {
+	_u.mutation.SetReason(v)
+	return _u
+}
+
+// SetNillableReason sets the "reason" field if the given value is not nil.
+func (_u *UserTransitionCaseUpdateOne) SetNillableReason(v *string) *UserTransitionCaseUpdateOne {
+	if v != nil {
+		_u.SetReason(*v)
+	}
+	return _u
+}
+
+// ClearReason clears the value of the "reason" field.
+func (_u *UserTransitionCaseUpdateOne) ClearReason() *UserTransitionCaseUpdateOne {
+	_u.mutation.ClearReason()
 	return _u
 }
 
@@ -865,6 +911,12 @@ func (_u *UserTransitionCaseUpdateOne) sqlSave(ctx context.Context) (_node *User
 	}
 	if _u.mutation.ActiveSlotCleared() {
 		_spec.ClearField(usertransitioncase.FieldActiveSlot, field.TypeString)
+	}
+	if value, ok := _u.mutation.Reason(); ok {
+		_spec.SetField(usertransitioncase.FieldReason, field.TypeString, value)
+	}
+	if _u.mutation.ReasonCleared() {
+		_spec.ClearField(usertransitioncase.FieldReason, field.TypeString)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(usertransitioncase.FieldStatus, field.TypeString, value)

@@ -242,27 +242,27 @@ func init() {
 	usertransitioncaseFields := schema.UserTransitionCase{}.Fields()
 	_ = usertransitioncaseFields
 	// usertransitioncaseDescStatus is the schema descriptor for status field.
-	usertransitioncaseDescStatus := usertransitioncaseFields[2].Descriptor()
+	usertransitioncaseDescStatus := usertransitioncaseFields[3].Descriptor()
 	// usertransitioncase.DefaultStatus holds the default value on creation for the status field.
 	usertransitioncase.DefaultStatus = usertransitioncaseDescStatus.Default.(string)
 	// usertransitioncaseDescMinimumConfirmersSnapshot is the schema descriptor for minimum_confirmers_snapshot field.
-	usertransitioncaseDescMinimumConfirmersSnapshot := usertransitioncaseFields[3].Descriptor()
+	usertransitioncaseDescMinimumConfirmersSnapshot := usertransitioncaseFields[4].Descriptor()
 	// usertransitioncase.MinimumConfirmersSnapshotValidator is a validator for the "minimum_confirmers_snapshot" field. It is called by the builders before save.
 	usertransitioncase.MinimumConfirmersSnapshotValidator = usertransitioncaseDescMinimumConfirmersSnapshot.Validators[0].(func(int) error)
 	// usertransitioncaseDescWaitingPeriodDaysSnapshot is the schema descriptor for waiting_period_days_snapshot field.
-	usertransitioncaseDescWaitingPeriodDaysSnapshot := usertransitioncaseFields[4].Descriptor()
+	usertransitioncaseDescWaitingPeriodDaysSnapshot := usertransitioncaseFields[5].Descriptor()
 	// usertransitioncase.WaitingPeriodDaysSnapshotValidator is a validator for the "waiting_period_days_snapshot" field. It is called by the builders before save.
 	usertransitioncase.WaitingPeriodDaysSnapshotValidator = usertransitioncaseDescWaitingPeriodDaysSnapshot.Validators[0].(func(int) error)
 	// usertransitioncaseDescRequestedAt is the schema descriptor for requested_at field.
-	usertransitioncaseDescRequestedAt := usertransitioncaseFields[5].Descriptor()
+	usertransitioncaseDescRequestedAt := usertransitioncaseFields[6].Descriptor()
 	// usertransitioncase.DefaultRequestedAt holds the default value on creation for the requested_at field.
 	usertransitioncase.DefaultRequestedAt = usertransitioncaseDescRequestedAt.Default.(func() time.Time)
 	// usertransitioncaseDescCreatedAt is the schema descriptor for created_at field.
-	usertransitioncaseDescCreatedAt := usertransitioncaseFields[10].Descriptor()
+	usertransitioncaseDescCreatedAt := usertransitioncaseFields[11].Descriptor()
 	// usertransitioncase.DefaultCreatedAt holds the default value on creation for the created_at field.
 	usertransitioncase.DefaultCreatedAt = usertransitioncaseDescCreatedAt.Default.(func() time.Time)
 	// usertransitioncaseDescUpdatedAt is the schema descriptor for updated_at field.
-	usertransitioncaseDescUpdatedAt := usertransitioncaseFields[11].Descriptor()
+	usertransitioncaseDescUpdatedAt := usertransitioncaseFields[12].Descriptor()
 	// usertransitioncase.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	usertransitioncase.DefaultUpdatedAt = usertransitioncaseDescUpdatedAt.Default.(func() time.Time)
 	// usertransitioncase.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

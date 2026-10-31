@@ -221,11 +221,14 @@ func TestTransitionFlow(t *testing.T) {
 		}, &legacy.ID, &owner.ID)
 		require.NoError(t, err)
 
-		transitionCase, err := caseUseCase.Start(ctx, accepted.Confirmer)
+		reason := "가족이 대신 처리"
+		transitionCase, err := caseUseCase.Start(ctx, accepted.Confirmer, &domain.StartTransitionCaseRequest{Reason: &reason})
 		require.NoError(t, err)
 		assert.Equal(t, domain.UserTransitionCaseStatusPending, transitionCase.Status)
+		require.NotNil(t, transitionCase.Reason)
+		assert.Equal(t, reason, *transitionCase.Reason)
 
-		_, err = caseUseCase.Start(ctx, accepted.Confirmer)
+		_, err = caseUseCase.Start(ctx, accepted.Confirmer, nil)
 		require.Error(t, err)
 
 		_, err = confirmationUseCase.Submit(ctx, &transitionCase.ID, accepted.Confirmer, &domain.SubmitTransitionConfirmationRequest{
@@ -319,7 +322,7 @@ func TestTransitionFlow(t *testing.T) {
 		}, &legacy.ID, &owner.ID)
 		require.NoError(t, err)
 
-		secondCase, err := caseUseCase.Start(ctx, accepted.Confirmer)
+		secondCase, err := caseUseCase.Start(ctx, accepted.Confirmer, nil)
 		require.NoError(t, err)
 		_, err = confirmationUseCase.Submit(ctx, &secondCase.ID, accepted.Confirmer, &domain.SubmitTransitionConfirmationRequest{
 			Decision: domain.UserTransitionDecisionAgree,
@@ -416,7 +419,7 @@ func TestTransitionFlow(t *testing.T) {
 		accepted, err := confirmerUseCase.Accept(ctx, invitation.InvitationToken)
 		require.NoError(t, err)
 
-		transitionCase, err := caseUseCase.Start(ctx, accepted.Confirmer)
+		transitionCase, err := caseUseCase.Start(ctx, accepted.Confirmer, nil)
 		require.NoError(t, err)
 
 		_, err = confirmationUseCase.Submit(ctx, &transitionCase.ID, accepted.Confirmer, &domain.SubmitTransitionConfirmationRequest{
@@ -435,7 +438,7 @@ func TestTransitionFlow(t *testing.T) {
 		assert.Equal(t, domain.UserTransitionCaseStatusCancelled, cancelled.Status)
 		require.NotNil(t, cancelled.CancelledAt)
 
-		restarted, err := caseUseCase.Start(ctx, accepted.Confirmer)
+		restarted, err := caseUseCase.Start(ctx, accepted.Confirmer, nil)
 		require.NoError(t, err)
 		assert.Equal(t, domain.UserTransitionCaseStatusPending, restarted.Status)
 		_, err = caseUseCase.Cancel(ctx, &restarted.ID, &owner.ID)

@@ -322,6 +322,7 @@ var (
 	UserTransitionCasesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "active_slot", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "reason", Type: field.TypeString, Nullable: true},
 		{Name: "status", Type: field.TypeString, Default: "pending_confirmation"},
 		{Name: "minimum_confirmers_snapshot", Type: field.TypeInt},
 		{Name: "waiting_period_days_snapshot", Type: field.TypeInt},
@@ -342,7 +343,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_transition_cases_users_transition_cases",
-				Columns:    []*schema.Column{UserTransitionCasesColumns[12]},
+				Columns:    []*schema.Column{UserTransitionCasesColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

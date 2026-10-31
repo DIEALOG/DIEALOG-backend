@@ -166,9 +166,9 @@ func (_m *UserTransitionCaseUseCase) ListByUserID(c context.Context, userID *uui
 	return r0, r1
 }
 
-// Start provides a mock function with given fields: c, confirmer
-func (_m *UserTransitionCaseUseCase) Start(c context.Context, confirmer *domain.UserTransitionConfirmer) (*domain.UserTransitionCase, error) {
-	ret := _m.Called(c, confirmer)
+// Start provides a mock function with given fields: c, confirmer, request
+func (_m *UserTransitionCaseUseCase) Start(c context.Context, confirmer *domain.UserTransitionConfirmer, request *domain.StartTransitionCaseRequest) (*domain.UserTransitionCase, error) {
+	ret := _m.Called(c, confirmer, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
@@ -176,19 +176,19 @@ func (_m *UserTransitionCaseUseCase) Start(c context.Context, confirmer *domain.
 
 	var r0 *domain.UserTransitionCase
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserTransitionConfirmer) (*domain.UserTransitionCase, error)); ok {
-		return rf(c, confirmer)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserTransitionConfirmer, *domain.StartTransitionCaseRequest) (*domain.UserTransitionCase, error)); ok {
+		return rf(c, confirmer, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserTransitionConfirmer) *domain.UserTransitionCase); ok {
-		r0 = rf(c, confirmer)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserTransitionConfirmer, *domain.StartTransitionCaseRequest) *domain.UserTransitionCase); ok {
+		r0 = rf(c, confirmer, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.UserTransitionCase)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.UserTransitionConfirmer) error); ok {
-		r1 = rf(c, confirmer)
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.UserTransitionConfirmer, *domain.StartTransitionCaseRequest) error); ok {
+		r1 = rf(c, confirmer, request)
 	} else {
 		r1 = ret.Error(1)
 	}

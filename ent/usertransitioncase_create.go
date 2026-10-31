@@ -38,6 +38,20 @@ func (_c *UserTransitionCaseCreate) SetNillableActiveSlot(v *string) *UserTransi
 	return _c
 }
 
+// SetReason sets the "reason" field.
+func (_c *UserTransitionCaseCreate) SetReason(v string) *UserTransitionCaseCreate {
+	_c.mutation.SetReason(v)
+	return _c
+}
+
+// SetNillableReason sets the "reason" field if the given value is not nil.
+func (_c *UserTransitionCaseCreate) SetNillableReason(v *string) *UserTransitionCaseCreate {
+	if v != nil {
+		_c.SetReason(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *UserTransitionCaseCreate) SetStatus(v string) *UserTransitionCaseCreate {
 	_c.mutation.SetStatus(v)
@@ -345,6 +359,10 @@ func (_c *UserTransitionCaseCreate) createSpec() (*UserTransitionCase, *sqlgraph
 	if value, ok := _c.mutation.ActiveSlot(); ok {
 		_spec.SetField(usertransitioncase.FieldActiveSlot, field.TypeString, value)
 		_node.ActiveSlot = &value
+	}
+	if value, ok := _c.mutation.Reason(); ok {
+		_spec.SetField(usertransitioncase.FieldReason, field.TypeString, value)
+		_node.Reason = &value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(usertransitioncase.FieldStatus, field.TypeString, value)

@@ -10138,6 +10138,7 @@ type UserTransitionCaseMutation struct {
 	typ                             string
 	id                              *uuid.UUID
 	active_slot                     *string
+	reason                          *string
 	status                          *string
 	minimum_confirmers_snapshot     *int
 	addminimum_confirmers_snapshot  *int
@@ -10315,6 +10316,55 @@ func (m *UserTransitionCaseMutation) ActiveSlotCleared() bool {
 func (m *UserTransitionCaseMutation) ResetActiveSlot() {
 	m.active_slot = nil
 	delete(m.clearedFields, usertransitioncase.FieldActiveSlot)
+}
+
+// SetReason sets the "reason" field.
+func (m *UserTransitionCaseMutation) SetReason(s string) {
+	m.reason = &s
+}
+
+// Reason returns the value of the "reason" field in the mutation.
+func (m *UserTransitionCaseMutation) Reason() (r string, exists bool) {
+	v := m.reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReason returns the old "reason" field's value of the UserTransitionCase entity.
+// If the UserTransitionCase object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserTransitionCaseMutation) OldReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReason: %w", err)
+	}
+	return oldValue.Reason, nil
+}
+
+// ClearReason clears the value of the "reason" field.
+func (m *UserTransitionCaseMutation) ClearReason() {
+	m.reason = nil
+	m.clearedFields[usertransitioncase.FieldReason] = struct{}{}
+}
+
+// ReasonCleared returns if the "reason" field was cleared in this mutation.
+func (m *UserTransitionCaseMutation) ReasonCleared() bool {
+	_, ok := m.clearedFields[usertransitioncase.FieldReason]
+	return ok
+}
+
+// ResetReason resets all changes to the "reason" field.
+func (m *UserTransitionCaseMutation) ResetReason() {
+	m.reason = nil
+	delete(m.clearedFields, usertransitioncase.FieldReason)
 }
 
 // SetStatus sets the "status" field.
@@ -10950,9 +11000,12 @@ func (m *UserTransitionCaseMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserTransitionCaseMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.active_slot != nil {
 		fields = append(fields, usertransitioncase.FieldActiveSlot)
+	}
+	if m.reason != nil {
+		fields = append(fields, usertransitioncase.FieldReason)
 	}
 	if m.status != nil {
 		fields = append(fields, usertransitioncase.FieldStatus)
@@ -10994,6 +11047,8 @@ func (m *UserTransitionCaseMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case usertransitioncase.FieldActiveSlot:
 		return m.ActiveSlot()
+	case usertransitioncase.FieldReason:
+		return m.Reason()
 	case usertransitioncase.FieldStatus:
 		return m.Status()
 	case usertransitioncase.FieldMinimumConfirmersSnapshot:
@@ -11025,6 +11080,8 @@ func (m *UserTransitionCaseMutation) OldField(ctx context.Context, name string) 
 	switch name {
 	case usertransitioncase.FieldActiveSlot:
 		return m.OldActiveSlot(ctx)
+	case usertransitioncase.FieldReason:
+		return m.OldReason(ctx)
 	case usertransitioncase.FieldStatus:
 		return m.OldStatus(ctx)
 	case usertransitioncase.FieldMinimumConfirmersSnapshot:
@@ -11060,6 +11117,13 @@ func (m *UserTransitionCaseMutation) SetField(name string, value ent.Value) erro
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetActiveSlot(v)
+		return nil
+	case usertransitioncase.FieldReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReason(v)
 		return nil
 	case usertransitioncase.FieldStatus:
 		v, ok := value.(string)
@@ -11191,6 +11255,9 @@ func (m *UserTransitionCaseMutation) ClearedFields() []string {
 	if m.FieldCleared(usertransitioncase.FieldActiveSlot) {
 		fields = append(fields, usertransitioncase.FieldActiveSlot)
 	}
+	if m.FieldCleared(usertransitioncase.FieldReason) {
+		fields = append(fields, usertransitioncase.FieldReason)
+	}
 	if m.FieldCleared(usertransitioncase.FieldWaitingStartedAt) {
 		fields = append(fields, usertransitioncase.FieldWaitingStartedAt)
 	}
@@ -11220,6 +11287,9 @@ func (m *UserTransitionCaseMutation) ClearField(name string) error {
 	case usertransitioncase.FieldActiveSlot:
 		m.ClearActiveSlot()
 		return nil
+	case usertransitioncase.FieldReason:
+		m.ClearReason()
+		return nil
 	case usertransitioncase.FieldWaitingStartedAt:
 		m.ClearWaitingStartedAt()
 		return nil
@@ -11242,6 +11312,9 @@ func (m *UserTransitionCaseMutation) ResetField(name string) error {
 	switch name {
 	case usertransitioncase.FieldActiveSlot:
 		m.ResetActiveSlot()
+		return nil
+	case usertransitioncase.FieldReason:
+		m.ResetReason()
 		return nil
 	case usertransitioncase.FieldStatus:
 		m.ResetStatus()

@@ -47,6 +47,7 @@ func (r *userTransitionCaseRepository) Create(c context.Context, transitionCase 
 
 	entity, err := tx.UserTransitionCase.Create().
 		SetActiveSlot(userID.String()).
+		SetNillableReason(transitionCase.Reason).
 		SetStatus(string(transitionCase.Status)).
 		SetMinimumConfirmersSnapshot(transitionCase.MinimumConfirmersSnapshot).
 		SetWaitingPeriodDaysSnapshot(transitionCase.WaitingPeriodDaysSnapshot).

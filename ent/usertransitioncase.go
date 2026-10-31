@@ -21,6 +21,8 @@ type UserTransitionCase struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// ActiveSlot holds the value of the "active_slot" field.
 	ActiveSlot *string `json:"active_slot,omitempty"`
+	// Reason holds the value of the "reason" field.
+	Reason *string `json:"reason,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
 	// MinimumConfirmersSnapshot holds the value of the "minimum_confirmers_snapshot" field.
@@ -97,7 +99,7 @@ func (*UserTransitionCase) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case usertransitioncase.FieldMinimumConfirmersSnapshot, usertransitioncase.FieldWaitingPeriodDaysSnapshot:
 			values[i] = new(sql.NullInt64)
-		case usertransitioncase.FieldActiveSlot, usertransitioncase.FieldStatus:
+		case usertransitioncase.FieldActiveSlot, usertransitioncase.FieldReason, usertransitioncase.FieldStatus:
 			values[i] = new(sql.NullString)
 		case usertransitioncase.FieldRequestedAt, usertransitioncase.FieldWaitingStartedAt, usertransitioncase.FieldEligibleAt, usertransitioncase.FieldConfirmedAt, usertransitioncase.FieldCancelledAt, usertransitioncase.FieldCreatedAt, usertransitioncase.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -132,6 +134,13 @@ func (_m *UserTransitionCase) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				_m.ActiveSlot = new(string)
 				*_m.ActiveSlot = value.String
+			}
+		case usertransitioncase.FieldReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reason", values[i])
+			} else if value.Valid {
+				_m.Reason = new(string)
+				*_m.Reason = value.String
 			}
 		case usertransitioncase.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -257,6 +266,11 @@ func (_m *UserTransitionCase) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	if v := _m.ActiveSlot; v != nil {
 		builder.WriteString("active_slot=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.Reason; v != nil {
+		builder.WriteString("reason=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

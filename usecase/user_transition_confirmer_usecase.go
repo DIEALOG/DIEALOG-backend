@@ -191,6 +191,53 @@ func (u *userTransitionConfirmerUseCase) ListByUserID(c context.Context, userID 
 	return items, nil
 }
 
+func (u *userTransitionConfirmerUseCase) ListDesignatingUsers(c context.Context, userID *domain.ID) ([]*domain.TransitionDesignatingUser, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	if u.userRepository == nil {
+		return nil, domain.NewInternalServerError(errors.New("user repository is not configured"))
+	}
+
+	user, err := u.userRepository.FindByID(ctx, userID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	var email, phone *string
+	if user.Email != "" {
+		email = &user.Email
+	}
+	if user.PhoneNumber != "" {
+		phone = &user.PhoneNumber
+	}
+
+	owners, err := u.repository.FindOwnersByContacts(ctx, email, phone)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	items := make([]*domain.TransitionDesignatingUser, 0, len(owners))
+	for _, owner := range owners {
+		if owner.ID == *userID {
+			continue
+		}
+		items = append(items, &domain.TransitionDesignatingUser{
+			ID:               owner.ID,
+			Name:             owner.Name,
+			Email:            owner.Email,
+			PhoneNumber:      owner.PhoneNumber,
+			ProfileImagePath: owner.ProfileImagePath,
+			CreatedAt:        owner.CreatedAt,
+		})
+	}
+
+	return items, nil
+}
+
 func (u *userTransitionConfirmerUseCase) Resend(c context.Context, id *domain.ID, userID *domain.ID) (*domain.TransitionInvitationResponse, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()

@@ -17,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldActiveSlot holds the string denoting the active_slot field in the database.
 	FieldActiveSlot = "active_slot"
+	// FieldReason holds the string denoting the reason field in the database.
+	FieldReason = "reason"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldMinimumConfirmersSnapshot holds the string denoting the minimum_confirmers_snapshot field in the database.
@@ -72,6 +74,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldActiveSlot,
+	FieldReason,
 	FieldStatus,
 	FieldMinimumConfirmersSnapshot,
 	FieldWaitingPeriodDaysSnapshot,
@@ -135,6 +138,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByActiveSlot orders the results by the active_slot field.
 func ByActiveSlot(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldActiveSlot, opts...).ToFunc()
+}
+
+// ByReason orders the results by the reason field.
+func ByReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReason, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

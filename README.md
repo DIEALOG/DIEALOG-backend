@@ -77,6 +77,7 @@ Authorization: Bearer <accessToken>
 | Transition confirmer | `/api/transition/protected/confirmers` | `POST`, `GET` |
 | Transition confirmer | `/api/transition/protected/confirmers/{id}` | `DELETE` |
 | Transition confirmer | `/api/transition/protected/confirmers/{id}/resend` | `POST` |
+| Transition confirmer | `/api/transition/protected/confirmers/designating-users` | `GET` (나를 확인자로 지정한 사용자 목록) |
 | Alive check | `/api/transition/protected/alive-checks` | `POST`, `GET` |
 | Alive check | `/api/transition/protected/alive-checks/{id}/respond` | `POST` |
 | Transition case | `/api/transition/protected/cases` | `GET` |
@@ -86,7 +87,7 @@ Authorization: Bearer <accessToken>
 | Transition case | `/api/transition/protected/cases/{id}/tasks` | `GET` |
 | Account handling task | `/api/transition/protected/tasks/{id}/request` | `POST` |
 | Stakeholder task result | `/api/transition/stakeholder-tasks/result` | `POST` (JSON body `token`, `success`) |
-| Confirmer flow | `/api/transition/confirmer/cases` | `POST`, `GET` |
+| Confirmer flow | `/api/transition/confirmer/cases` | `POST` (JSON body `reason`, optional), `GET` |
 | Confirmer flow | `/api/transition/confirmer/cases/{id}` | `GET` |
 | Confirmer flow | `/api/transition/confirmer/cases/{id}/confirmations` | `POST` |
 | Invitation | `/api/transition/invitations/accept` | `POST` (JSON body `token`) |

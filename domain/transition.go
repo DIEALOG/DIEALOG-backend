@@ -39,6 +39,22 @@ type AcceptTransitionInvitationResponse struct {
 	ExpiresAt time.Time                `json:"expires_at"`
 }
 
+// TransitionDesignatingUser represents a registered user who has designated the
+// current user as their transition confirmer. Only public profile fields are
+// exposed so the owner's stakeholders and config are not leaked.
+type TransitionDesignatingUser struct {
+	ID               ID        `json:"id"`
+	Name             string    `json:"name"`
+	Email            string    `json:"email"`
+	PhoneNumber      string    `json:"phone_number"`
+	ProfileImagePath *string   `json:"profile_image_path"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+type StartTransitionCaseRequest struct {
+	Reason *string `json:"reason"`
+}
+
 type SubmitTransitionConfirmationRequest struct {
 	Decision UserTransitionDecision `json:"decision"`
 	Comment  *string                `json:"comment,omitempty"`
@@ -62,6 +78,7 @@ type UserTransitionPolicyUseCase interface {
 type UserTransitionConfirmerRepository interface {
 	Create(c context.Context, confirmer *UserTransitionConfirmer, userID *ID) (*UserTransitionConfirmer, error)
 	FindAllByUserID(c context.Context, userID *ID) ([]*UserTransitionConfirmer, error)
+	FindOwnersByContacts(c context.Context, email *string, phone *string) ([]*User, error)
 	FindByID(c context.Context, id *ID, userID *ID) (*UserTransitionConfirmer, error)
 	FindByInviteTokenHash(c context.Context, tokenHash string) (*UserTransitionConfirmer, error)
 	FindByAuthTokenHash(c context.Context, tokenHash string) (*UserTransitionConfirmer, error)
@@ -71,6 +88,7 @@ type UserTransitionConfirmerRepository interface {
 type UserTransitionConfirmerUseCase interface {
 	Invite(c context.Context, request *InviteTransitionConfirmerRequest, userID *ID) (*TransitionInvitationResponse, error)
 	ListByUserID(c context.Context, userID *ID) ([]*UserTransitionConfirmer, error)
+	ListDesignatingUsers(c context.Context, userID *ID) ([]*TransitionDesignatingUser, error)
 	Resend(c context.Context, id *ID, userID *ID) (*TransitionInvitationResponse, error)
 	Revoke(c context.Context, id *ID, userID *ID) error
 	Accept(c context.Context, token string) (*AcceptTransitionInvitationResponse, error)
@@ -102,7 +120,7 @@ type UserTransitionCaseRepository interface {
 }
 
 type UserTransitionCaseUseCase interface {
-	Start(c context.Context, confirmer *UserTransitionConfirmer) (*UserTransitionCase, error)
+	Start(c context.Context, confirmer *UserTransitionConfirmer, request *StartTransitionCaseRequest) (*UserTransitionCase, error)
 	GetByID(c context.Context, id *ID, userID *ID) (*UserTransitionCase, error)
 	ListByUserID(c context.Context, userID *ID) ([]*UserTransitionCase, error)
 	ListActiveByUserID(c context.Context, userID *ID) ([]*UserTransitionCase, error)

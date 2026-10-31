@@ -27,6 +27,27 @@ func FetchTransitionConfirmers(service domain.UserTransitionConfirmerUseCase) fi
 	}
 }
 
+// FetchTransitionDesignatingUsers godoc
+// @Summary      나를 사후 전환 확인자로 지정한 사용자 조회
+// @Description  현재 사용자의 이메일 또는 전화번호를 확인자로 등록한 사용자(소유자) 목록을 조회합니다. 대기 중이거나 수락된 확인자만 포함합니다.
+// @Tags         Transition
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {array} domain.TransitionDesignatingUser "지정한 사용자 목록 조회 성공"
+// @Failure      401 {object} domain.ErrorResponse "인증 실패"
+// @Failure      404 {object} domain.ErrorResponse "사용자를 찾을 수 없음"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /transition/protected/confirmers/designating-users [get]
+func FetchTransitionDesignatingUsers(service domain.UserTransitionConfirmerUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		items, err := service.ListDesignatingUsers(c.RequestCtx(), transitionUserID(c))
+		if err != nil {
+			return RespondError(c, err)
+		}
+		return c.Status(http.StatusOK).JSON(items)
+	}
+}
+
 // InviteTransitionConfirmer godoc
 // @Summary      사후 전환 확인자 초대
 // @Description  확인자를 초대하고 초대 토큰을 한 번만 반환합니다. 실제 이메일/SMS 발송은 아직 구현되지 않았습니다.

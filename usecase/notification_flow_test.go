@@ -216,7 +216,7 @@ func TestNotificationFlow(t *testing.T) {
 		authenticatedConfirmer, err := confirmerUseCase.Authenticate(ctx, confirmerAuthToken)
 		require.NoError(t, err)
 
-		transitionCase, err = caseUseCase.Start(ctx, authenticatedConfirmer)
+		transitionCase, err = caseUseCase.Start(ctx, authenticatedConfirmer, nil)
 		require.NoError(t, err)
 		require.NotNil(t, transitionCase)
 

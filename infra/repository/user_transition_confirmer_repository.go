@@ -5,6 +5,7 @@ import (
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitionconfirmer"
 )
@@ -68,6 +69,42 @@ func (r *userTransitionConfirmerRepository) FindAllByUserID(c context.Context, u
 		items[i].UserID = *userID
 	}
 	return items, nil
+}
+
+// FindOwnersByContacts returns the users who have an active confirmer
+// (pending or accepted) matching the given email or phone. It is the reverse
+// lookup used to find the owners who designated a contact as their confirmer.
+func (r *userTransitionConfirmerRepository) FindOwnersByContacts(c context.Context, email *string, phone *string) ([]*domain.User, error) {
+	contacts := make([]predicate.UserTransitionConfirmer, 0, 2)
+	if email != nil && *email != "" {
+		contacts = append(contacts, usertransitionconfirmer.EmailEqualFold(*email))
+	}
+	if phone != nil && *phone != "" {
+		contacts = append(contacts, usertransitionconfirmer.PhoneEQ(*phone))
+	}
+	if len(contacts) == 0 {
+		return []*domain.User{}, nil
+	}
+
+	entities, err := r.client.User.Query().
+		Where(user.HasTransitionConfirmersWith(
+			usertransitionconfirmer.StatusIn(
+				string(domain.UserTransitionConfirmerStatusPending),
+				string(domain.UserTransitionConfirmerStatusAccepted),
+			),
+			usertransitionconfirmer.Or(contacts...),
+		)).
+		Order(ent.Asc(user.FieldCreatedAt)).
+		All(c)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]*domain.User, len(entities))
+	for i, entity := range entities {
+		users[i] = toDomainUser(entity)
+	}
+	return users, nil
 }
 
 func (r *userTransitionConfirmerRepository) FindByID(c context.Context, id *domain.ID, userID *domain.ID) (*domain.UserTransitionConfirmer, error) {

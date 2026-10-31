@@ -154,6 +154,36 @@ func (_m *UserTransitionConfirmerUseCase) ListByUserID(c context.Context, userID
 	return r0, r1
 }
 
+// ListDesignatingUsers provides a mock function with given fields: c, userID
+func (_m *UserTransitionConfirmerUseCase) ListDesignatingUsers(c context.Context, userID *uuid.UUID) ([]*domain.TransitionDesignatingUser, error) {
+	ret := _m.Called(c, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListDesignatingUsers")
+	}
+
+	var r0 []*domain.TransitionDesignatingUser
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) ([]*domain.TransitionDesignatingUser, error)); ok {
+		return rf(c, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) []*domain.TransitionDesignatingUser); ok {
+		r0 = rf(c, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.TransitionDesignatingUser)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID) error); ok {
+		r1 = rf(c, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Resend provides a mock function with given fields: c, id, userID
 func (_m *UserTransitionConfirmerUseCase) Resend(c context.Context, id *uuid.UUID, userID *uuid.UUID) (*domain.TransitionInvitationResponse, error) {
 	ret := _m.Called(c, id, userID)

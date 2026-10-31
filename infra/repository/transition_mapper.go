@@ -70,6 +70,7 @@ func toDomainUserAliveCheck(entity *ent.UserAliveCheck) *domain.UserAliveCheck {
 func toDomainUserTransitionCase(entity *ent.UserTransitionCase) *domain.UserTransitionCase {
 	item := &domain.UserTransitionCase{
 		ID:                        entity.ID,
+		Reason:                    entity.Reason,
 		Status:                    domain.UserTransitionCaseStatus(entity.Status),
 		MinimumConfirmersSnapshot: entity.MinimumConfirmersSnapshot,
 		WaitingPeriodDaysSnapshot: entity.WaitingPeriodDaysSnapshot,

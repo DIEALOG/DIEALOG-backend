@@ -24,6 +24,7 @@ func NewTransitionRouter(
 	protected.Patch("/policy", handler.UpdateTransitionPolicy(policyService))
 
 	protected.Get("/confirmers", handler.FetchTransitionConfirmers(confirmerService))
+	protected.Get("/confirmers/designating-users", handler.FetchTransitionDesignatingUsers(confirmerService))
 	protected.Post("/confirmers", handler.InviteTransitionConfirmer(confirmerService))
 	protected.Post("/confirmers/:id/resend", handler.ResendTransitionConfirmerInvitation(confirmerService))
 	protected.Delete("/confirmers/:id", handler.RevokeTransitionConfirmer(confirmerService))

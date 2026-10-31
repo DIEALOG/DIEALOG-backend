@@ -390,6 +390,38 @@ definitions:
     - email
     - password
     type: object
+  domain.Notification:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      is_read:
+        type: boolean
+      message:
+        type: string
+      metadata:
+        type: object
+      receiver_id:
+        type: string
+      type:
+        $ref: '#/definitions/domain.NotificationType'
+    type: object
+  domain.NotificationCountResponse:
+    properties:
+      count:
+        type: integer
+    type: object
+  domain.NotificationType:
+    enum:
+    - transition
+    - legacy
+    - invite
+    type: string
+    x-enum-varnames:
+    - NotificationTypeTransition
+    - NotificationTypeDiealog
+    - NotificationTypeInvite
   domain.Profile:
     properties:
       email:
@@ -417,6 +449,11 @@ definitions:
         type: string
     required:
     - refreshToken
+    type: object
+  domain.SendPhoneVerificationRequest:
+    properties:
+      phoneNumber:
+        type: string
     type: object
   domain.SignupRequest:
     properties:
@@ -484,6 +521,11 @@ definitions:
     required:
     - name
     type: object
+  domain.StartTransitionCaseRequest:
+    properties:
+      reason:
+        type: string
+    type: object
   domain.SubmitAccountHandlingResultRequest:
     properties:
       message:
@@ -503,6 +545,21 @@ definitions:
   domain.SuccessResponse:
     properties:
       message:
+        type: string
+    type: object
+  domain.TransitionDesignatingUser:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      profile_image_path:
         type: string
     type: object
   domain.TransitionInvitationResponse:
@@ -601,6 +658,8 @@ definitions:
         type: string
       minimum_confirmers_snapshot:
         type: integer
+      reason:
+        type: string
       requested_at:
         type: string
       status:
@@ -714,6 +773,13 @@ definitions:
         type: string
       waiting_period_days:
         type: integer
+    type: object
+  domain.VerifyPhoneVerificationRequest:
+    properties:
+      code:
+        type: string
+      phoneNumber:
+        type: string
     type: object
   handler.UpdateLegacyRequest:
     properties:
@@ -1227,6 +1293,215 @@ paths:
       summary: 로그인
       tags:
       - Auth
+  /notification/protected:
+    get:
+      consumes:
+      - application/json
+      description: 현재 로그인한 사용자의 모든 알림을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 알림 목록
+          schema:
+            items:
+              $ref: '#/definitions/domain.Notification'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 서버 내부 오류
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 현재 사용자의 모든 알림 조회
+      tags:
+      - 알림
+  /notification/protected/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 알림 ID를 이용하여 해당 알림을 삭제합니다.
+      parameters:
+      - description: 알림 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 성공 응답
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '잘못된 요청 (예: ID 변환 실패)'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 서버 내부 오류
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 특정 알림 삭제
+      tags:
+      - 알림
+    patch:
+      consumes:
+      - application/json
+      description: 알림 ID를 이용하여 해당 알림을 읽음 상태로 변경합니다.
+      parameters:
+      - description: 알림 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 성공 응답
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '잘못된 요청 (예: ID 변환 실패)'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 서버 내부 오류
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 특정 알림 읽음 처리
+      tags:
+      - 알림
+  /notification/protected/unread-count:
+    get:
+      consumes:
+      - application/json
+      description: 현재 로그인한 사용자의 읽지 않은 알림 총 개수를 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 읽지 않은 알림 개수
+          schema:
+            $ref: '#/definitions/domain.NotificationCountResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 서버 내부 오류
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 읽지 않은 알림 개수 조회
+      tags:
+      - 알림
+  /phone-verification/send:
+    post:
+      consumes:
+      - application/json
+      description: 지정한 전화번호로 SMS 인증번호 발송을 요청합니다.
+      parameters:
+      - description: 전화번호 인증 요청
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SendPhoneVerificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 인증번호 발송 요청 성공
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: 잘못된 요청 파라미터
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 인증번호 발송 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: 전화번호 인증번호 발송
+      tags:
+      - PhoneVerification
+  /phone-verification/verify:
+    post:
+      consumes:
+      - application/json
+      description: 입력한 인증번호를 검증합니다.
+      parameters:
+      - description: 전화번호 및 인증번호
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.VerifyPhoneVerificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 전화번호 인증 성공
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: 잘못된 요청 파라미터
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증번호 불일치
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 인증 처리 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: 전화번호 인증번호 검증
+      tags:
+      - PhoneVerification
   /profile/protected:
     get:
       description: 현재 로그인된 사용자의 기본 프로필 및 등록된 이해관계자 정보를 조회합니다.
@@ -1751,7 +2026,15 @@ paths:
       tags:
       - Transition
     post:
+      consumes:
+      - application/json
       description: 수락된 확인자가 사후 전환 절차를 생성합니다. 사용자당 진행 중인 절차는 하나만 허용됩니다.
+      parameters:
+      - description: 전환 사유 (선택)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/domain.StartTransitionCaseRequest'
       produces:
       - application/json
       responses:
@@ -1760,7 +2043,7 @@ paths:
           schema:
             $ref: '#/definitions/domain.UserTransitionCase'
         "400":
-          description: 이미 진행 중인 절차가 있음
+          description: 잘못된 요청 또는 이미 진행 중인 절차가 있음
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "401":
@@ -2331,6 +2614,36 @@ paths:
       security:
       - BearerAuth: []
       summary: 사후 전환 확인자 초대 재발송
+      tags:
+      - Transition
+  /transition/protected/confirmers/designating-users:
+    get:
+      description: 현재 사용자의 이메일 또는 전화번호를 확인자로 등록한 사용자(소유자) 목록을 조회합니다. 대기 중이거나 수락된 확인자만
+        포함합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 지정한 사용자 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.TransitionDesignatingUser'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 사용자를 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 나를 사후 전환 확인자로 지정한 사용자 조회
       tags:
       - Transition
   /transition/protected/policy:
