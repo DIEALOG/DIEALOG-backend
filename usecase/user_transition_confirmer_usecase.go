@@ -238,6 +238,81 @@ func (u *userTransitionConfirmerUseCase) ListDesignatingUsers(c context.Context,
 	return items, nil
 }
 
+func (u *userTransitionConfirmerUseCase) ClaimAccess(c context.Context, userID *domain.ID) ([]*domain.AcceptTransitionInvitationResponse, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	if u.userRepository == nil {
+		return nil, domain.NewInternalServerError(errors.New("user repository is not configured"))
+	}
+
+	user, err := u.userRepository.FindByID(ctx, userID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	var email, phone *string
+	if user.Email != "" {
+		email = &user.Email
+	}
+	if user.PhoneNumber != "" {
+		phone = &user.PhoneNumber
+	}
+
+	owners, err := u.repository.FindOwnersByContacts(ctx, email, phone)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	issued := make([]*domain.AcceptTransitionInvitationResponse, 0)
+	for _, owner := range owners {
+		if owner.ID == *userID {
+			continue
+		}
+		confirmers, err := u.repository.FindAllByUserID(ctx, &owner.ID)
+		if err != nil {
+			return nil, domain.NewInternalServerError(err)
+		}
+		for _, item := range confirmers {
+			if !confirmerMatchesUser(item, user) {
+				continue
+			}
+			switch item.Status {
+			case domain.UserTransitionConfirmerStatusPending:
+				access, acceptErr := u.acceptPending(ctx, item)
+				if acceptErr != nil {
+					var domainErr *domain.Error
+					if errors.As(acceptErr, &domainErr) && domainErr.StatusCode < 500 {
+						continue
+					}
+					return nil, acceptErr
+				}
+				issued = append(issued, access)
+			case domain.UserTransitionConfirmerStatusAccepted:
+				access, refreshErr := u.refreshAcceptedAccess(ctx, item)
+				if refreshErr != nil {
+					return nil, refreshErr
+				}
+				issued = append(issued, access)
+			}
+		}
+	}
+	return issued, nil
+}
+
+func confirmerMatchesUser(item *domain.UserTransitionConfirmer, user *domain.User) bool {
+	if item.Email != nil && user.Email != "" && strings.EqualFold(*item.Email, user.Email) {
+		return true
+	}
+	if item.Phone != nil && user.PhoneNumber != "" && *item.Phone == user.PhoneNumber {
+		return true
+	}
+	return false
+}
+
 func (u *userTransitionConfirmerUseCase) Resend(c context.Context, id *domain.ID, userID *domain.ID) (*domain.TransitionInvitationResponse, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
@@ -349,6 +424,10 @@ func (u *userTransitionConfirmerUseCase) Accept(c context.Context, token string)
 	if err != nil {
 		return nil, err
 	}
+	return u.acceptPending(ctx, item)
+}
+
+func (u *userTransitionConfirmerUseCase) acceptPending(ctx context.Context, item *domain.UserTransitionConfirmer) (*domain.AcceptTransitionInvitationResponse, error) {
 	if item.Status != domain.UserTransitionConfirmerStatusPending {
 		return nil, domain.NewBadRequestError(errors.New("invitation is no longer active"))
 	}
@@ -394,6 +473,26 @@ func (u *userTransitionConfirmerUseCase) Accept(c context.Context, token string)
 		})
 	}
 
+	return &domain.AcceptTransitionInvitationResponse{
+		Confirmer: updated,
+		AuthToken: authToken,
+		ExpiresAt: authExpiresAt,
+	}, nil
+}
+
+func (u *userTransitionConfirmerUseCase) refreshAcceptedAccess(ctx context.Context, item *domain.UserTransitionConfirmer) (*domain.AcceptTransitionInvitationResponse, error) {
+	authToken, err := securetoken.Generate()
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+	authExpiresAt := time.Now().Add(confirmerAuthTTL)
+	updated, err := u.repository.RefreshAuthToken(ctx, &item.ID, &item.UserID, securetoken.Hash(authToken), authExpiresAt)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
 	return &domain.AcceptTransitionInvitationResponse{
 		Confirmer: updated,
 		AuthToken: authToken,

@@ -4,6 +4,7 @@ package mocks
 
 import (
 	context "context"
+	time "time"
 
 	domain "github.com/DIEALOG/DIEALOG-backend/domain"
 	mock "github.com/stretchr/testify/mock"
@@ -189,6 +190,36 @@ func (_m *UserTransitionConfirmerRepository) FindOwnersByContacts(c context.Cont
 
 	if rf, ok := ret.Get(1).(func(context.Context, *string, *string) error); ok {
 		r1 = rf(c, email, phone)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RefreshAuthToken provides a mock function with given fields: c, id, userID, tokenHash, expiresAt
+func (_m *UserTransitionConfirmerRepository) RefreshAuthToken(c context.Context, id *uuid.UUID, userID *uuid.UUID, tokenHash string, expiresAt time.Time) (*domain.UserTransitionConfirmer, error) {
+	ret := _m.Called(c, id, userID, tokenHash, expiresAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RefreshAuthToken")
+	}
+
+	var r0 *domain.UserTransitionConfirmer
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID, string, time.Time) (*domain.UserTransitionConfirmer, error)); ok {
+		return rf(c, id, userID, tokenHash, expiresAt)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID, string, time.Time) *domain.UserTransitionConfirmer); ok {
+		r0 = rf(c, id, userID, tokenHash, expiresAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.UserTransitionConfirmer)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID, string, time.Time) error); ok {
+		r1 = rf(c, id, userID, tokenHash, expiresAt)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -48,6 +48,26 @@ func FetchTransitionDesignatingUsers(service domain.UserTransitionConfirmerUseCa
 	}
 }
 
+// ClaimTransitionConfirmerAccess godoc
+// @Summary      내게 온 확인자 자격 연결
+// @Description  현재 로그인 계정과 이메일/전화번호가 맞는 확인자 초대를 수락하거나, 이미 수락한 자격의 인증 토큰을 다시 발급합니다.
+// @Tags         Transition
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {array} domain.AcceptTransitionInvitationResponse "확인자 자격 연결 성공"
+// @Failure      401 {object} domain.ErrorResponse "인증 실패"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /transition/protected/confirmers/access [post]
+func ClaimTransitionConfirmerAccess(service domain.UserTransitionConfirmerUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		items, err := service.ClaimAccess(c.RequestCtx(), transitionUserID(c))
+		if err != nil {
+			return RespondError(c, err)
+		}
+		return c.Status(http.StatusOK).JSON(items)
+	}
+}
+
 // InviteTransitionConfirmer godoc
 // @Summary      사후 전환 확인자 초대
 // @Description  확인자를 초대하고 초대 토큰을 한 번만 반환합니다. 실제 이메일/SMS 발송은 아직 구현되지 않았습니다.

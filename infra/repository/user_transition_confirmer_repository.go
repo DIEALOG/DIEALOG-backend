@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
@@ -135,6 +136,25 @@ func (r *userTransitionConfirmerRepository) FindByInviteTokenHash(c context.Cont
 		return nil, err
 	}
 	return toDomainUserTransitionConfirmer(entity), nil
+}
+
+func (r *userTransitionConfirmerRepository) RefreshAuthToken(c context.Context, id *domain.ID, userID *domain.ID, tokenHash string, expiresAt time.Time) (*domain.UserTransitionConfirmer, error) {
+	n, err := r.client.UserTransitionConfirmer.Update().
+		Where(
+			usertransitionconfirmer.IDEQ(*id),
+			usertransitionconfirmer.HasOwnerWith(user.IDEQ(*userID)),
+			usertransitionconfirmer.StatusEQ(string(domain.UserTransitionConfirmerStatusAccepted)),
+		).
+		SetAuthTokenHash(tokenHash).
+		SetAuthTokenExpiresAt(expiresAt).
+		Save(c)
+	if err != nil {
+		return nil, err
+	}
+	if n == 0 {
+		return nil, &ent.NotFoundError{}
+	}
+	return r.FindByID(c, id, userID)
 }
 
 func (r *userTransitionConfirmerRepository) FindByAuthTokenHash(c context.Context, tokenHash string) (*domain.UserTransitionConfirmer, error) {

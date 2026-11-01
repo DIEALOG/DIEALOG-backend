@@ -83,12 +83,14 @@ type UserTransitionConfirmerRepository interface {
 	FindByInviteTokenHash(c context.Context, tokenHash string) (*UserTransitionConfirmer, error)
 	FindByAuthTokenHash(c context.Context, tokenHash string) (*UserTransitionConfirmer, error)
 	Update(c context.Context, confirmer *UserTransitionConfirmer, userID *ID) (*UserTransitionConfirmer, error)
+	RefreshAuthToken(c context.Context, id *ID, userID *ID, tokenHash string, expiresAt time.Time) (*UserTransitionConfirmer, error)
 }
 
 type UserTransitionConfirmerUseCase interface {
 	Invite(c context.Context, request *InviteTransitionConfirmerRequest, userID *ID) (*TransitionInvitationResponse, error)
 	ListByUserID(c context.Context, userID *ID) ([]*UserTransitionConfirmer, error)
 	ListDesignatingUsers(c context.Context, userID *ID) ([]*TransitionDesignatingUser, error)
+	ClaimAccess(c context.Context, userID *ID) ([]*AcceptTransitionInvitationResponse, error)
 	Resend(c context.Context, id *ID, userID *ID) (*TransitionInvitationResponse, error)
 	Revoke(c context.Context, id *ID, userID *ID) error
 	Accept(c context.Context, token string) (*AcceptTransitionInvitationResponse, error)
