@@ -134,4 +134,4 @@ docs/        생성된 Swagger 스펙
 ## Docker
 
 - `docker compose up -d postgres`는 데이터베이스만 시작하며, 로컬 설정의 권장 방식입니다.
-- `docker compose up -d --build`는 전체 스택을 실행합니다. Compose는 `.env`를 읽어 보간하고, `api` 컨테이너에 구성 정보를 주입하여 `DB_HOST`를 `postgres`, `DB_PORT`를 `5432`로 override합니다. 앱은 환경 변수도 직접 읽습니다.
+- `docker compose up -d --build`는 전체 스택을 실행합니다. Compose는 `.env`를 읽어 보간하고, `api` 컨테이너에 구성 정보를 주입하여 `DB_HOST`를 `postgres`, `DB_PORT`를 `5432`로 override합니다. 앱은 환경 변수도 직접 읽습니다. 
