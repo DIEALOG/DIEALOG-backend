@@ -72,6 +72,26 @@ func TestTransitionFlow(t *testing.T) {
 		AliveCheckIntervalDays: 90,
 	}, &owner.ID)
 
+	t.Run("get creates a default policy when none exists", func(t *testing.T) {
+		newcomer, err := userRepo.Create(ctx, &domain.User{
+			Name:        "newcomer",
+			Email:       "newcomer@example.com",
+			Password:    "password",
+			PhoneNumber: "010-0000-0000",
+		})
+		require.NoError(t, err)
+
+		policy, err := policyUseCase.Get(ctx, &newcomer.ID)
+		require.NoError(t, err)
+		assert.Equal(t, 2, policy.MinimumConfirmers)
+		assert.Equal(t, 7, policy.WaitingPeriodDays)
+		assert.Equal(t, 90, policy.AliveCheckIntervalDays)
+
+		again, err := policyUseCase.Get(ctx, &newcomer.ID)
+		require.NoError(t, err)
+		assert.Equal(t, policy.ID, again.ID)
+	})
+
 	t.Run("default policy and validation", func(t *testing.T) {
 		policy, err := policyUseCase.Get(ctx, &owner.ID)
 		require.NoError(t, err)

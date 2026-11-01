@@ -33,7 +33,21 @@ func (u *userTransitionPolicyUseCase) Get(c context.Context, userID *domain.ID) 
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	return nil, domain.NewNotFoundError(errors.New("transition policy not found"))
+	created, err := u.repository.Create(ctx, &domain.UserTransitionPolicy{
+		MinimumConfirmers:      2,
+		WaitingPeriodDays:      7,
+		AliveCheckIntervalDays: 90,
+	}, userID)
+	if err == nil {
+		return created, nil
+	}
+	if ent.IsConstraintError(err) {
+		policy, findErr := u.repository.FindByUserID(ctx, userID)
+		if findErr == nil {
+			return policy, nil
+		}
+	}
+	return nil, domain.NewInternalServerError(err)
 }
 
 func (u *userTransitionPolicyUseCase) Update(c context.Context, request *domain.UpdateUserTransitionPolicyRequest, userID *domain.ID) (*domain.UserTransitionPolicy, error) {
