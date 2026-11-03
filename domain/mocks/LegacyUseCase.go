@@ -241,6 +241,36 @@ func (_m *LegacyUseCase) Update(c context.Context, id *uuid.UUID, name string, u
 	return r0, r1
 }
 
+// UpdateAccount provides a mock function with given fields: c, account, legacyID, userID, password
+func (_m *LegacyUseCase) UpdateAccount(c context.Context, account *domain.Account, legacyID *uuid.UUID, userID *uuid.UUID, password *string) (*domain.Account, error) {
+	ret := _m.Called(c, account, legacyID, userID, password)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAccount")
+	}
+
+	var r0 *domain.Account
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID, *string) (*domain.Account, error)); ok {
+		return rf(c, account, legacyID, userID, password)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID, *string) *domain.Account); ok {
+		r0 = rf(c, account, legacyID, userID, password)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Account)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID, *string) error); ok {
+		r1 = rf(c, account, legacyID, userID, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewLegacyUseCase creates a new instance of LegacyUseCase. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewLegacyUseCase(t interface {

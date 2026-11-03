@@ -211,14 +211,18 @@ func (u *userTransitionCaseUseCase) Evaluate(c context.Context, id *domain.ID, u
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	item, err := u.repository.FindByID(ctx, id, userID)
+	// The requester may be the deceased owner or one of the owner's
+	// stakeholders. Evaluation itself remains owner-scoped, so resolve the
+	// owner ID from the case before touching confirmations or tasks.
+	item, err := u.repository.FindByIDForRequester(ctx, id, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
-	return u.evaluateCase(ctx, item, userID)
+	ownerID := item.UserID
+	return u.evaluateCase(ctx, item, &ownerID)
 }
 
 func normalizeTransitionCaseReason(request *domain.StartTransitionCaseRequest) *string {

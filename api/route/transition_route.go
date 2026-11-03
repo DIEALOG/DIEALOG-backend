@@ -48,6 +48,7 @@ func NewTransitionRouter(
 	confirmer.Get("/cases", handler.FetchConfirmerCases(caseService))
 	confirmer.Post("/cases", handler.StartTransitionCase(caseService))
 	confirmer.Get("/cases/:id", handler.FetchConfirmerCase(caseService))
+	confirmer.Get("/cases/:id/confirmations", handler.FetchConfirmerTransitionConfirmations(confirmationService))
 	confirmer.Post("/cases/:id/confirmations", handler.SubmitTransitionConfirmation(confirmationService))
 
 	// public invitation token routes. The token is sent in the JSON body so it

@@ -211,12 +211,26 @@ func TestTransitionFlow(t *testing.T) {
 		require.NoError(t, err)
 
 		handlerEmail := "handler@example.com"
+		handlerUser, err := userRepo.Create(ctx, &domain.User{
+			Name:        "Account Handler",
+			Email:       handlerEmail,
+			Password:    "password",
+			PhoneNumber: "010-1111-2222",
+		})
+		require.NoError(t, err)
 		handler, err := stakeholderRepo.Create(ctx, &domain.Stakeholder{
 			Name:  "Account Handler",
 			Email: &handlerEmail,
 		}, &owner.ID)
 		require.NoError(t, err)
 		groupHandlerEmail := "group-handler@example.com"
+		groupHandlerUser, err := userRepo.Create(ctx, &domain.User{
+			Name:        "Group Handler",
+			Email:       groupHandlerEmail,
+			Password:    "password",
+			PhoneNumber: "010-3333-4444",
+		})
+		require.NoError(t, err)
 		groupHandler, err := stakeholderRepo.Create(ctx, &domain.Stakeholder{
 			Name:  "Group Handler",
 			Email: &groupHandlerEmail,
@@ -256,6 +270,44 @@ func TestTransitionFlow(t *testing.T) {
 		})
 		require.NoError(t, err)
 
+		// Confirmers read the decisions with their own token, because the
+		// deceased owner cannot authenticate anymore.
+		confirmations, err := confirmationUseCase.ListByCaseIDForConfirmer(ctx, &transitionCase.ID, accepted.Confirmer)
+		require.NoError(t, err)
+		require.Len(t, confirmations, 1)
+		assert.Equal(t, domain.UserTransitionDecisionAgree, confirmations[0].Decision)
+
+		// A confirmer of another user cannot see this case, and only accepted
+		// confirmers may list decisions.
+		otherOwner, err := userRepo.Create(ctx, &domain.User{
+			Name:        "Other Owner",
+			Email:       "other-owner@example.com",
+			Password:    "password",
+			PhoneNumber: "010-7777-6666",
+		})
+		require.NoError(t, err)
+		otherEmail := "other-confirmer@example.com"
+		otherInvitation, err := confirmerUseCase.Invite(ctx, &domain.InviteTransitionConfirmerRequest{
+			Name:  "Other Confirmer",
+			Email: &otherEmail,
+		}, &otherOwner.ID)
+		require.NoError(t, err)
+		otherAccepted, err := confirmerUseCase.Accept(ctx, otherInvitation.InvitationToken)
+		require.NoError(t, err)
+		_, err = confirmationUseCase.ListByCaseIDForConfirmer(ctx, &transitionCase.ID, otherAccepted.Confirmer)
+		require.Error(t, err)
+		var otherConfirmerErr *domain.Error
+		require.True(t, errors.As(err, &otherConfirmerErr))
+		assert.Equal(t, 404, otherConfirmerErr.StatusCode)
+
+		_, err = confirmationUseCase.ListByCaseIDForConfirmer(ctx, &transitionCase.ID, &domain.UserTransitionConfirmer{
+			Status: domain.UserTransitionConfirmerStatusPending,
+		})
+		require.Error(t, err)
+		var pendingConfirmerErr *domain.Error
+		require.True(t, errors.As(err, &pendingConfirmerErr))
+		assert.Equal(t, 403, pendingConfirmerErr.StatusCode)
+
 		confirmed, err := caseUseCase.GetByID(ctx, &transitionCase.ID, &owner.ID)
 		require.NoError(t, err)
 		assert.Equal(t, domain.UserTransitionCaseStatusConfirmed, confirmed.Status)
@@ -271,10 +323,47 @@ func TestTransitionFlow(t *testing.T) {
 		require.NotEmpty(t, tasks[0].Events)
 		assert.Equal(t, tasks[0].ID, tasks[0].Events[0].TaskID)
 
+		// Stakeholders can list the tasks they are responsible for. The owner
+		// keeps seeing every task in the case.
+		handlerTasks, err := accountUseCase.ListByCaseID(ctx, &transitionCase.ID, &handlerUser.ID)
+		require.NoError(t, err)
+		require.Len(t, handlerTasks, 1)
+		assert.Equal(t, tasks[0].ID, handlerTasks[0].ID)
+
+		groupHandlerTasks, err := accountUseCase.ListByCaseID(ctx, &transitionCase.ID, &groupHandlerUser.ID)
+		require.NoError(t, err)
+		require.Len(t, groupHandlerTasks, 1)
+		assert.Equal(t, tasks[0].ID, groupHandlerTasks[0].ID)
+
 		// The action is only a request to the stakeholders. It must not complete
 		// without a stakeholder reporting success.
 		assert.Equal(t, domain.AccountHandlingTaskStatusPending, tasks[0].Status)
-		request, err := accountUseCase.Request(ctx, &tasks[0].ID, &owner.ID)
+
+		// A stakeholder linked to a DIEALOG account can trigger the request with
+		// their own credentials instead of the deceased owner's credentials.
+		require.NotNil(t, handler.StakeholderID)
+		assert.Equal(t, handlerUser.ID, *handler.StakeholderID)
+
+		outsider, err := userRepo.Create(ctx, &domain.User{
+			Name:        "Outsider",
+			Email:       "outsider@example.com",
+			Password:    "password",
+			PhoneNumber: "010-9999-8888",
+		})
+		require.NoError(t, err)
+		_, err = accountUseCase.Request(ctx, &tasks[0].ID, &outsider.ID)
+		require.Error(t, err)
+		var outsiderErr *domain.Error
+		require.True(t, errors.As(err, &outsiderErr))
+		assert.Equal(t, 404, outsiderErr.StatusCode)
+
+		_, err = accountUseCase.ListByCaseID(ctx, &transitionCase.ID, &outsider.ID)
+		require.Error(t, err)
+		var outsiderListErr *domain.Error
+		require.True(t, errors.As(err, &outsiderListErr))
+		assert.Equal(t, 404, outsiderListErr.StatusCode)
+
+		request, err := accountUseCase.Request(ctx, &tasks[0].ID, &handlerUser.ID)
 		require.NoError(t, err)
 		require.NotNil(t, request.Task)
 		assert.Equal(t, domain.AccountHandlingTaskStatusInProgress, request.Task.Status)
@@ -365,6 +454,21 @@ func TestTransitionFlow(t *testing.T) {
 		require.NotEqual(t, domain.ID{}, deleteTaskID)
 		require.NotEqual(t, domain.ID{}, noHandlerTaskID)
 
+		// Stakeholder task lists are filtered to the accounts they are linked
+		// to. handlerUser belongs to Google and Delete me, groupHandlerUser only
+		// belongs to Google through the stakeholder group.
+		handlerSecondTasks, err := accountUseCase.ListByCaseID(ctx, &secondCase.ID, &handlerUser.ID)
+		require.NoError(t, err)
+		require.Len(t, handlerSecondTasks, 2)
+		for _, task := range handlerSecondTasks {
+			assert.NotEqual(t, noHandlerAccount.ID, task.AccountID)
+		}
+
+		groupHandlerSecondTasks, err := accountUseCase.ListByCaseID(ctx, &secondCase.ID, &groupHandlerUser.ID)
+		require.NoError(t, err)
+		require.Len(t, groupHandlerSecondTasks, 1)
+		assert.Equal(t, account.ID, groupHandlerSecondTasks[0].AccountID)
+
 		_, err = accountUseCase.Request(ctx, &noHandlerTaskID, &owner.ID)
 		require.Error(t, err)
 		var domainErr *domain.Error
@@ -400,11 +504,19 @@ func TestTransitionFlow(t *testing.T) {
 
 		// A request refreshes the assignee snapshot additively, so a stakeholder
 		// added after the task was created receives a token on the next request.
+		// That newly added stakeholder is also authorized to issue the request
+		// even though they were not an assignee when the task was created.
 		_, err = client.Account.UpdateOneID(deleteAccount.ID).
 			AddStakeholderIDs(groupHandler.ID).
 			Save(ctx)
 		require.NoError(t, err)
-		retriedRequest, err := accountUseCase.Request(ctx, &deleteTaskID, &owner.ID)
+
+		// Once linked to the account, the stakeholder also sees that task.
+		groupHandlerSecondTasks, err = accountUseCase.ListByCaseID(ctx, &secondCase.ID, &groupHandlerUser.ID)
+		require.NoError(t, err)
+		require.Len(t, groupHandlerSecondTasks, 2)
+
+		retriedRequest, err := accountUseCase.Request(ctx, &deleteTaskID, &groupHandlerUser.ID)
 		require.NoError(t, err)
 		assert.Equal(t, domain.AccountHandlingTaskStatusInProgress, retriedRequest.Task.Status)
 		assert.Equal(t, 2, retriedRequest.Task.RequestCount)

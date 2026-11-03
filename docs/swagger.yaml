@@ -576,6 +576,33 @@ definitions:
       token:
         type: string
     type: object
+  domain.UpdateAccountRequest:
+    properties:
+      account_id:
+        type: string
+      account_password:
+        type: string
+      action:
+        $ref: '#/definitions/domain.AccountAction'
+      data_location:
+        type: string
+      name:
+        type: string
+      stakeholder_group_ids:
+        items:
+          type: string
+        type: array
+      stakeholder_ids:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/domain.AccountType'
+    required:
+    - action
+    - name
+    - type
+    type: object
   domain.UpdateLastWordRequest:
     properties:
       message:
@@ -972,6 +999,41 @@ paths:
       summary: 유언 메시지 수정
       tags:
       - LastWord
+  /last-word/protected/to-me/{id}:
+    get:
+      description: 특정 사용자가 로그인한 사용자를 수신자(또는 수신자 그룹의 구성원)로 지정한 유언 메시지 목록을 조회합니다.
+      parameters:
+      - description: 유언 메시지 작성자 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 유언 메시지 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.LastWord'
+            type: array
+        "400":
+          description: 잘못된 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 나에게 남긴 유언 메시지 목록 조회
+      tags:
+      - LastWord
   /legacy/protected:
     get:
       description: 현재 사용자의 레거시 목록을 조회합니다.
@@ -1261,6 +1323,56 @@ paths:
       security:
       - BearerAuth: []
       summary: 특정 계정 detail 정보
+      tags:
+      - Legacy
+    put:
+      consumes:
+      - application/json
+      description: 특정 레거시에 등록된 계정 정보, 사후 처리 방침, 관계자 및 관계자 그룹을 수정합니다. 요청에 포함되지 않은 관계자는
+        제거됩니다.
+      parameters:
+      - description: 레거시 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 계정 ID (UUID)
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: 수정할 계정 정보
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 계정 수정 성공
+          schema:
+            $ref: '#/definitions/domain.AccountDetailResponse'
+        "400":
+          description: 잘못된 요청 파라미터 또는 ID 형식
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 레거시 또는 계정을 찾을 수 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 레거시 하위 계정 수정
       tags:
       - Legacy
   /login:
@@ -2101,6 +2213,45 @@ paths:
       tags:
       - Transition
   /transition/confirmer/cases/{id}/confirmations:
+    get:
+      description: 확인자 인증 토큰으로 전환 절차에 제출된 확인 의사 목록을 조회합니다. 자신이 확인하는 사용자의 전환 절차만 조회할
+        수 있습니다.
+      parameters:
+      - description: 전환 절차 ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인 의사 목록 조회 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.UserTransitionConfirmation'
+            type: array
+        "400":
+          description: 잘못된 ID
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: 확인자 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: 전환 절차를 찾을 수 없거나 접근 권한이 없음
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ConfirmerAuth: []
+      summary: 확인자용 사후 전환 확인 의사 목록 조회
+      tags:
+      - Transition
     post:
       consumes:
       - application/json
@@ -2441,7 +2592,8 @@ paths:
       - Transition
   /transition/protected/cases/{id}/tasks:
     get:
-      description: 확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다.
+      description: 확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다. 사망한 사용자 본인은 모든 작업을, 관계자는 자신이
+        담당하는 계정의 작업만 조회할 수 있습니다.
       parameters:
       - description: 전환 절차 ID (UUID)
         in: path
@@ -2466,7 +2618,7 @@ paths:
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "404":
-          description: 전환 절차를 찾을 수 없음
+          description: 전환 절차를 찾을 수 없거나 접근 권한이 없음
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "500":
@@ -2616,6 +2768,31 @@ paths:
       summary: 사후 전환 확인자 초대 재발송
       tags:
       - Transition
+  /transition/protected/confirmers/access:
+    post:
+      description: 현재 로그인 계정과 이메일/전화번호가 맞는 확인자 초대를 수락하거나, 이미 수락한 자격의 인증 토큰을 다시 발급합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 확인자 자격 연결 성공
+          schema:
+            items:
+              $ref: '#/definitions/domain.AcceptTransitionInvitationResponse'
+            type: array
+        "401":
+          description: 인증 실패
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: 서버 내부 오류
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 내게 온 확인자 자격 연결
+      tags:
+      - Transition
   /transition/protected/confirmers/designating-users:
     get:
       description: 현재 사용자의 이메일 또는 전화번호를 확인자로 등록한 사용자(소유자) 목록을 조회합니다. 대기 중이거나 수락된 확인자만
@@ -2706,8 +2883,9 @@ paths:
       - Transition
   /transition/protected/tasks/{id}/request:
     post:
-      description: 계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 요청할 때마다 계정의 현재 관계자를 추가로
-        반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.
+      description: 계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 사망한 사용자 본인뿐 아니라 계정의 관계자도
+        자신의 계정 인증으로 호출할 수 있습니다. 요청할 때마다 계정의 현재 관계자를 추가로 반영하고 기존 관계자는 유지합니다. 요청 토큰은
+        이 응답에서만 반환됩니다.
       parameters:
       - description: 계정 처리 작업 ID (UUID)
         in: path
@@ -2730,7 +2908,7 @@ paths:
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "404":
-          description: 작업을 찾을 수 없음
+          description: 작업을 찾을 수 없거나 접근 권한이 없음
           schema:
             $ref: '#/definitions/domain.ErrorResponse'
         "500":

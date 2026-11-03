@@ -104,6 +104,61 @@
                 }
             }
         },
+        "/last-word/protected/to-me/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 사용자가 로그인한 사용자를 수신자(또는 수신자 그룹의 구성원)로 지정한 유언 메시지 목록을 조회합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LastWord"
+                ],
+                "summary": "나에게 남긴 유언 메시지 목록 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "유언 메시지 작성자 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "유언 메시지 목록 조회 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.LastWord"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/last-word/protected/{id}": {
             "get": {
                 "security": [
@@ -670,6 +725,81 @@
                     },
                     "401": {
                         "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "특정 레거시에 등록된 계정 정보, 사후 처리 방침, 관계자 및 관계자 그룹을 수정합니다. 요청에 포함되지 않은 관계자는 제거됩니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Legacy"
+                ],
+                "summary": "레거시 하위 계정 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "레거시 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "계정 ID (UUID)",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "수정할 계정 정보",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "계정 수정 성공",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AccountDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 파라미터 또는 ID 형식",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "레거시 또는 계정을 찾을 수 없음",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -2050,6 +2180,65 @@
             }
         },
         "/transition/confirmer/cases/{id}/confirmations": {
+            "get": {
+                "security": [
+                    {
+                        "ConfirmerAuth": []
+                    }
+                ],
+                "description": "확인자 인증 토큰으로 전환 절차에 제출된 확인 의사 목록을 조회합니다. 자신이 확인하는 사용자의 전환 절차만 조회할 수 있습니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transition"
+                ],
+                "summary": "확인자용 사후 전환 확인 의사 목록 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "전환 절차 ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "확인 의사 목록 조회 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.UserTransitionConfirmation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 ID",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "확인자 인증 실패",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "전환 절차를 찾을 수 없거나 접근 권한이 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2586,7 +2775,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다.",
+                "description": "확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다. 사망한 사용자 본인은 모든 작업을, 관계자는 자신이 담당하는 계정의 작업만 조회할 수 있습니다.",
                 "produces": [
                     "application/json"
                 ],
@@ -2626,7 +2815,7 @@
                         }
                     },
                     "404": {
-                        "description": "전환 절차를 찾을 수 없음",
+                        "description": "전환 절차를 찾을 수 없거나 접근 권한이 없음",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -2728,6 +2917,46 @@
                     },
                     "404": {
                         "description": "이해관계자를 찾을 수 없음",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "서버 내부 오류",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transition/protected/confirmers/access": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "현재 로그인 계정과 이메일/전화번호가 맞는 확인자 초대를 수락하거나, 이미 수락한 자격의 인증 토큰을 다시 발급합니다.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transition"
+                ],
+                "summary": "내게 온 확인자 자격 연결",
+                "responses": {
+                    "200": {
+                        "description": "확인자 자격 연결 성공",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.AcceptTransitionInvitationResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -3002,7 +3231,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 요청할 때마다 계정의 현재 관계자를 추가로 반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.",
+                "description": "계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 사망한 사용자 본인뿐 아니라 계정의 관계자도 자신의 계정 인증으로 호출할 수 있습니다. 요청할 때마다 계정의 현재 관계자를 추가로 반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.",
                 "produces": [
                     "application/json"
                 ],
@@ -3039,7 +3268,7 @@
                         }
                     },
                     "404": {
-                        "description": "작업을 찾을 수 없음",
+                        "description": "작업을 찾을 수 없거나 접근 권한이 없음",
                         "schema": {
                             "$ref": "#/definitions/domain.ErrorResponse"
                         }
@@ -3949,6 +4178,46 @@
             "properties": {
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.UpdateAccountRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "account_password": {
+                    "type": "string"
+                },
+                "action": {
+                    "$ref": "#/definitions/domain.AccountAction"
+                },
+                "data_location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stakeholder_group_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "stakeholder_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountType"
                 }
             }
         },

@@ -76,6 +76,36 @@ func (_m *AccountHandlingTaskRepository) FindAllByCaseID(c context.Context, case
 	return r0, r1
 }
 
+// FindAllByCaseIDForRequester provides a mock function with given fields: c, caseID, requesterID
+func (_m *AccountHandlingTaskRepository) FindAllByCaseIDForRequester(c context.Context, caseID *uuid.UUID, requesterID *uuid.UUID) ([]*domain.AccountHandlingTask, error) {
+	ret := _m.Called(c, caseID, requesterID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindAllByCaseIDForRequester")
+	}
+
+	var r0 []*domain.AccountHandlingTask
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) ([]*domain.AccountHandlingTask, error)); ok {
+		return rf(c, caseID, requesterID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) []*domain.AccountHandlingTask); ok {
+		r0 = rf(c, caseID, requesterID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.AccountHandlingTask)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(c, caseID, requesterID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByAssigneeTokenHash provides a mock function with given fields: c, tokenHash
 func (_m *AccountHandlingTaskRepository) FindByAssigneeTokenHash(c context.Context, tokenHash string) (*domain.AccountHandlingTask, *domain.AccountHandlingTaskAssignee, error) {
 	ret := _m.Called(c, tokenHash)
@@ -138,6 +168,36 @@ func (_m *AccountHandlingTaskRepository) FindByID(c context.Context, id *uuid.UU
 
 	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
 		r1 = rf(c, id, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByIDForRequester provides a mock function with given fields: c, id, requesterID
+func (_m *AccountHandlingTaskRepository) FindByIDForRequester(c context.Context, id *uuid.UUID, requesterID *uuid.UUID) (*domain.AccountHandlingTask, error) {
+	ret := _m.Called(c, id, requesterID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByIDForRequester")
+	}
+
+	var r0 *domain.AccountHandlingTask
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) (*domain.AccountHandlingTask, error)); ok {
+		return rf(c, id, requesterID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) *domain.AccountHandlingTask); ok {
+		r0 = rf(c, id, requesterID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.AccountHandlingTask)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(c, id, requesterID)
 	} else {
 		r1 = ret.Error(1)
 	}

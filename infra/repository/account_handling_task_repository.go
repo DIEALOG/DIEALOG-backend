@@ -6,9 +6,13 @@ import (
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
+	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingevent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
 )
@@ -22,13 +26,53 @@ func NewAccountHandlingTaskRepository(client *ent.Client) domain.AccountHandling
 }
 
 func (r *accountHandlingTaskRepository) FindAllByCaseID(c context.Context, caseID *domain.ID, userID *domain.ID) ([]*domain.AccountHandlingTask, error) {
-	entities, err := r.client.AccountHandlingTask.Query().
-		Where(
-			accounthandlingtask.HasTransitionCaseWith(
-				usertransitioncase.IDEQ(*caseID),
-				usertransitioncase.HasOwnerWith(user.IDEQ(*userID)),
+	return r.findAll(c,
+		accounthandlingtask.HasTransitionCaseWith(
+			usertransitioncase.IDEQ(*caseID),
+			usertransitioncase.HasOwnerWith(user.IDEQ(*userID)),
+		),
+	)
+}
+
+// FindAllByCaseIDForRequester lists the tasks of a case that the requester may
+// handle. The owner sees every task; a stakeholder only sees tasks whose account
+// they belong to (directly or through a group) or where they are an assignee.
+func (r *accountHandlingTaskRepository) FindAllByCaseIDForRequester(c context.Context, caseID *domain.ID, requesterID *domain.ID) ([]*domain.AccountHandlingTask, error) {
+	stakeholderIDs, err := r.client.Stakeholder.Query().
+		Where(stakeholder.StakeholderIDEQ(*requesterID)).
+		IDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	allowed := []predicate.AccountHandlingTask{
+		accounthandlingtask.HasTransitionCaseWith(
+			usertransitioncase.HasOwnerWith(user.IDEQ(*requesterID)),
+		),
+		accounthandlingtask.HasAccountWith(
+			account.Or(
+				account.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+				account.HasStakeholderGroupsWith(
+					stakeholdergroup.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+				),
 			),
-		).
+		),
+	}
+	if len(stakeholderIDs) > 0 {
+		allowed = append(allowed, accounthandlingtask.HasAssigneesWith(
+			accounthandlingtaskassignee.StakeholderIDIn(stakeholderIDs...),
+		))
+	}
+
+	return r.findAll(c,
+		accounthandlingtask.HasTransitionCaseWith(usertransitioncase.IDEQ(*caseID)),
+		accounthandlingtask.Or(allowed...),
+	)
+}
+
+func (r *accountHandlingTaskRepository) findAll(c context.Context, predicates ...predicate.AccountHandlingTask) ([]*domain.AccountHandlingTask, error) {
+	entities, err := r.client.AccountHandlingTask.Query().
+		Where(predicates...).
 		WithTransitionCase(func(q *ent.UserTransitionCaseQuery) {
 			q.WithOwner()
 		}).
@@ -53,12 +97,54 @@ func (r *accountHandlingTaskRepository) FindAllByCaseID(c context.Context, caseI
 }
 
 func (r *accountHandlingTaskRepository) FindByID(c context.Context, id *domain.ID, userID *domain.ID) (*domain.AccountHandlingTask, error) {
+	return r.findOne(c, id,
+		accounthandlingtask.HasTransitionCaseWith(
+			usertransitioncase.HasOwnerWith(user.IDEQ(*userID)),
+		),
+	)
+}
+
+// FindByIDForRequester loads a task for either the deceased owner or one of the
+// deceased user's stakeholders. The owner may need to manage tasks while alive,
+// but after death the owner can no longer authenticate, so stakeholders linked
+// to a DIEALOG user (Stakeholder.StakeholderID) must be able to trigger account
+// handling. A stakeholder is authorized when they are a current stakeholder of
+// the task's account (directly or through a stakeholder group) or when they were
+// snapshotted as an assignee when the task was created.
+func (r *accountHandlingTaskRepository) FindByIDForRequester(c context.Context, id *domain.ID, requesterID *domain.ID) (*domain.AccountHandlingTask, error) {
+	stakeholderIDs, err := r.client.Stakeholder.Query().
+		Where(stakeholder.StakeholderIDEQ(*requesterID)).
+		IDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	allowed := []predicate.AccountHandlingTask{
+		accounthandlingtask.HasTransitionCaseWith(
+			usertransitioncase.HasOwnerWith(user.IDEQ(*requesterID)),
+		),
+		accounthandlingtask.HasAccountWith(
+			account.Or(
+				account.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+				account.HasStakeholderGroupsWith(
+					stakeholdergroup.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+				),
+			),
+		),
+	}
+	if len(stakeholderIDs) > 0 {
+		allowed = append(allowed, accounthandlingtask.HasAssigneesWith(
+			accounthandlingtaskassignee.StakeholderIDIn(stakeholderIDs...),
+		))
+	}
+
+	return r.findOne(c, id, accounthandlingtask.Or(allowed...))
+}
+
+func (r *accountHandlingTaskRepository) findOne(c context.Context, id *domain.ID, scope ...predicate.AccountHandlingTask) (*domain.AccountHandlingTask, error) {
 	entity, err := r.client.AccountHandlingTask.Query().
 		Where(
-			accounthandlingtask.IDEQ(*id),
-			accounthandlingtask.HasTransitionCaseWith(
-				usertransitioncase.HasOwnerWith(user.IDEQ(*userID)),
-			),
+			append([]predicate.AccountHandlingTask{accounthandlingtask.IDEQ(*id)}, scope...)...,
 		).
 		WithTransitionCase(func(q *ent.UserTransitionCaseQuery) {
 			q.WithOwner()

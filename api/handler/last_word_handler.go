@@ -212,3 +212,33 @@ func DeleteLastWord(service domain.LastWordUseCase) fiber.Handler {
 		})
 	}
 }
+
+// FetchLastWordsToMe godoc
+// @Summary      나에게 남긴 유언 메시지 목록 조회
+// @Description  특정 사용자가 로그인한 사용자를 수신자(또는 수신자 그룹의 구성원)로 지정한 유언 메시지 목록을 조회합니다.
+// @Tags         LastWord
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "유언 메시지 작성자 ID (UUID)"
+// @Success      200 {array} domain.LastWord "유언 메시지 목록 조회 성공"
+// @Failure      400 {object} domain.ErrorResponse "잘못된 ID 형식"
+// @Failure      401 {object} domain.ErrorResponse "인증 실패"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /last-word/protected/to-me/{id} [get]
+func FetchLastWordsToMe(service domain.LastWordUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		ctx := c.RequestCtx()
+		userID := c.Locals("id").(*domain.ID)
+		targetUserID, err := domain.StringToID(c.Params("id"))
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
+		}
+
+		lastWords, err := service.ListByUserIDAndReceiverID(ctx, &targetUserID, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		return c.Status(http.StatusOK).JSON(lastWords)
+	}
+}

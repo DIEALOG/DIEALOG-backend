@@ -115,6 +115,7 @@ type UserAliveCheckUseCase interface {
 type UserTransitionCaseRepository interface {
 	Create(c context.Context, transitionCase *UserTransitionCase, userID *ID) (*UserTransitionCase, error)
 	FindByID(c context.Context, id *ID, userID *ID) (*UserTransitionCase, error)
+	FindByIDForRequester(c context.Context, id *ID, requesterID *ID) (*UserTransitionCase, error)
 	FindAllByUserID(c context.Context, userID *ID) ([]*UserTransitionCase, error)
 	FindActiveByUserID(c context.Context, userID *ID) (*UserTransitionCase, error)
 	Update(c context.Context, transitionCase *UserTransitionCase, userID *ID) (*UserTransitionCase, error)
@@ -139,11 +140,14 @@ type UserTransitionConfirmationRepository interface {
 type UserTransitionConfirmationUseCase interface {
 	Submit(c context.Context, caseID *ID, confirmer *UserTransitionConfirmer, request *SubmitTransitionConfirmationRequest) (*UserTransitionConfirmation, error)
 	ListByCaseID(c context.Context, caseID *ID, userID *ID) ([]*UserTransitionConfirmation, error)
+	ListByCaseIDForConfirmer(c context.Context, caseID *ID, confirmer *UserTransitionConfirmer) ([]*UserTransitionConfirmation, error)
 }
 
 type AccountHandlingTaskRepository interface {
 	FindAllByCaseID(c context.Context, caseID *ID, userID *ID) ([]*AccountHandlingTask, error)
+	FindAllByCaseIDForRequester(c context.Context, caseID *ID, requesterID *ID) ([]*AccountHandlingTask, error)
 	FindByID(c context.Context, id *ID, userID *ID) (*AccountHandlingTask, error)
+	FindByIDForRequester(c context.Context, id *ID, requesterID *ID) (*AccountHandlingTask, error)
 	FindByAssigneeTokenHash(c context.Context, tokenHash string) (*AccountHandlingTask, *AccountHandlingTaskAssignee, error)
 	EnsureAssignees(c context.Context, taskID *ID, userID *ID, assignees []AccountHandlingTaskAssignee) (*AccountHandlingTask, error)
 	SaveRequest(c context.Context, task *AccountHandlingTask, assignees []AccountHandlingTaskAssignee, userID *ID) (*AccountHandlingTask, error)

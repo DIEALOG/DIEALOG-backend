@@ -185,14 +185,16 @@ func (r *legacyRepository) CreateAccount(c context.Context, acc *domain.Account,
 	loaded, err := r.client.Account.Query().
 		Where(account.IDEQ(entity.ID)).
 		WithStakeholders().
+		WithStakeholderGroups(func(q *ent.StakeholderGroupQuery) {
+			q.WithStakeholders()
+		}).
+		WithLegacy().
 		Only(c)
 	if err != nil {
 		return nil, err
 	}
 
-	result := toDomainAccount(loaded)
-	result.LegacyID = *legacyID
-	return result, nil
+	return toDomainAccount(loaded), nil
 }
 
 func (r *legacyRepository) FindAccountById(c context.Context, id *domain.ID, userID *domain.ID) (*domain.Account, error) {
@@ -215,6 +217,97 @@ func (r *legacyRepository) FindAccountById(c context.Context, id *domain.ID, use
 	}
 
 	return toDomainAccount(entity), nil
+}
+
+func (r *legacyRepository) UpdateAccount(c context.Context, acc *domain.Account, legacyID *domain.ID, userID *domain.ID) (*domain.Account, error) {
+	stakeholderIDs := collections.ToIterable(acc.Stakeholders).Map(func(s domain.Stakeholder) domain.ID {
+		return s.ID
+	})
+
+	stakeholderGroupIDs := collections.ToIterable(acc.StakeholderGroups).Map(func(s domain.StakeholderGroup) domain.ID {
+		return s.ID
+	})
+
+	exists, err := r.client.Legacy.Query().
+		Where(
+			legacy.IDEQ(*legacyID),
+			legacy.HasOwnerWith(user.IDEQ(*userID)),
+		).
+		Exist(c)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, &ent.NotFoundError{}
+	}
+
+	// Replace the stakeholder links instead of only adding to them, so the
+	// update can also remove stakeholders the caller no longer selects.
+	builder := r.client.Account.Update().
+		Where(
+			account.IDEQ(acc.ID),
+			account.HasLegacyWith(legacy.IDEQ(*legacyID)),
+		).
+		SetName(acc.Name).
+		SetType(toEntAccountType(acc.Type.Type)).
+		SetAction(toEntAccountAction(acc.Action.Action)).
+		ClearStakeholders().
+		ClearStakeholderGroups()
+
+	if acc.Type.Name != nil {
+		builder.SetTypeName(*acc.Type.Name)
+	} else {
+		builder.ClearTypeName()
+	}
+	if acc.Action.Message != nil {
+		builder.SetActionMessage(*acc.Action.Message)
+	} else {
+		builder.ClearActionMessage()
+	}
+	if acc.DataLocation != nil {
+		builder.SetDataLocation(*acc.DataLocation)
+	} else {
+		builder.ClearDataLocation()
+	}
+	if acc.AccountID != nil {
+		builder.SetAccountID(*acc.AccountID)
+	} else {
+		builder.ClearAccountID()
+	}
+	if len(stakeholderIDs) > 0 {
+		builder.AddStakeholderIDs(stakeholderIDs...)
+	}
+	if len(stakeholderGroupIDs) > 0 {
+		builder.AddStakeholderGroupIDs(stakeholderGroupIDs...)
+	}
+
+	n, err := builder.Save(c)
+	if err != nil {
+		return nil, err
+	}
+	if n == 0 {
+		return nil, &ent.NotFoundError{}
+	}
+
+	loaded, err := r.client.Account.Query().
+		Where(
+			account.IDEQ(acc.ID),
+			account.HasLegacyWith(
+				legacy.IDEQ(*legacyID),
+				legacy.HasOwnerWith(user.IDEQ(*userID)),
+			),
+		).
+		WithStakeholders().
+		WithStakeholderGroups(func(q *ent.StakeholderGroupQuery) {
+			q.WithStakeholders()
+		}).
+		WithLegacy().
+		Only(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainAccount(loaded), nil
 }
 
 func (r *legacyRepository) DeleteAccount(c context.Context, accountID *domain.ID, legacyID *domain.ID, userID *domain.ID) error {

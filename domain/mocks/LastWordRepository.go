@@ -94,6 +94,36 @@ func (_m *LastWordRepository) FindAllByUserID(c context.Context, userID *uuid.UU
 	return r0, r1
 }
 
+// FindAllByUserIDAndReceiverID provides a mock function with given fields: c, userID, receiverID
+func (_m *LastWordRepository) FindAllByUserIDAndReceiverID(c context.Context, userID *uuid.UUID, receiverID *uuid.UUID) ([]*domain.LastWord, error) {
+	ret := _m.Called(c, userID, receiverID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindAllByUserIDAndReceiverID")
+	}
+
+	var r0 []*domain.LastWord
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) ([]*domain.LastWord, error)); ok {
+		return rf(c, userID, receiverID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) []*domain.LastWord); ok {
+		r0 = rf(c, userID, receiverID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.LastWord)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(c, userID, receiverID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByID provides a mock function with given fields: c, id, userID
 func (_m *LastWordRepository) FindByID(c context.Context, id *uuid.UUID, userID *uuid.UUID) (*domain.LastWord, error) {
 	ret := _m.Called(c, id, userID)

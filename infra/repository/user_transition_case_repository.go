@@ -9,7 +9,11 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/account"
 	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtask"
+	"github.com/DIEALOG/DIEALOG-backend/ent/accounthandlingtaskassignee"
 	"github.com/DIEALOG/DIEALOG-backend/ent/legacy"
+	"github.com/DIEALOG/DIEALOG-backend/ent/predicate"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/DIEALOG/DIEALOG-backend/ent/usertransitioncase"
 )
@@ -85,6 +89,55 @@ func (r *userTransitionCaseRepository) FindByID(c context.Context, id *domain.ID
 	item := toDomainUserTransitionCase(entity)
 	item.UserID = *userID
 	return item, nil
+}
+
+func (r *userTransitionCaseRepository) FindByIDForRequester(c context.Context, id *domain.ID, requesterID *domain.ID) (*domain.UserTransitionCase, error) {
+	stakeholderIDs, err := r.client.Stakeholder.Query().
+		Where(stakeholder.StakeholderIDEQ(*requesterID)).
+		IDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	// Besides the owner, a stakeholder linked to a DIEALOG user may read the
+	// case when they are a stakeholder of one of the owner's legacy accounts
+	// (directly or through a stakeholder group) or were snapshotted as an
+	// account handling assignee.
+	allowed := []predicate.UserTransitionCase{
+		usertransitioncase.HasOwnerWith(user.IDEQ(*requesterID)),
+		usertransitioncase.HasOwnerWith(
+			user.HasLegaciesWith(
+				legacy.HasAccountsWith(
+					account.Or(
+						account.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+						account.HasStakeholderGroupsWith(
+							stakeholdergroup.HasStakeholdersWith(stakeholder.StakeholderIDEQ(*requesterID)),
+						),
+					),
+				),
+			),
+		),
+	}
+	if len(stakeholderIDs) > 0 {
+		allowed = append(allowed, usertransitioncase.HasTasksWith(
+			accounthandlingtask.HasAssigneesWith(
+				accounthandlingtaskassignee.StakeholderIDIn(stakeholderIDs...),
+			),
+		))
+	}
+
+	entity, err := r.client.UserTransitionCase.Query().
+		Where(
+			usertransitioncase.IDEQ(*id),
+			usertransitioncase.Or(allowed...),
+		).
+		WithOwner().
+		Only(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainUserTransitionCase(entity), nil
 }
 
 func (r *userTransitionCaseRepository) FindAllByUserID(c context.Context, userID *domain.ID) ([]*domain.UserTransitionCase, error) {

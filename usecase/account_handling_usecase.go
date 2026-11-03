@@ -47,11 +47,13 @@ func (u *accountHandlingUseCase) ListByCaseID(c context.Context, caseID *domain.
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
+	// Evaluate authorizes either the deceased owner or a linked stakeholder and
+	// still performs confirmation/task creation with the owner ID.
 	if _, err := u.caseUseCase.Evaluate(ctx, caseID, userID); err != nil {
 		return nil, err
 	}
 
-	items, err := u.taskRepository.FindAllByCaseID(ctx, caseID, userID)
+	items, err := u.taskRepository.FindAllByCaseIDForRequester(ctx, caseID, userID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
@@ -66,16 +68,21 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	task, err := u.taskRepository.FindByID(ctx, taskID, userID)
+	// The requester may be the deceased owner (while alive) or one of the
+	// deceased user's stakeholders, because the owner cannot authenticate after
+	// death. Authorization is checked here; the owner ID stored on the task is
+	// used for every owner-scoped repository operation below.
+	task, err := u.taskRepository.FindByIDForRequester(ctx, taskID, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
 		}
 		return nil, domain.NewInternalServerError(err)
 	}
+	ownerID := task.UserID
 	previousStatus := task.Status
 
-	transitionCase, err := u.caseUseCase.GetByID(ctx, &task.TransitionCaseID, userID)
+	transitionCase, err := u.caseUseCase.GetByID(ctx, &task.TransitionCaseID, &ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +100,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	// Refresh the assignee snapshot additively from the account's current
 	// stakeholders. Existing assignees are retained even if the account's
 	// stakeholder list changes later.
-	account, err := u.legacyRepository.FindAccountById(ctx, &task.AccountID, userID)
+	account, err := u.legacyRepository.FindAccountById(ctx, &task.AccountID, &ownerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, domain.NewNotFoundError(err)
@@ -105,7 +112,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 		return nil, domain.NewBadRequestError(errors.New("account has no stakeholders assigned"))
 	}
 	if len(currentAssignees) > 0 {
-		task, err = u.taskRepository.EnsureAssignees(ctx, &task.ID, userID, currentAssignees)
+		task, err = u.taskRepository.EnsureAssignees(ctx, &task.ID, &ownerID, currentAssignees)
 		if err != nil {
 			return nil, domain.NewInternalServerError(err)
 		}
@@ -154,7 +161,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	task.CompletedAt = nil
 	task.FailureReason = nil
 
-	updated, err := u.taskRepository.SaveRequest(ctx, task, requested, userID)
+	updated, err := u.taskRepository.SaveRequest(ctx, task, requested, &ownerID)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidTransitionState) {
 			return nil, domain.NewBadRequestError(errors.New("account handling task cannot be requested in its current state"))
@@ -180,11 +187,11 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 		TaskID:    updated.ID,
 		EventType: domain.AccountHandlingEventTypeRequestIssued,
 		Message:   &message,
-	}, userID); err != nil {
+	}, &ownerID); err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	final, err := u.taskRepository.FindByID(ctx, &updated.ID, userID)
+	final, err := u.taskRepository.FindByID(ctx, &updated.ID, &ownerID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}

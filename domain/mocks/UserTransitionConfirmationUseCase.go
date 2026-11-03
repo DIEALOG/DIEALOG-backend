@@ -46,6 +46,36 @@ func (_m *UserTransitionConfirmationUseCase) ListByCaseID(c context.Context, cas
 	return r0, r1
 }
 
+// ListByCaseIDForConfirmer provides a mock function with given fields: c, caseID, confirmer
+func (_m *UserTransitionConfirmationUseCase) ListByCaseIDForConfirmer(c context.Context, caseID *uuid.UUID, confirmer *domain.UserTransitionConfirmer) ([]*domain.UserTransitionConfirmation, error) {
+	ret := _m.Called(c, caseID, confirmer)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByCaseIDForConfirmer")
+	}
+
+	var r0 []*domain.UserTransitionConfirmation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *domain.UserTransitionConfirmer) ([]*domain.UserTransitionConfirmation, error)); ok {
+		return rf(c, caseID, confirmer)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *domain.UserTransitionConfirmer) []*domain.UserTransitionConfirmation); ok {
+		r0 = rf(c, caseID, confirmer)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.UserTransitionConfirmation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *domain.UserTransitionConfirmer) error); ok {
+		r1 = rf(c, caseID, confirmer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Submit provides a mock function with given fields: c, caseID, confirmer, request
 func (_m *UserTransitionConfirmationUseCase) Submit(c context.Context, caseID *uuid.UUID, confirmer *domain.UserTransitionConfirmer, request *domain.SubmitTransitionConfirmationRequest) (*domain.UserTransitionConfirmation, error) {
 	ret := _m.Called(c, caseID, confirmer, request)

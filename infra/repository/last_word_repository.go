@@ -6,6 +6,8 @@ import (
 	"github.com/DIEALOG/DIEALOG-backend/domain"
 	"github.com/DIEALOG/DIEALOG-backend/ent"
 	"github.com/DIEALOG/DIEALOG-backend/ent/lastword"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholder"
+	"github.com/DIEALOG/DIEALOG-backend/ent/stakeholdergroup"
 	"github.com/DIEALOG/DIEALOG-backend/ent/user"
 	"github.com/janghanul090801/collections"
 )
@@ -151,4 +153,32 @@ func (r *lastWordRepository) Delete(c context.Context, id *domain.ID, userID *do
 	}
 
 	return nil
+}
+
+func (r *lastWordRepository) FindAllByUserIDAndReceiverID(c context.Context, userID *domain.ID, receiverID *domain.ID) ([]*domain.LastWord, error) {
+	lastWords, err := r.client.LastWord.Query().
+		Where(
+			lastword.HasOwnerWith(
+				user.IDEQ(*userID),
+			),
+			lastword.Or(
+				lastword.HasReceiverWith(
+					stakeholder.StakeholderIDEQ(*receiverID),
+				),
+				lastword.HasReceiverGroupsWith(
+					stakeholdergroup.HasStakeholdersWith(
+						stakeholder.StakeholderIDEQ(*receiverID),
+					),
+				),
+			),
+		).
+		WithReceiver().
+		WithOwner().
+		WithReceiverGroups().
+		All(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return collections.ToIterable(lastWords).Map(toDomainLastWord), nil
 }

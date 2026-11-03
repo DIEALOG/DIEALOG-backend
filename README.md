@@ -66,8 +66,9 @@ Authorization: Bearer <accessToken>
 | Legacy | `/api/legacy/protected` | `POST`, `GET` |
 | Legacy | `/api/legacy/protected/{id}` | `GET`, `PUT`, `DELETE` |
 | Legacy account | `/api/legacy/protected/{id}/account` | `POST` |
-| Legacy account | `/api/legacy/protected/{id}/account/{accountId}` | `GET`, `DELETE` |
+| Legacy account | `/api/legacy/protected/{id}/account/{accountId}` | `GET`, `PUT`, `DELETE` |
 | Last word | `/api/last-word/protected` | `POST`, `GET` |
+| Last word | `/api/last-word/protected/to-me/{id}` | `GET` (작성자 `id`가 나를 수신자로 지정한 유언) |
 | Last word | `/api/last-word/protected/{id}` | `PUT`, `DELETE` |
 | Stakeholder | `/api/stakeholder/protected` | `POST`, `GET` |
 | Stakeholder | `/api/stakeholder/protected/{id}` | `GET`, `PUT`, `DELETE` |
@@ -84,12 +85,12 @@ Authorization: Bearer <accessToken>
 | Transition case | `/api/transition/protected/cases/{id}` | `GET` |
 | Transition case | `/api/transition/protected/cases/{id}/cancel` | `POST` |
 | Transition case | `/api/transition/protected/cases/{id}/confirmations` | `GET` |
-| Transition case | `/api/transition/protected/cases/{id}/tasks` | `GET` |
-| Account handling task | `/api/transition/protected/tasks/{id}/request` | `POST` |
+| Transition case | `/api/transition/protected/cases/{id}/tasks` | `GET` (사망자 본인은 전체, 관계자는 담당 작업만) |
+| Account handling task | `/api/transition/protected/tasks/{id}/request` | `POST` (사망자 본인 또는 연결된 관계자 JWT) |
 | Stakeholder task result | `/api/transition/stakeholder-tasks/result` | `POST` (JSON body `token`, `success`) |
 | Confirmer flow | `/api/transition/confirmer/cases` | `POST` (JSON body `reason`, optional), `GET` |
 | Confirmer flow | `/api/transition/confirmer/cases/{id}` | `GET` |
-| Confirmer flow | `/api/transition/confirmer/cases/{id}/confirmations` | `POST` |
+| Confirmer flow | `/api/transition/confirmer/cases/{id}/confirmations` | `GET`, `POST` |
 | Invitation | `/api/transition/invitations/accept` | `POST` (JSON body `token`) |
 | Invitation | `/api/transition/invitations/decline` | `POST` (JSON body `token`) |
 

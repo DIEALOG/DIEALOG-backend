@@ -103,3 +103,15 @@ func (l *lastWordUseCase) Delete(c context.Context, id *domain.ID, userID *domai
 
 	return nil
 }
+
+func (l *lastWordUseCase) ListByUserIDAndReceiverID(c context.Context, userID *domain.ID, receiverID *domain.ID) ([]*domain.LastWord, error) {
+	ctx, cancel := context.WithTimeout(c, l.contextTimeout)
+	defer cancel()
+
+	lastWords, err := l.lastWordRepository.FindAllByUserIDAndReceiverID(ctx, userID, receiverID)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	return lastWords, nil
+}

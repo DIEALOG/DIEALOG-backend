@@ -232,6 +232,36 @@ func (_m *LegacyRepository) Update(c context.Context, id *uuid.UUID, name string
 	return r0, r1
 }
 
+// UpdateAccount provides a mock function with given fields: c, account, legacyID, userID
+func (_m *LegacyRepository) UpdateAccount(c context.Context, account *domain.Account, legacyID *uuid.UUID, userID *uuid.UUID) (*domain.Account, error) {
+	ret := _m.Called(c, account, legacyID, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAccount")
+	}
+
+	var r0 *domain.Account
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID) (*domain.Account, error)); ok {
+		return rf(c, account, legacyID, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID) *domain.Account); ok {
+		r0 = rf(c, account, legacyID, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Account)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.Account, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(c, account, legacyID, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewLegacyRepository creates a new instance of LegacyRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewLegacyRepository(t interface {

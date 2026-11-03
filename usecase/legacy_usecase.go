@@ -123,8 +123,6 @@ func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Accoun
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	// Store the password only after the account row exists, so a failed
-	// account creation cannot leave an orphaned credential behind.
 	if password != nil {
 		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
 		if err != nil {
@@ -176,7 +174,6 @@ func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, 
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
-	// 계정의 패스워드 Credential 삭제 (삭제 전 패스워드 제거)
 	acc, err := lu.legacyRepository.FindAccountById(ctx, accountID, userID)
 	if err != nil {
 		return domain.NewInternalServerError(err)
@@ -187,7 +184,6 @@ func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, 
 		return domain.NewInternalServerError(err)
 	}
 
-	// 계정 DB 삭제
 	err = lu.legacyRepository.DeleteAccount(ctx, accountID, legacyID, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -197,4 +193,34 @@ func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, 
 	}
 
 	return nil
+}
+
+func (lu *legacyUseCase) UpdateAccount(c context.Context, account *domain.Account, legacyID *domain.ID, userID *domain.ID, password *string) (*domain.Account, error) {
+	if !account.IsValid() {
+		return nil, domain.NewBadRequestError(errors.New("invalid account: type or action is invalid"))
+	}
+
+	if account.Name == "" {
+		return nil, domain.NewBadRequestError(errors.New("invalid account: name is required"))
+	}
+
+	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
+	defer cancel()
+
+	acc, err := lu.legacyRepository.UpdateAccount(ctx, account, legacyID, userID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	if password != nil {
+		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
+		if err != nil {
+			return nil, domain.NewInternalServerError(err)
+		}
+	}
+
+	return acc, nil
 }

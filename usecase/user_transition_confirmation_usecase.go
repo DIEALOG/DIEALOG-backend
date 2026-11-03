@@ -100,3 +100,32 @@ func (u *userTransitionConfirmationUseCase) ListByCaseID(c context.Context, case
 	}
 	return items, nil
 }
+
+// ListByCaseIDForConfirmer lists the decisions of a case for a confirmer. After
+// death the owner cannot authenticate, so confirmers read the case with their
+// own token. The case is scoped to the deceased user the confirmer belongs to,
+// and a case of another user is reported as not found.
+func (u *userTransitionConfirmationUseCase) ListByCaseIDForConfirmer(c context.Context, caseID *domain.ID, confirmer *domain.UserTransitionConfirmer) ([]*domain.UserTransitionConfirmation, error) {
+	if confirmer == nil {
+		return nil, domain.NewUnauthorizedError(errors.New("confirmer is required"))
+	}
+	if confirmer.Status != domain.UserTransitionConfirmerStatusAccepted {
+		return nil, domain.NewForbiddenError(domain.ErrConfirmerNotAccepted)
+	}
+
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	if _, err := u.caseRepository.FindByID(ctx, caseID, &confirmer.UserID); err != nil {
+		if ent.IsNotFound(err) {
+			return nil, domain.NewNotFoundError(err)
+		}
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	items, err := u.repository.FindByCaseID(ctx, caseID, &confirmer.UserID)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+	return items, nil
+}

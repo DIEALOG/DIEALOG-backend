@@ -168,6 +168,36 @@ func (_m *UserTransitionCaseRepository) FindByID(c context.Context, id *uuid.UUI
 	return r0, r1
 }
 
+// FindByIDForRequester provides a mock function with given fields: c, id, requesterID
+func (_m *UserTransitionCaseRepository) FindByIDForRequester(c context.Context, id *uuid.UUID, requesterID *uuid.UUID) (*domain.UserTransitionCase, error) {
+	ret := _m.Called(c, id, requesterID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByIDForRequester")
+	}
+
+	var r0 *domain.UserTransitionCase
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) (*domain.UserTransitionCase, error)); ok {
+		return rf(c, id, requesterID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) *domain.UserTransitionCase); ok {
+		r0 = rf(c, id, requesterID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.UserTransitionCase)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(c, id, requesterID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: c, transitionCase, userID
 func (_m *UserTransitionCaseRepository) Update(c context.Context, transitionCase *domain.UserTransitionCase, userID *uuid.UUID) (*domain.UserTransitionCase, error) {
 	ret := _m.Called(c, transitionCase, userID)

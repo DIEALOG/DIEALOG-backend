@@ -292,6 +292,76 @@ func GetAccount(service domain.LegacyUseCase) fiber.Handler {
 	}
 }
 
+// UpdateAccount godoc
+// @Summary      레거시 하위 계정 수정
+// @Description  특정 레거시에 등록된 계정 정보, 사후 처리 방침, 관계자 및 관계자 그룹을 수정합니다. 요청에 포함되지 않은 관계자는 제거됩니다.
+// @Tags         Legacy
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "레거시 ID (UUID)"
+// @Param        accountId path string true "계정 ID (UUID)"
+// @Param        request body domain.UpdateAccountRequest true "수정할 계정 정보"
+// @Success      200 {object} domain.AccountDetailResponse "계정 수정 성공"
+// @Failure      400 {object} domain.ErrorResponse "잘못된 요청 파라미터 또는 ID 형식"
+// @Failure      401 {object} domain.ErrorResponse "인증 실패"
+// @Failure      404 {object} domain.ErrorResponse "레거시 또는 계정을 찾을 수 없음"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /legacy/protected/{id}/account/{accountId} [put]
+func UpdateAccount(service domain.LegacyUseCase, stakeholderService domain.StakeholderUseCase, stakeholderGroupService domain.StakeholderGroupUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		ctx := c.RequestCtx()
+		userID := c.Locals("id").(*domain.ID)
+
+		legacyID, err := domain.StringToID(c.Params("id"))
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid legacy id format"})
+		}
+
+		accountID, err := domain.StringToID(c.Params("accountId"))
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: "invalid account id format"})
+		}
+
+		var req domain.UpdateAccountRequest
+		err = c.Bind().Body(&req)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(domain.ErrorResponse{Message: err.Error()})
+		}
+
+		stakeholders, err := stakeholderService.ListByIDs(ctx, req.StakeholderIDs, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		stakeholderGroups, err := stakeholderGroupService.ListByIDs(ctx, req.StakeholderGroupIDs, userID)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		updated, err := service.UpdateAccount(ctx, &domain.Account{
+			ID:           accountID,
+			LegacyID:     legacyID,
+			Type:         req.Type,
+			Name:         req.Name,
+			AccountID:    req.AccountID,
+			DataLocation: req.DataLocation,
+			Stakeholders: collections.ToIterable(stakeholders).Map(func(s *domain.Stakeholder) domain.Stakeholder {
+				return *s
+			}),
+			StakeholderGroups: collections.ToIterable(stakeholderGroups).Map(func(s *domain.StakeholderGroup) domain.StakeholderGroup {
+				return *s
+			}),
+			Action: req.Action,
+		}, &legacyID, userID, req.AccountPassword)
+		if err != nil {
+			return RespondError(c, err)
+		}
+
+		return c.Status(http.StatusOK).JSON(domain.ToAccountDetailResponse(*updated, req.AccountPassword))
+	}
+}
+
 // DeleteAccount godoc
 // @Summary      레거시 하위 계정 삭제
 // @Description  특정 레거시에 등록된 디지털 서비스 계정을 삭제합니다.

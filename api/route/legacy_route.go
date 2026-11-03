@@ -21,5 +21,6 @@ func NewLegacyRouter(app fiber.Router, service domain.LegacyUseCase, stakeholder
 	// account endpoints under legacy
 	protected.Post("/:id/account", handler.CreateAccount(service, stakeholderService, stakeholderGroupService))
 	protected.Get("/:id/account/:accountId", handler.GetAccount(service))
+	protected.Put("/:id/account/:accountId", handler.UpdateAccount(service, stakeholderService, stakeholderGroupService))
 	protected.Delete("/:id/account/:accountId", handler.DeleteAccount(service))
 }

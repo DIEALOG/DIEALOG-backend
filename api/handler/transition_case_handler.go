@@ -223,9 +223,36 @@ func FetchTransitionConfirmations(service domain.UserTransitionConfirmationUseCa
 	}
 }
 
+// FetchConfirmerTransitionConfirmations godoc
+// @Summary      확인자용 사후 전환 확인 의사 목록 조회
+// @Description  확인자 인증 토큰으로 전환 절차에 제출된 확인 의사 목록을 조회합니다. 자신이 확인하는 사용자의 전환 절차만 조회할 수 있습니다.
+// @Tags         Transition
+// @Produce      json
+// @Security     ConfirmerAuth
+// @Param        id path string true "전환 절차 ID (UUID)"
+// @Success      200 {array} domain.UserTransitionConfirmation "확인 의사 목록 조회 성공"
+// @Failure      400 {object} domain.ErrorResponse "잘못된 ID"
+// @Failure      401 {object} domain.ErrorResponse "확인자 인증 실패"
+// @Failure      404 {object} domain.ErrorResponse "전환 절차를 찾을 수 없거나 접근 권한이 없음"
+// @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
+// @Router       /transition/confirmer/cases/{id}/confirmations [get]
+func FetchConfirmerTransitionConfirmations(service domain.UserTransitionConfirmationUseCase) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		id, err := transitionParamID(c, "id", "invalid transition case id format")
+		if err != nil {
+			return RespondError(c, err)
+		}
+		items, err := service.ListByCaseIDForConfirmer(c.RequestCtx(), id, transitionConfirmer(c))
+		if err != nil {
+			return RespondError(c, err)
+		}
+		return c.Status(http.StatusOK).JSON(items)
+	}
+}
+
 // FetchAccountHandlingTasks godoc
 // @Summary      계정 처리 작업 목록 조회
-// @Description  확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다.
+// @Description  확정된 전환 절차의 계정별 처리 작업과 이벤트 이력을 조회합니다. 사망한 사용자 본인은 모든 작업을, 관계자는 자신이 담당하는 계정의 작업만 조회할 수 있습니다.
 // @Tags         Transition
 // @Produce      json
 // @Security     BearerAuth
@@ -233,7 +260,7 @@ func FetchTransitionConfirmations(service domain.UserTransitionConfirmationUseCa
 // @Success      200 {array} domain.AccountHandlingTask "계정 처리 작업 목록 조회 성공"
 // @Failure      400 {object} domain.ErrorResponse "잘못된 ID"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
-// @Failure      404 {object} domain.ErrorResponse "전환 절차를 찾을 수 없음"
+// @Failure      404 {object} domain.ErrorResponse "전환 절차를 찾을 수 없거나 접근 권한이 없음"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
 // @Router       /transition/protected/cases/{id}/tasks [get]
 func FetchAccountHandlingTasks(service domain.AccountHandlingUseCase) fiber.Handler {
@@ -252,7 +279,7 @@ func FetchAccountHandlingTasks(service domain.AccountHandlingUseCase) fiber.Hand
 
 // RequestAccountHandlingTask godoc
 // @Summary      계정 처리 요청 토큰 발급
-// @Description  계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 요청할 때마다 계정의 현재 관계자를 추가로 반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.
+// @Description  계정에 지정된 관계자에게 전달할 사후 처리 작업 요청 토큰을 발급합니다. 사망한 사용자 본인뿐 아니라 계정의 관계자도 자신의 계정 인증으로 호출할 수 있습니다. 요청할 때마다 계정의 현재 관계자를 추가로 반영하고 기존 관계자는 유지합니다. 요청 토큰은 이 응답에서만 반환됩니다.
 // @Tags         Transition
 // @Produce      json
 // @Security     BearerAuth
@@ -260,7 +287,7 @@ func FetchAccountHandlingTasks(service domain.AccountHandlingUseCase) fiber.Hand
 // @Success      200 {object} domain.AccountHandlingRequestResponse "계정 처리 요청 토큰 발급 결과"
 // @Failure      400 {object} domain.ErrorResponse "요청할 수 없는 상태, 관계자 없음 또는 잘못된 ID"
 // @Failure      401 {object} domain.ErrorResponse "인증 실패"
-// @Failure      404 {object} domain.ErrorResponse "작업을 찾을 수 없음"
+// @Failure      404 {object} domain.ErrorResponse "작업을 찾을 수 없거나 접근 권한이 없음"
 // @Failure      500 {object} domain.ErrorResponse "서버 내부 오류"
 // @Router       /transition/protected/tasks/{id}/request [post]
 func RequestAccountHandlingTask(service domain.AccountHandlingUseCase) fiber.Handler {
