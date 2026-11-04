@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/DIEALOG/DIEALOG-backend/domain"
+	"github.com/DIEALOG/DIEALOG-backend/domain/mocks"
 	"github.com/DIEALOG/DIEALOG-backend/ent/enttest"
 	"github.com/DIEALOG/DIEALOG-backend/infra/repository"
 	"github.com/DIEALOG/DIEALOG-backend/usecase"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -57,7 +59,13 @@ func TestTransitionFlow(t *testing.T) {
 		timeout,
 	)
 	confirmationUseCase := usecase.NewUserTransitionConfirmationUseCase(confirmationRepo, caseRepo, caseUseCase, timeout)
-	accountUseCase := usecase.NewAccountHandlingUseCase(taskRepo, eventRepo, legacyRepo, caseUseCase, notificationUseCase, timeout)
+
+	cryptoClient := new(mocks.CryptoServiceClient)
+	storedPassword := "stored-account-password"
+	cryptoClient.On("Retrieve", mock.Anything, mock.Anything).Return(&storedPassword, nil)
+	credentialUseCase := usecase.NewCredentialUseCase(cryptoClient)
+
+	accountUseCase := usecase.NewAccountHandlingUseCase(taskRepo, eventRepo, legacyRepo, credentialUseCase, caseUseCase, notificationUseCase, timeout)
 
 	owner, err := userRepo.Create(ctx, &domain.User{
 		Name:        "owner",
@@ -319,6 +327,14 @@ func TestTransitionFlow(t *testing.T) {
 		assert.Equal(t, account.ID, tasks[0].AccountID)
 		assert.Equal(t, domain.AccountActionRemain, tasks[0].ActionSnapshot)
 		assert.Equal(t, domain.AccountHandlingTaskStatusPending, tasks[0].Status)
+		// Account detail is snapshotted on the task and the credential is
+		// resolved from the crypto service with the owner's user ID.
+		assert.Equal(t, legacy.ID, tasks[0].LegacyID)
+		assert.Equal(t, account.ID, tasks[0].Type.ID)
+		assert.Equal(t, domain.AccountTypeGoogle, tasks[0].Type.Type)
+		assert.Equal(t, "Google", tasks[0].Name)
+		require.NotNil(t, tasks[0].AccountPassword)
+		assert.Equal(t, storedPassword, *tasks[0].AccountPassword)
 		require.Len(t, tasks[0].Assignees, 2)
 		require.NotEmpty(t, tasks[0].Events)
 		assert.Equal(t, tasks[0].ID, tasks[0].Events[0].TaskID)

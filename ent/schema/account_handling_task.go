@@ -22,6 +22,14 @@ func (AccountHandlingTask) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("id"),
 		field.UUID("transition_case_id", uuid.UUID{}).Immutable(),
 		field.UUID("account_id", uuid.UUID{}).Immutable(),
+		// Account detail snapshots are optional so the columns can be added to
+		// databases that already contain tasks created before the fields existed.
+		field.UUID("legacy_id", uuid.UUID{}).Optional().Nillable().Immutable(),
+		field.String("account_type").Optional().Nillable(),
+		field.String("account_type_name").Optional().Nillable(),
+		field.String("name").Optional().Nillable(),
+		field.String("account_identifier").Optional().Nillable(),
+		field.String("data_location").Optional().Nillable(),
 		field.String("action_snapshot").NotEmpty(),
 		field.String("action_message_snapshot").Optional().Nillable(),
 		field.String("status").Default("pending"),

@@ -37,6 +37,90 @@ func (_c *AccountHandlingTaskCreate) SetAccountID(v uuid.UUID) *AccountHandlingT
 	return _c
 }
 
+// SetLegacyID sets the "legacy_id" field.
+func (_c *AccountHandlingTaskCreate) SetLegacyID(v uuid.UUID) *AccountHandlingTaskCreate {
+	_c.mutation.SetLegacyID(v)
+	return _c
+}
+
+// SetNillableLegacyID sets the "legacy_id" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableLegacyID(v *uuid.UUID) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetLegacyID(*v)
+	}
+	return _c
+}
+
+// SetAccountType sets the "account_type" field.
+func (_c *AccountHandlingTaskCreate) SetAccountType(v string) *AccountHandlingTaskCreate {
+	_c.mutation.SetAccountType(v)
+	return _c
+}
+
+// SetNillableAccountType sets the "account_type" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableAccountType(v *string) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetAccountType(*v)
+	}
+	return _c
+}
+
+// SetAccountTypeName sets the "account_type_name" field.
+func (_c *AccountHandlingTaskCreate) SetAccountTypeName(v string) *AccountHandlingTaskCreate {
+	_c.mutation.SetAccountTypeName(v)
+	return _c
+}
+
+// SetNillableAccountTypeName sets the "account_type_name" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableAccountTypeName(v *string) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetAccountTypeName(*v)
+	}
+	return _c
+}
+
+// SetName sets the "name" field.
+func (_c *AccountHandlingTaskCreate) SetName(v string) *AccountHandlingTaskCreate {
+	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableName(v *string) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetName(*v)
+	}
+	return _c
+}
+
+// SetAccountIdentifier sets the "account_identifier" field.
+func (_c *AccountHandlingTaskCreate) SetAccountIdentifier(v string) *AccountHandlingTaskCreate {
+	_c.mutation.SetAccountIdentifier(v)
+	return _c
+}
+
+// SetNillableAccountIdentifier sets the "account_identifier" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableAccountIdentifier(v *string) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetAccountIdentifier(*v)
+	}
+	return _c
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_c *AccountHandlingTaskCreate) SetDataLocation(v string) *AccountHandlingTaskCreate {
+	_c.mutation.SetDataLocation(v)
+	return _c
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_c *AccountHandlingTaskCreate) SetNillableDataLocation(v *string) *AccountHandlingTaskCreate {
+	if v != nil {
+		_c.SetDataLocation(*v)
+	}
+	return _c
+}
+
 // SetActionSnapshot sets the "action_snapshot" field.
 func (_c *AccountHandlingTaskCreate) SetActionSnapshot(v string) *AccountHandlingTaskCreate {
 	_c.mutation.SetActionSnapshot(v)
@@ -339,6 +423,30 @@ func (_c *AccountHandlingTaskCreate) createSpec() (*AccountHandlingTask, *sqlgra
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.LegacyID(); ok {
+		_spec.SetField(accounthandlingtask.FieldLegacyID, field.TypeUUID, value)
+		_node.LegacyID = &value
+	}
+	if value, ok := _c.mutation.AccountType(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountType, field.TypeString, value)
+		_node.AccountType = &value
+	}
+	if value, ok := _c.mutation.AccountTypeName(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountTypeName, field.TypeString, value)
+		_node.AccountTypeName = &value
+	}
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(accounthandlingtask.FieldName, field.TypeString, value)
+		_node.Name = &value
+	}
+	if value, ok := _c.mutation.AccountIdentifier(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountIdentifier, field.TypeString, value)
+		_node.AccountIdentifier = &value
+	}
+	if value, ok := _c.mutation.DataLocation(); ok {
+		_spec.SetField(accounthandlingtask.FieldDataLocation, field.TypeString, value)
+		_node.DataLocation = &value
 	}
 	if value, ok := _c.mutation.ActionSnapshot(); ok {
 		_spec.SetField(accounthandlingtask.FieldActionSnapshot, field.TypeString, value)

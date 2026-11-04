@@ -19,6 +19,18 @@ const (
 	FieldTransitionCaseID = "transition_case_id"
 	// FieldAccountID holds the string denoting the account_id field in the database.
 	FieldAccountID = "account_id"
+	// FieldLegacyID holds the string denoting the legacy_id field in the database.
+	FieldLegacyID = "legacy_id"
+	// FieldAccountType holds the string denoting the account_type field in the database.
+	FieldAccountType = "account_type"
+	// FieldAccountTypeName holds the string denoting the account_type_name field in the database.
+	FieldAccountTypeName = "account_type_name"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
+	// FieldAccountIdentifier holds the string denoting the account_identifier field in the database.
+	FieldAccountIdentifier = "account_identifier"
+	// FieldDataLocation holds the string denoting the data_location field in the database.
+	FieldDataLocation = "data_location"
 	// FieldActionSnapshot holds the string denoting the action_snapshot field in the database.
 	FieldActionSnapshot = "action_snapshot"
 	// FieldActionMessageSnapshot holds the string denoting the action_message_snapshot field in the database.
@@ -82,6 +94,12 @@ var Columns = []string{
 	FieldID,
 	FieldTransitionCaseID,
 	FieldAccountID,
+	FieldLegacyID,
+	FieldAccountType,
+	FieldAccountTypeName,
+	FieldName,
+	FieldAccountIdentifier,
+	FieldDataLocation,
 	FieldActionSnapshot,
 	FieldActionMessageSnapshot,
 	FieldStatus,
@@ -138,6 +156,36 @@ func ByTransitionCaseID(opts ...sql.OrderTermOption) OrderOption {
 // ByAccountID orders the results by the account_id field.
 func ByAccountID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAccountID, opts...).ToFunc()
+}
+
+// ByLegacyID orders the results by the legacy_id field.
+func ByLegacyID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLegacyID, opts...).ToFunc()
+}
+
+// ByAccountType orders the results by the account_type field.
+func ByAccountType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountType, opts...).ToFunc()
+}
+
+// ByAccountTypeName orders the results by the account_type_name field.
+func ByAccountTypeName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountTypeName, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByAccountIdentifier orders the results by the account_identifier field.
+func ByAccountIdentifier(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountIdentifier, opts...).ToFunc()
+}
+
+// ByDataLocation orders the results by the data_location field.
+func ByDataLocation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDataLocation, opts...).ToFunc()
 }
 
 // ByActionSnapshot orders the results by the action_snapshot field.

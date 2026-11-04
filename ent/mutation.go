@@ -1700,6 +1700,12 @@ type AccountHandlingTaskMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
+	legacy_id               *uuid.UUID
+	account_type            *string
+	account_type_name       *string
+	name                    *string
+	account_identifier      *string
+	data_location           *string
 	action_snapshot         *string
 	action_message_snapshot *string
 	status                  *string
@@ -1900,6 +1906,300 @@ func (m *AccountHandlingTaskMutation) OldAccountID(ctx context.Context) (v uuid.
 // ResetAccountID resets all changes to the "account_id" field.
 func (m *AccountHandlingTaskMutation) ResetAccountID() {
 	m.account = nil
+}
+
+// SetLegacyID sets the "legacy_id" field.
+func (m *AccountHandlingTaskMutation) SetLegacyID(u uuid.UUID) {
+	m.legacy_id = &u
+}
+
+// LegacyID returns the value of the "legacy_id" field in the mutation.
+func (m *AccountHandlingTaskMutation) LegacyID() (r uuid.UUID, exists bool) {
+	v := m.legacy_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLegacyID returns the old "legacy_id" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldLegacyID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLegacyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLegacyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLegacyID: %w", err)
+	}
+	return oldValue.LegacyID, nil
+}
+
+// ClearLegacyID clears the value of the "legacy_id" field.
+func (m *AccountHandlingTaskMutation) ClearLegacyID() {
+	m.legacy_id = nil
+	m.clearedFields[accounthandlingtask.FieldLegacyID] = struct{}{}
+}
+
+// LegacyIDCleared returns if the "legacy_id" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) LegacyIDCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldLegacyID]
+	return ok
+}
+
+// ResetLegacyID resets all changes to the "legacy_id" field.
+func (m *AccountHandlingTaskMutation) ResetLegacyID() {
+	m.legacy_id = nil
+	delete(m.clearedFields, accounthandlingtask.FieldLegacyID)
+}
+
+// SetAccountType sets the "account_type" field.
+func (m *AccountHandlingTaskMutation) SetAccountType(s string) {
+	m.account_type = &s
+}
+
+// AccountType returns the value of the "account_type" field in the mutation.
+func (m *AccountHandlingTaskMutation) AccountType() (r string, exists bool) {
+	v := m.account_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountType returns the old "account_type" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldAccountType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountType: %w", err)
+	}
+	return oldValue.AccountType, nil
+}
+
+// ClearAccountType clears the value of the "account_type" field.
+func (m *AccountHandlingTaskMutation) ClearAccountType() {
+	m.account_type = nil
+	m.clearedFields[accounthandlingtask.FieldAccountType] = struct{}{}
+}
+
+// AccountTypeCleared returns if the "account_type" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) AccountTypeCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldAccountType]
+	return ok
+}
+
+// ResetAccountType resets all changes to the "account_type" field.
+func (m *AccountHandlingTaskMutation) ResetAccountType() {
+	m.account_type = nil
+	delete(m.clearedFields, accounthandlingtask.FieldAccountType)
+}
+
+// SetAccountTypeName sets the "account_type_name" field.
+func (m *AccountHandlingTaskMutation) SetAccountTypeName(s string) {
+	m.account_type_name = &s
+}
+
+// AccountTypeName returns the value of the "account_type_name" field in the mutation.
+func (m *AccountHandlingTaskMutation) AccountTypeName() (r string, exists bool) {
+	v := m.account_type_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountTypeName returns the old "account_type_name" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldAccountTypeName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountTypeName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountTypeName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountTypeName: %w", err)
+	}
+	return oldValue.AccountTypeName, nil
+}
+
+// ClearAccountTypeName clears the value of the "account_type_name" field.
+func (m *AccountHandlingTaskMutation) ClearAccountTypeName() {
+	m.account_type_name = nil
+	m.clearedFields[accounthandlingtask.FieldAccountTypeName] = struct{}{}
+}
+
+// AccountTypeNameCleared returns if the "account_type_name" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) AccountTypeNameCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldAccountTypeName]
+	return ok
+}
+
+// ResetAccountTypeName resets all changes to the "account_type_name" field.
+func (m *AccountHandlingTaskMutation) ResetAccountTypeName() {
+	m.account_type_name = nil
+	delete(m.clearedFields, accounthandlingtask.FieldAccountTypeName)
+}
+
+// SetName sets the "name" field.
+func (m *AccountHandlingTaskMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *AccountHandlingTaskMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ClearName clears the value of the "name" field.
+func (m *AccountHandlingTaskMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[accounthandlingtask.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) NameCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldName]
+	return ok
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *AccountHandlingTaskMutation) ResetName() {
+	m.name = nil
+	delete(m.clearedFields, accounthandlingtask.FieldName)
+}
+
+// SetAccountIdentifier sets the "account_identifier" field.
+func (m *AccountHandlingTaskMutation) SetAccountIdentifier(s string) {
+	m.account_identifier = &s
+}
+
+// AccountIdentifier returns the value of the "account_identifier" field in the mutation.
+func (m *AccountHandlingTaskMutation) AccountIdentifier() (r string, exists bool) {
+	v := m.account_identifier
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountIdentifier returns the old "account_identifier" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldAccountIdentifier(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountIdentifier is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountIdentifier requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountIdentifier: %w", err)
+	}
+	return oldValue.AccountIdentifier, nil
+}
+
+// ClearAccountIdentifier clears the value of the "account_identifier" field.
+func (m *AccountHandlingTaskMutation) ClearAccountIdentifier() {
+	m.account_identifier = nil
+	m.clearedFields[accounthandlingtask.FieldAccountIdentifier] = struct{}{}
+}
+
+// AccountIdentifierCleared returns if the "account_identifier" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) AccountIdentifierCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldAccountIdentifier]
+	return ok
+}
+
+// ResetAccountIdentifier resets all changes to the "account_identifier" field.
+func (m *AccountHandlingTaskMutation) ResetAccountIdentifier() {
+	m.account_identifier = nil
+	delete(m.clearedFields, accounthandlingtask.FieldAccountIdentifier)
+}
+
+// SetDataLocation sets the "data_location" field.
+func (m *AccountHandlingTaskMutation) SetDataLocation(s string) {
+	m.data_location = &s
+}
+
+// DataLocation returns the value of the "data_location" field in the mutation.
+func (m *AccountHandlingTaskMutation) DataLocation() (r string, exists bool) {
+	v := m.data_location
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDataLocation returns the old "data_location" field's value of the AccountHandlingTask entity.
+// If the AccountHandlingTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountHandlingTaskMutation) OldDataLocation(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDataLocation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDataLocation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDataLocation: %w", err)
+	}
+	return oldValue.DataLocation, nil
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (m *AccountHandlingTaskMutation) ClearDataLocation() {
+	m.data_location = nil
+	m.clearedFields[accounthandlingtask.FieldDataLocation] = struct{}{}
+}
+
+// DataLocationCleared returns if the "data_location" field was cleared in this mutation.
+func (m *AccountHandlingTaskMutation) DataLocationCleared() bool {
+	_, ok := m.clearedFields[accounthandlingtask.FieldDataLocation]
+	return ok
+}
+
+// ResetDataLocation resets all changes to the "data_location" field.
+func (m *AccountHandlingTaskMutation) ResetDataLocation() {
+	m.data_location = nil
+	delete(m.clearedFields, accounthandlingtask.FieldDataLocation)
 }
 
 // SetActionSnapshot sets the "action_snapshot" field.
@@ -2494,12 +2794,30 @@ func (m *AccountHandlingTaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountHandlingTaskMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 17)
 	if m.transition_case != nil {
 		fields = append(fields, accounthandlingtask.FieldTransitionCaseID)
 	}
 	if m.account != nil {
 		fields = append(fields, accounthandlingtask.FieldAccountID)
+	}
+	if m.legacy_id != nil {
+		fields = append(fields, accounthandlingtask.FieldLegacyID)
+	}
+	if m.account_type != nil {
+		fields = append(fields, accounthandlingtask.FieldAccountType)
+	}
+	if m.account_type_name != nil {
+		fields = append(fields, accounthandlingtask.FieldAccountTypeName)
+	}
+	if m.name != nil {
+		fields = append(fields, accounthandlingtask.FieldName)
+	}
+	if m.account_identifier != nil {
+		fields = append(fields, accounthandlingtask.FieldAccountIdentifier)
+	}
+	if m.data_location != nil {
+		fields = append(fields, accounthandlingtask.FieldDataLocation)
 	}
 	if m.action_snapshot != nil {
 		fields = append(fields, accounthandlingtask.FieldActionSnapshot)
@@ -2540,6 +2858,18 @@ func (m *AccountHandlingTaskMutation) Field(name string) (ent.Value, bool) {
 		return m.TransitionCaseID()
 	case accounthandlingtask.FieldAccountID:
 		return m.AccountID()
+	case accounthandlingtask.FieldLegacyID:
+		return m.LegacyID()
+	case accounthandlingtask.FieldAccountType:
+		return m.AccountType()
+	case accounthandlingtask.FieldAccountTypeName:
+		return m.AccountTypeName()
+	case accounthandlingtask.FieldName:
+		return m.Name()
+	case accounthandlingtask.FieldAccountIdentifier:
+		return m.AccountIdentifier()
+	case accounthandlingtask.FieldDataLocation:
+		return m.DataLocation()
 	case accounthandlingtask.FieldActionSnapshot:
 		return m.ActionSnapshot()
 	case accounthandlingtask.FieldActionMessageSnapshot:
@@ -2571,6 +2901,18 @@ func (m *AccountHandlingTaskMutation) OldField(ctx context.Context, name string)
 		return m.OldTransitionCaseID(ctx)
 	case accounthandlingtask.FieldAccountID:
 		return m.OldAccountID(ctx)
+	case accounthandlingtask.FieldLegacyID:
+		return m.OldLegacyID(ctx)
+	case accounthandlingtask.FieldAccountType:
+		return m.OldAccountType(ctx)
+	case accounthandlingtask.FieldAccountTypeName:
+		return m.OldAccountTypeName(ctx)
+	case accounthandlingtask.FieldName:
+		return m.OldName(ctx)
+	case accounthandlingtask.FieldAccountIdentifier:
+		return m.OldAccountIdentifier(ctx)
+	case accounthandlingtask.FieldDataLocation:
+		return m.OldDataLocation(ctx)
 	case accounthandlingtask.FieldActionSnapshot:
 		return m.OldActionSnapshot(ctx)
 	case accounthandlingtask.FieldActionMessageSnapshot:
@@ -2611,6 +2953,48 @@ func (m *AccountHandlingTaskMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAccountID(v)
+		return nil
+	case accounthandlingtask.FieldLegacyID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLegacyID(v)
+		return nil
+	case accounthandlingtask.FieldAccountType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountType(v)
+		return nil
+	case accounthandlingtask.FieldAccountTypeName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountTypeName(v)
+		return nil
+	case accounthandlingtask.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case accounthandlingtask.FieldAccountIdentifier:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountIdentifier(v)
+		return nil
+	case accounthandlingtask.FieldDataLocation:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDataLocation(v)
 		return nil
 	case accounthandlingtask.FieldActionSnapshot:
 		v, ok := value.(string)
@@ -2720,6 +3104,24 @@ func (m *AccountHandlingTaskMutation) AddField(name string, value ent.Value) err
 // mutation.
 func (m *AccountHandlingTaskMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(accounthandlingtask.FieldLegacyID) {
+		fields = append(fields, accounthandlingtask.FieldLegacyID)
+	}
+	if m.FieldCleared(accounthandlingtask.FieldAccountType) {
+		fields = append(fields, accounthandlingtask.FieldAccountType)
+	}
+	if m.FieldCleared(accounthandlingtask.FieldAccountTypeName) {
+		fields = append(fields, accounthandlingtask.FieldAccountTypeName)
+	}
+	if m.FieldCleared(accounthandlingtask.FieldName) {
+		fields = append(fields, accounthandlingtask.FieldName)
+	}
+	if m.FieldCleared(accounthandlingtask.FieldAccountIdentifier) {
+		fields = append(fields, accounthandlingtask.FieldAccountIdentifier)
+	}
+	if m.FieldCleared(accounthandlingtask.FieldDataLocation) {
+		fields = append(fields, accounthandlingtask.FieldDataLocation)
+	}
 	if m.FieldCleared(accounthandlingtask.FieldActionMessageSnapshot) {
 		fields = append(fields, accounthandlingtask.FieldActionMessageSnapshot)
 	}
@@ -2746,6 +3148,24 @@ func (m *AccountHandlingTaskMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AccountHandlingTaskMutation) ClearField(name string) error {
 	switch name {
+	case accounthandlingtask.FieldLegacyID:
+		m.ClearLegacyID()
+		return nil
+	case accounthandlingtask.FieldAccountType:
+		m.ClearAccountType()
+		return nil
+	case accounthandlingtask.FieldAccountTypeName:
+		m.ClearAccountTypeName()
+		return nil
+	case accounthandlingtask.FieldName:
+		m.ClearName()
+		return nil
+	case accounthandlingtask.FieldAccountIdentifier:
+		m.ClearAccountIdentifier()
+		return nil
+	case accounthandlingtask.FieldDataLocation:
+		m.ClearDataLocation()
+		return nil
 	case accounthandlingtask.FieldActionMessageSnapshot:
 		m.ClearActionMessageSnapshot()
 		return nil
@@ -2771,6 +3191,24 @@ func (m *AccountHandlingTaskMutation) ResetField(name string) error {
 		return nil
 	case accounthandlingtask.FieldAccountID:
 		m.ResetAccountID()
+		return nil
+	case accounthandlingtask.FieldLegacyID:
+		m.ResetLegacyID()
+		return nil
+	case accounthandlingtask.FieldAccountType:
+		m.ResetAccountType()
+		return nil
+	case accounthandlingtask.FieldAccountTypeName:
+		m.ResetAccountTypeName()
+		return nil
+	case accounthandlingtask.FieldName:
+		m.ResetName()
+		return nil
+	case accounthandlingtask.FieldAccountIdentifier:
+		m.ResetAccountIdentifier()
+		return nil
+	case accounthandlingtask.FieldDataLocation:
+		m.ResetDataLocation()
 		return nil
 	case accounthandlingtask.FieldActionSnapshot:
 		m.ResetActionSnapshot()

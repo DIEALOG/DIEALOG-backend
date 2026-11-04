@@ -146,6 +146,7 @@ func main() {
 		accountTaskRepository,
 		accountEventRepository,
 		legacyRepository,
+		credentialUseCase,
 		transitionCaseUseCase,
 		notificationUseCase,
 		timeout,

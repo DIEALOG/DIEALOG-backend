@@ -24,6 +24,18 @@ type AccountHandlingTask struct {
 	TransitionCaseID uuid.UUID `json:"transition_case_id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID uuid.UUID `json:"account_id,omitempty"`
+	// LegacyID holds the value of the "legacy_id" field.
+	LegacyID *uuid.UUID `json:"legacy_id,omitempty"`
+	// AccountType holds the value of the "account_type" field.
+	AccountType *string `json:"account_type,omitempty"`
+	// AccountTypeName holds the value of the "account_type_name" field.
+	AccountTypeName *string `json:"account_type_name,omitempty"`
+	// Name holds the value of the "name" field.
+	Name *string `json:"name,omitempty"`
+	// AccountIdentifier holds the value of the "account_identifier" field.
+	AccountIdentifier *string `json:"account_identifier,omitempty"`
+	// DataLocation holds the value of the "data_location" field.
+	DataLocation *string `json:"data_location,omitempty"`
 	// ActionSnapshot holds the value of the "action_snapshot" field.
 	ActionSnapshot string `json:"action_snapshot,omitempty"`
 	// ActionMessageSnapshot holds the value of the "action_message_snapshot" field.
@@ -108,9 +120,11 @@ func (*AccountHandlingTask) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case accounthandlingtask.FieldLegacyID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case accounthandlingtask.FieldRequestCount:
 			values[i] = new(sql.NullInt64)
-		case accounthandlingtask.FieldActionSnapshot, accounthandlingtask.FieldActionMessageSnapshot, accounthandlingtask.FieldStatus, accounthandlingtask.FieldFailureReason:
+		case accounthandlingtask.FieldAccountType, accounthandlingtask.FieldAccountTypeName, accounthandlingtask.FieldName, accounthandlingtask.FieldAccountIdentifier, accounthandlingtask.FieldDataLocation, accounthandlingtask.FieldActionSnapshot, accounthandlingtask.FieldActionMessageSnapshot, accounthandlingtask.FieldStatus, accounthandlingtask.FieldFailureReason:
 			values[i] = new(sql.NullString)
 		case accounthandlingtask.FieldStartedAt, accounthandlingtask.FieldCompletedAt, accounthandlingtask.FieldCreatedAt, accounthandlingtask.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -148,6 +162,48 @@ func (_m *AccountHandlingTask) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
 			} else if value != nil {
 				_m.AccountID = *value
+			}
+		case accounthandlingtask.FieldLegacyID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field legacy_id", values[i])
+			} else if value.Valid {
+				_m.LegacyID = new(uuid.UUID)
+				*_m.LegacyID = *value.S.(*uuid.UUID)
+			}
+		case accounthandlingtask.FieldAccountType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account_type", values[i])
+			} else if value.Valid {
+				_m.AccountType = new(string)
+				*_m.AccountType = value.String
+			}
+		case accounthandlingtask.FieldAccountTypeName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account_type_name", values[i])
+			} else if value.Valid {
+				_m.AccountTypeName = new(string)
+				*_m.AccountTypeName = value.String
+			}
+		case accounthandlingtask.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				_m.Name = new(string)
+				*_m.Name = value.String
+			}
+		case accounthandlingtask.FieldAccountIdentifier:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account_identifier", values[i])
+			} else if value.Valid {
+				_m.AccountIdentifier = new(string)
+				*_m.AccountIdentifier = value.String
+			}
+		case accounthandlingtask.FieldDataLocation:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field data_location", values[i])
+			} else if value.Valid {
+				_m.DataLocation = new(string)
+				*_m.DataLocation = value.String
 			}
 		case accounthandlingtask.FieldActionSnapshot:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -268,6 +324,36 @@ func (_m *AccountHandlingTask) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("account_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AccountID))
+	builder.WriteString(", ")
+	if v := _m.LegacyID; v != nil {
+		builder.WriteString("legacy_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.AccountType; v != nil {
+		builder.WriteString("account_type=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.AccountTypeName; v != nil {
+		builder.WriteString("account_type_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.Name; v != nil {
+		builder.WriteString("name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.AccountIdentifier; v != nil {
+		builder.WriteString("account_identifier=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DataLocation; v != nil {
+		builder.WriteString("data_location=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("action_snapshot=")
 	builder.WriteString(_m.ActionSnapshot)

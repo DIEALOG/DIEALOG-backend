@@ -60,25 +60,25 @@ func init() {
 	accounthandlingtaskFields := schema.AccountHandlingTask{}.Fields()
 	_ = accounthandlingtaskFields
 	// accounthandlingtaskDescActionSnapshot is the schema descriptor for action_snapshot field.
-	accounthandlingtaskDescActionSnapshot := accounthandlingtaskFields[3].Descriptor()
+	accounthandlingtaskDescActionSnapshot := accounthandlingtaskFields[9].Descriptor()
 	// accounthandlingtask.ActionSnapshotValidator is a validator for the "action_snapshot" field. It is called by the builders before save.
 	accounthandlingtask.ActionSnapshotValidator = accounthandlingtaskDescActionSnapshot.Validators[0].(func(string) error)
 	// accounthandlingtaskDescStatus is the schema descriptor for status field.
-	accounthandlingtaskDescStatus := accounthandlingtaskFields[5].Descriptor()
+	accounthandlingtaskDescStatus := accounthandlingtaskFields[11].Descriptor()
 	// accounthandlingtask.DefaultStatus holds the default value on creation for the status field.
 	accounthandlingtask.DefaultStatus = accounthandlingtaskDescStatus.Default.(string)
 	// accounthandlingtaskDescRequestCount is the schema descriptor for request_count field.
-	accounthandlingtaskDescRequestCount := accounthandlingtaskFields[9].Descriptor()
+	accounthandlingtaskDescRequestCount := accounthandlingtaskFields[15].Descriptor()
 	// accounthandlingtask.DefaultRequestCount holds the default value on creation for the request_count field.
 	accounthandlingtask.DefaultRequestCount = accounthandlingtaskDescRequestCount.Default.(int)
 	// accounthandlingtask.RequestCountValidator is a validator for the "request_count" field. It is called by the builders before save.
 	accounthandlingtask.RequestCountValidator = accounthandlingtaskDescRequestCount.Validators[0].(func(int) error)
 	// accounthandlingtaskDescCreatedAt is the schema descriptor for created_at field.
-	accounthandlingtaskDescCreatedAt := accounthandlingtaskFields[10].Descriptor()
+	accounthandlingtaskDescCreatedAt := accounthandlingtaskFields[16].Descriptor()
 	// accounthandlingtask.DefaultCreatedAt holds the default value on creation for the created_at field.
 	accounthandlingtask.DefaultCreatedAt = accounthandlingtaskDescCreatedAt.Default.(func() time.Time)
 	// accounthandlingtaskDescUpdatedAt is the schema descriptor for updated_at field.
-	accounthandlingtaskDescUpdatedAt := accounthandlingtaskFields[11].Descriptor()
+	accounthandlingtaskDescUpdatedAt := accounthandlingtaskFields[17].Descriptor()
 	// accounthandlingtask.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	accounthandlingtask.DefaultUpdatedAt = accounthandlingtaskDescUpdatedAt.Default.(func() time.Time)
 	// accounthandlingtask.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

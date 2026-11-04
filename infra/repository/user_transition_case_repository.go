@@ -286,6 +286,7 @@ func (r *userTransitionCaseRepository) ConfirmAndCreateTasks(c context.Context, 
 		WithStakeholderGroups(func(q *ent.StakeholderGroupQuery) {
 			q.WithStakeholders()
 		}).
+		WithLegacy().
 		All(c)
 	if err != nil {
 		return nil, err
@@ -322,11 +323,22 @@ func (r *userTransitionCaseRepository) ConfirmAndCreateTasks(c context.Context, 
 			continue
 		}
 
+		var legacyID *domain.ID
+		if item.Edges.Legacy != nil {
+			legacyID = &item.Edges.Legacy.ID
+		}
+
 		task, err := tx.AccountHandlingTask.Create().
 			SetTransitionCaseID(*id).
 			SetAccountID(item.ID).
+			SetNillableLegacyID(legacyID).
 			SetActionSnapshot(string(item.Action)).
 			SetNillableActionMessageSnapshot(item.ActionMessage).
+			SetAccountType(string(item.Type)).
+			SetNillableAccountTypeName(item.TypeName).
+			SetName(item.Name).
+			SetNillableAccountIdentifier(item.AccountID).
+			SetNillableDataLocation(item.DataLocation).
 			SetStatus(string(domain.AccountHandlingTaskStatusPending)).
 			Save(c)
 		if err != nil {

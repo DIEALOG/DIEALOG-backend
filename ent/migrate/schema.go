@@ -61,6 +61,12 @@ var (
 	// AccountHandlingTasksColumns holds the columns for the "account_handling_tasks" table.
 	AccountHandlingTasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "legacy_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "account_type", Type: field.TypeString, Nullable: true},
+		{Name: "account_type_name", Type: field.TypeString, Nullable: true},
+		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "account_identifier", Type: field.TypeString, Nullable: true},
+		{Name: "data_location", Type: field.TypeString, Nullable: true},
 		{Name: "action_snapshot", Type: field.TypeString},
 		{Name: "action_message_snapshot", Type: field.TypeString, Nullable: true},
 		{Name: "status", Type: field.TypeString, Default: "pending"},
@@ -81,13 +87,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "account_handling_tasks_accounts_handling_tasks",
-				Columns:    []*schema.Column{AccountHandlingTasksColumns[10]},
+				Columns:    []*schema.Column{AccountHandlingTasksColumns[16]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "account_handling_tasks_user_transition_cases_tasks",
-				Columns:    []*schema.Column{AccountHandlingTasksColumns[11]},
+				Columns:    []*schema.Column{AccountHandlingTasksColumns[17]},
 				RefColumns: []*schema.Column{UserTransitionCasesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -96,7 +102,7 @@ var (
 			{
 				Name:    "accounthandlingtask_transition_case_id_account_id",
 				Unique:  true,
-				Columns: []*schema.Column{AccountHandlingTasksColumns[11], AccountHandlingTasksColumns[10]},
+				Columns: []*schema.Column{AccountHandlingTasksColumns[17], AccountHandlingTasksColumns[16]},
 			},
 		},
 	}

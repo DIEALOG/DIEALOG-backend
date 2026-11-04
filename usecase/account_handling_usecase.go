@@ -19,6 +19,7 @@ type accountHandlingUseCase struct {
 	taskRepository      domain.AccountHandlingTaskRepository
 	eventRepository     domain.AccountHandlingEventRepository
 	legacyRepository    domain.LegacyRepository
+	credentialUseCase   domain.CredentialUseCase
 	caseUseCase         domain.UserTransitionCaseUseCase
 	notificationUseCase domain.NotificationUseCase
 	contextTimeout      time.Duration
@@ -28,6 +29,7 @@ func NewAccountHandlingUseCase(
 	taskRepository domain.AccountHandlingTaskRepository,
 	eventRepository domain.AccountHandlingEventRepository,
 	legacyRepository domain.LegacyRepository,
+	credentialUseCase domain.CredentialUseCase,
 	caseUseCase domain.UserTransitionCaseUseCase,
 	notificationUseCase domain.NotificationUseCase,
 	timeout time.Duration,
@@ -37,6 +39,7 @@ func NewAccountHandlingUseCase(
 		taskRepository:      taskRepository,
 		eventRepository:     eventRepository,
 		legacyRepository:    legacyRepository,
+		credentialUseCase:   credentialUseCase,
 		caseUseCase:         caseUseCase,
 		notificationUseCase: notificationUseCase,
 		contextTimeout:      timeout,
@@ -56,6 +59,11 @@ func (u *accountHandlingUseCase) ListByCaseID(c context.Context, caseID *domain.
 	items, err := u.taskRepository.FindAllByCaseIDForRequester(ctx, caseID, userID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
+	}
+	for _, item := range items {
+		if err := u.attachAccountPassword(ctx, item); err != nil {
+			return nil, err
+		}
 	}
 	return items, nil
 }
@@ -91,7 +99,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	}
 
 	if task.Status == domain.AccountHandlingTaskStatusCompleted {
-		return &domain.AccountHandlingRequestResponse{Task: task}, nil
+		return u.taskResponse(ctx, task, nil)
 	}
 	if task.Status == domain.AccountHandlingTaskStatusSkipped {
 		return nil, domain.NewBadRequestError(errors.New("skipped account handling task cannot be requested"))
@@ -151,7 +159,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	}
 
 	if len(requests) == 0 {
-		return &domain.AccountHandlingRequestResponse{Task: task}, nil
+		return u.taskResponse(ctx, task, nil)
 	}
 
 	if task.StartedAt == nil {
@@ -170,7 +178,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 	}
 
 	if updated.Status == domain.AccountHandlingTaskStatusCompleted {
-		return &domain.AccountHandlingRequestResponse{Task: updated}, nil
+		return u.taskResponse(ctx, updated, nil)
 	}
 
 	if previousStatus != updated.Status {
@@ -196,10 +204,7 @@ func (u *accountHandlingUseCase) Request(c context.Context, taskID *domain.ID, u
 		return nil, domain.NewInternalServerError(err)
 	}
 
-	return &domain.AccountHandlingRequestResponse{
-		Task:     final,
-		Requests: requests,
-	}, nil
+	return u.taskResponse(ctx, final, requests)
 }
 
 func (u *accountHandlingUseCase) SubmitResult(
@@ -370,8 +375,45 @@ func (u *accountHandlingUseCase) SubmitResult(
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
+	if err := u.attachAccountPassword(persistCtx, final); err != nil {
+		return nil, err
+	}
 
 	return final, nil
+}
+
+// taskResponse attaches the account credential before returning a task so every
+// task response exposes the same account detail snapshot.
+func (u *accountHandlingUseCase) taskResponse(
+	c context.Context,
+	task *domain.AccountHandlingTask,
+	requests []domain.AccountHandlingRequest,
+) (*domain.AccountHandlingRequestResponse, error) {
+	if err := u.attachAccountPassword(c, task); err != nil {
+		return nil, err
+	}
+	return &domain.AccountHandlingRequestResponse{
+		Task:     task,
+		Requests: requests,
+	}, nil
+}
+
+// attachAccountPassword fills the task's account credential. Credentials are
+// keyed by the owner's user ID and the account name snapshotted on the task, so
+// a stakeholder requester reads the value the owner stored.
+func (u *accountHandlingUseCase) attachAccountPassword(
+	c context.Context,
+	task *domain.AccountHandlingTask,
+) error {
+	if u.credentialUseCase == nil || task == nil || task.Name == "" {
+		return nil
+	}
+	pwd, err := u.credentialUseCase.GetPassword(c, &task.UserID, task.Name)
+	if err != nil {
+		return domain.NewInternalServerError(err)
+	}
+	task.AccountPassword = pwd
+	return nil
 }
 
 func stakeholderAssignees(account *domain.Account) []domain.AccountHandlingTaskAssignee {

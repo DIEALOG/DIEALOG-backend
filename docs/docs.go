@@ -3551,6 +3551,12 @@ const docTemplate = `{
                 "account_id": {
                     "type": "string"
                 },
+                "account_identifier": {
+                    "type": "string"
+                },
+                "account_password": {
+                    "type": "string"
+                },
                 "action_message_snapshot": {
                     "type": "string"
                 },
@@ -3569,6 +3575,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "data_location": {
+                    "type": "string"
+                },
                 "events": {
                     "type": "array",
                     "items": {
@@ -3579,6 +3588,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "legacy_id": {
+                    "description": "Account detail snapshots taken when the task is created. The credential is\nnot stored here; AccountPassword is resolved from the crypto service on read.",
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "request_count": {
@@ -3592,6 +3608,9 @@ const docTemplate = `{
                 },
                 "transition_case_id": {
                     "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.AccountType"
                 },
                 "updated_at": {
                     "type": "string"

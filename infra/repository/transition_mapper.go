@@ -110,6 +110,8 @@ func toDomainAccountHandlingTask(entity *ent.AccountHandlingTask) *domain.Accoun
 		ID:                    entity.ID,
 		ActionSnapshot:        domain.AccountActionField(entity.ActionSnapshot),
 		ActionMessageSnapshot: entity.ActionMessageSnapshot,
+		AccountIdentifier:     entity.AccountIdentifier,
+		DataLocation:          entity.DataLocation,
 		Status:                domain.AccountHandlingTaskStatus(entity.Status),
 		StartedAt:             entity.StartedAt,
 		CompletedAt:           entity.CompletedAt,
@@ -117,6 +119,17 @@ func toDomainAccountHandlingTask(entity *ent.AccountHandlingTask) *domain.Accoun
 		RequestCount:          entity.RequestCount,
 		CreatedAt:             entity.CreatedAt,
 		UpdatedAt:             entity.UpdatedAt,
+	}
+	item.Type.ID = entity.AccountID
+	if entity.LegacyID != nil {
+		item.LegacyID = *entity.LegacyID
+	}
+	if entity.AccountType != nil {
+		item.Type.Type = domain.AccountTypeField(*entity.AccountType)
+	}
+	item.Type.Name = entity.AccountTypeName
+	if entity.Name != nil {
+		item.Name = *entity.Name
 	}
 	if entity.Edges.TransitionCase != nil {
 		item.TransitionCaseID = entity.Edges.TransitionCase.ID

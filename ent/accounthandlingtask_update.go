@@ -31,6 +31,106 @@ func (_u *AccountHandlingTaskUpdate) Where(ps ...predicate.AccountHandlingTask) 
 	return _u
 }
 
+// SetAccountType sets the "account_type" field.
+func (_u *AccountHandlingTaskUpdate) SetAccountType(v string) *AccountHandlingTaskUpdate {
+	_u.mutation.SetAccountType(v)
+	return _u
+}
+
+// SetNillableAccountType sets the "account_type" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdate) SetNillableAccountType(v *string) *AccountHandlingTaskUpdate {
+	if v != nil {
+		_u.SetAccountType(*v)
+	}
+	return _u
+}
+
+// ClearAccountType clears the value of the "account_type" field.
+func (_u *AccountHandlingTaskUpdate) ClearAccountType() *AccountHandlingTaskUpdate {
+	_u.mutation.ClearAccountType()
+	return _u
+}
+
+// SetAccountTypeName sets the "account_type_name" field.
+func (_u *AccountHandlingTaskUpdate) SetAccountTypeName(v string) *AccountHandlingTaskUpdate {
+	_u.mutation.SetAccountTypeName(v)
+	return _u
+}
+
+// SetNillableAccountTypeName sets the "account_type_name" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdate) SetNillableAccountTypeName(v *string) *AccountHandlingTaskUpdate {
+	if v != nil {
+		_u.SetAccountTypeName(*v)
+	}
+	return _u
+}
+
+// ClearAccountTypeName clears the value of the "account_type_name" field.
+func (_u *AccountHandlingTaskUpdate) ClearAccountTypeName() *AccountHandlingTaskUpdate {
+	_u.mutation.ClearAccountTypeName()
+	return _u
+}
+
+// SetName sets the "name" field.
+func (_u *AccountHandlingTaskUpdate) SetName(v string) *AccountHandlingTaskUpdate {
+	_u.mutation.SetName(v)
+	return _u
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdate) SetNillableName(v *string) *AccountHandlingTaskUpdate {
+	if v != nil {
+		_u.SetName(*v)
+	}
+	return _u
+}
+
+// ClearName clears the value of the "name" field.
+func (_u *AccountHandlingTaskUpdate) ClearName() *AccountHandlingTaskUpdate {
+	_u.mutation.ClearName()
+	return _u
+}
+
+// SetAccountIdentifier sets the "account_identifier" field.
+func (_u *AccountHandlingTaskUpdate) SetAccountIdentifier(v string) *AccountHandlingTaskUpdate {
+	_u.mutation.SetAccountIdentifier(v)
+	return _u
+}
+
+// SetNillableAccountIdentifier sets the "account_identifier" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdate) SetNillableAccountIdentifier(v *string) *AccountHandlingTaskUpdate {
+	if v != nil {
+		_u.SetAccountIdentifier(*v)
+	}
+	return _u
+}
+
+// ClearAccountIdentifier clears the value of the "account_identifier" field.
+func (_u *AccountHandlingTaskUpdate) ClearAccountIdentifier() *AccountHandlingTaskUpdate {
+	_u.mutation.ClearAccountIdentifier()
+	return _u
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_u *AccountHandlingTaskUpdate) SetDataLocation(v string) *AccountHandlingTaskUpdate {
+	_u.mutation.SetDataLocation(v)
+	return _u
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdate) SetNillableDataLocation(v *string) *AccountHandlingTaskUpdate {
+	if v != nil {
+		_u.SetDataLocation(*v)
+	}
+	return _u
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (_u *AccountHandlingTaskUpdate) ClearDataLocation() *AccountHandlingTaskUpdate {
+	_u.mutation.ClearDataLocation()
+	return _u
+}
+
 // SetActionSnapshot sets the "action_snapshot" field.
 func (_u *AccountHandlingTaskUpdate) SetActionSnapshot(v string) *AccountHandlingTaskUpdate {
 	_u.mutation.SetActionSnapshot(v)
@@ -312,6 +412,39 @@ func (_u *AccountHandlingTaskUpdate) sqlSave(ctx context.Context) (_node int, er
 			}
 		}
 	}
+	if _u.mutation.LegacyIDCleared() {
+		_spec.ClearField(accounthandlingtask.FieldLegacyID, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.AccountType(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountType, field.TypeString, value)
+	}
+	if _u.mutation.AccountTypeCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountType, field.TypeString)
+	}
+	if value, ok := _u.mutation.AccountTypeName(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountTypeName, field.TypeString, value)
+	}
+	if _u.mutation.AccountTypeNameCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(accounthandlingtask.FieldName, field.TypeString, value)
+	}
+	if _u.mutation.NameCleared() {
+		_spec.ClearField(accounthandlingtask.FieldName, field.TypeString)
+	}
+	if value, ok := _u.mutation.AccountIdentifier(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountIdentifier, field.TypeString, value)
+	}
+	if _u.mutation.AccountIdentifierCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountIdentifier, field.TypeString)
+	}
+	if value, ok := _u.mutation.DataLocation(); ok {
+		_spec.SetField(accounthandlingtask.FieldDataLocation, field.TypeString, value)
+	}
+	if _u.mutation.DataLocationCleared() {
+		_spec.ClearField(accounthandlingtask.FieldDataLocation, field.TypeString)
+	}
 	if value, ok := _u.mutation.ActionSnapshot(); ok {
 		_spec.SetField(accounthandlingtask.FieldActionSnapshot, field.TypeString, value)
 	}
@@ -459,6 +592,106 @@ type AccountHandlingTaskUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AccountHandlingTaskMutation
+}
+
+// SetAccountType sets the "account_type" field.
+func (_u *AccountHandlingTaskUpdateOne) SetAccountType(v string) *AccountHandlingTaskUpdateOne {
+	_u.mutation.SetAccountType(v)
+	return _u
+}
+
+// SetNillableAccountType sets the "account_type" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdateOne) SetNillableAccountType(v *string) *AccountHandlingTaskUpdateOne {
+	if v != nil {
+		_u.SetAccountType(*v)
+	}
+	return _u
+}
+
+// ClearAccountType clears the value of the "account_type" field.
+func (_u *AccountHandlingTaskUpdateOne) ClearAccountType() *AccountHandlingTaskUpdateOne {
+	_u.mutation.ClearAccountType()
+	return _u
+}
+
+// SetAccountTypeName sets the "account_type_name" field.
+func (_u *AccountHandlingTaskUpdateOne) SetAccountTypeName(v string) *AccountHandlingTaskUpdateOne {
+	_u.mutation.SetAccountTypeName(v)
+	return _u
+}
+
+// SetNillableAccountTypeName sets the "account_type_name" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdateOne) SetNillableAccountTypeName(v *string) *AccountHandlingTaskUpdateOne {
+	if v != nil {
+		_u.SetAccountTypeName(*v)
+	}
+	return _u
+}
+
+// ClearAccountTypeName clears the value of the "account_type_name" field.
+func (_u *AccountHandlingTaskUpdateOne) ClearAccountTypeName() *AccountHandlingTaskUpdateOne {
+	_u.mutation.ClearAccountTypeName()
+	return _u
+}
+
+// SetName sets the "name" field.
+func (_u *AccountHandlingTaskUpdateOne) SetName(v string) *AccountHandlingTaskUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdateOne) SetNillableName(v *string) *AccountHandlingTaskUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
+	}
+	return _u
+}
+
+// ClearName clears the value of the "name" field.
+func (_u *AccountHandlingTaskUpdateOne) ClearName() *AccountHandlingTaskUpdateOne {
+	_u.mutation.ClearName()
+	return _u
+}
+
+// SetAccountIdentifier sets the "account_identifier" field.
+func (_u *AccountHandlingTaskUpdateOne) SetAccountIdentifier(v string) *AccountHandlingTaskUpdateOne {
+	_u.mutation.SetAccountIdentifier(v)
+	return _u
+}
+
+// SetNillableAccountIdentifier sets the "account_identifier" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdateOne) SetNillableAccountIdentifier(v *string) *AccountHandlingTaskUpdateOne {
+	if v != nil {
+		_u.SetAccountIdentifier(*v)
+	}
+	return _u
+}
+
+// ClearAccountIdentifier clears the value of the "account_identifier" field.
+func (_u *AccountHandlingTaskUpdateOne) ClearAccountIdentifier() *AccountHandlingTaskUpdateOne {
+	_u.mutation.ClearAccountIdentifier()
+	return _u
+}
+
+// SetDataLocation sets the "data_location" field.
+func (_u *AccountHandlingTaskUpdateOne) SetDataLocation(v string) *AccountHandlingTaskUpdateOne {
+	_u.mutation.SetDataLocation(v)
+	return _u
+}
+
+// SetNillableDataLocation sets the "data_location" field if the given value is not nil.
+func (_u *AccountHandlingTaskUpdateOne) SetNillableDataLocation(v *string) *AccountHandlingTaskUpdateOne {
+	if v != nil {
+		_u.SetDataLocation(*v)
+	}
+	return _u
+}
+
+// ClearDataLocation clears the value of the "data_location" field.
+func (_u *AccountHandlingTaskUpdateOne) ClearDataLocation() *AccountHandlingTaskUpdateOne {
+	_u.mutation.ClearDataLocation()
+	return _u
 }
 
 // SetActionSnapshot sets the "action_snapshot" field.
@@ -771,6 +1004,39 @@ func (_u *AccountHandlingTaskUpdateOne) sqlSave(ctx context.Context) (_node *Acc
 				ps[i](selector)
 			}
 		}
+	}
+	if _u.mutation.LegacyIDCleared() {
+		_spec.ClearField(accounthandlingtask.FieldLegacyID, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.AccountType(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountType, field.TypeString, value)
+	}
+	if _u.mutation.AccountTypeCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountType, field.TypeString)
+	}
+	if value, ok := _u.mutation.AccountTypeName(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountTypeName, field.TypeString, value)
+	}
+	if _u.mutation.AccountTypeNameCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountTypeName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(accounthandlingtask.FieldName, field.TypeString, value)
+	}
+	if _u.mutation.NameCleared() {
+		_spec.ClearField(accounthandlingtask.FieldName, field.TypeString)
+	}
+	if value, ok := _u.mutation.AccountIdentifier(); ok {
+		_spec.SetField(accounthandlingtask.FieldAccountIdentifier, field.TypeString, value)
+	}
+	if _u.mutation.AccountIdentifierCleared() {
+		_spec.ClearField(accounthandlingtask.FieldAccountIdentifier, field.TypeString)
+	}
+	if value, ok := _u.mutation.DataLocation(); ok {
+		_spec.SetField(accounthandlingtask.FieldDataLocation, field.TypeString, value)
+	}
+	if _u.mutation.DataLocationCleared() {
+		_spec.ClearField(accounthandlingtask.FieldDataLocation, field.TypeString)
 	}
 	if value, ok := _u.mutation.ActionSnapshot(); ok {
 		_spec.SetField(accounthandlingtask.FieldActionSnapshot, field.TypeString, value)
