@@ -175,6 +175,12 @@ type UserRepository interface {
 	FindByPhoneNumber(c context.Context, phone string) (*User, error)
 	FindByID(c context.Context, id *ID) (*User, error)
 	Update(c context.Context, user *User) (*User, error)
+	Delete(c context.Context, id *ID) error
+}
+
+type UserUseCase interface {
+	Update(c context.Context, user *User) (*User, error)
+	Delete(c context.Context, id *ID) error
 }
 
 type StakeholderRepository interface {

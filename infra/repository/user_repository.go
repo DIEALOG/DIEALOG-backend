@@ -104,3 +104,17 @@ func (r *userRepository) Update(c context.Context, u *domain.User) (*domain.User
 
 	return toDomainUser(updated), nil
 }
+
+func (r *userRepository) Delete(c context.Context, id *domain.ID) error {
+	exist, err := r.client.User.Query().Where(
+		user.IDEQ(*id),
+	).Exist(c)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return &ent.NotFoundError{}
+	}
+
+	return r.client.User.DeleteOneID(*id).Exec(c)
+}

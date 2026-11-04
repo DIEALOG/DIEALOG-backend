@@ -118,6 +118,7 @@ func main() {
 	// usecase
 	notificationUseCase := usecase.NewNotificationUseCase(notificationRepository, timeout)
 	profileUseCase := usecase.NewProfileUseCase(userRepository, userConfigRepository, timeout)
+	userUseCase := usecase.NewUserUseCase(userRepository, timeout)
 	authUseCase := usecase.NewAuthUseCase(userRepository, userConfigRepository, timeout)
 	credentialUseCase := usecase.NewCredentialUseCase(cryptoClient)
 	legacyUseCase := usecase.NewLegacyUseCase(legacyRepository, credentialUseCase, userRepository, timeout)
@@ -158,6 +159,7 @@ func main() {
 	// router
 	route.NewLoginRouter(api.Group("/login"), authUseCase)
 	route.NewProfileRouter(api.Group("/profile"), profileUseCase)
+	route.NewUserRouter(api.Group("/user"), userUseCase)
 	route.NewRefreshTokenRouter(api.Group("/refresh"), authUseCase)
 	route.NewSignupRouter(api.Group("/signup"), authUseCase)
 	route.NewLegacyRouter(api.Group("/legacy"), legacyUseCase, stakeholderUseCase, stakeholderGroupUseCase)
