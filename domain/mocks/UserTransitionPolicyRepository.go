@@ -46,6 +46,36 @@ func (_m *UserTransitionPolicyRepository) Create(c context.Context, policy *doma
 	return r0, r1
 }
 
+// FindAll provides a mock function with given fields: c
+func (_m *UserTransitionPolicyRepository) FindAll(c context.Context) ([]*domain.UserTransitionPolicy, error) {
+	ret := _m.Called(c)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindAll")
+	}
+
+	var r0 []*domain.UserTransitionPolicy
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*domain.UserTransitionPolicy, error)); ok {
+		return rf(c)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []*domain.UserTransitionPolicy); ok {
+		r0 = rf(c)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.UserTransitionPolicy)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(c)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByUserID provides a mock function with given fields: c, userID
 func (_m *UserTransitionPolicyRepository) FindByUserID(c context.Context, userID *uuid.UUID) (*domain.UserTransitionPolicy, error) {
 	ret := _m.Called(c, userID)

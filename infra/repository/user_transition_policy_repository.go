@@ -79,3 +79,16 @@ func (r *userTransitionPolicyRepository) Update(c context.Context, policy *domai
 	item.UserID = *userID
 	return item, nil
 }
+
+func (r *userTransitionPolicyRepository) FindAll(c context.Context) ([]*domain.UserTransitionPolicy, error) {
+	entities, err := r.client.UserTransitionPolicy.Query().All(c)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]*domain.UserTransitionPolicy, len(entities))
+	for i, entity := range entities {
+		items[i] = toDomainUserTransitionPolicy(entity)
+	}
+	return items, nil
+}

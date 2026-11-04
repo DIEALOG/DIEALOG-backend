@@ -76,6 +76,36 @@ func (_m *UserTransitionConfirmerUseCase) Authenticate(c context.Context, token 
 	return r0, r1
 }
 
+// ClaimAccess provides a mock function with given fields: c, userID
+func (_m *UserTransitionConfirmerUseCase) ClaimAccess(c context.Context, userID *uuid.UUID) ([]*domain.AcceptTransitionInvitationResponse, error) {
+	ret := _m.Called(c, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ClaimAccess")
+	}
+
+	var r0 []*domain.AcceptTransitionInvitationResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) ([]*domain.AcceptTransitionInvitationResponse, error)); ok {
+		return rf(c, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) []*domain.AcceptTransitionInvitationResponse); ok {
+		r0 = rf(c, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.AcceptTransitionInvitationResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID) error); ok {
+		r1 = rf(c, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Decline provides a mock function with given fields: c, token
 func (_m *UserTransitionConfirmerUseCase) Decline(c context.Context, token string) error {
 	ret := _m.Called(c, token)
@@ -172,36 +202,6 @@ func (_m *UserTransitionConfirmerUseCase) ListDesignatingUsers(c context.Context
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*domain.TransitionDesignatingUser)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID) error); ok {
-		r1 = rf(c, userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ClaimAccess provides a mock function with given fields: c, userID
-func (_m *UserTransitionConfirmerUseCase) ClaimAccess(c context.Context, userID *uuid.UUID) ([]*domain.AcceptTransitionInvitationResponse, error) {
-	ret := _m.Called(c, userID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ClaimAccess")
-	}
-
-	var r0 []*domain.AcceptTransitionInvitationResponse
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) ([]*domain.AcceptTransitionInvitationResponse, error)); ok {
-		return rf(c, userID)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) []*domain.AcceptTransitionInvitationResponse); ok {
-		r0 = rf(c, userID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.AcceptTransitionInvitationResponse)
 		}
 	}
 

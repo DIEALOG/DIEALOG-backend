@@ -4,10 +4,11 @@ package mocks
 
 import (
 	context "context"
-	time "time"
 
 	domain "github.com/DIEALOG/DIEALOG-backend/domain"
 	mock "github.com/stretchr/testify/mock"
+
+	time "time"
 
 	uuid "github.com/google/uuid"
 )

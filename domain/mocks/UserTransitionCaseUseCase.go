@@ -46,6 +46,36 @@ func (_m *UserTransitionCaseUseCase) Cancel(c context.Context, id *uuid.UUID, us
 	return r0, r1
 }
 
+// CheckWaitingPeriods provides a mock function with given fields: c, userID
+func (_m *UserTransitionCaseUseCase) CheckWaitingPeriods(c context.Context, userID *uuid.UUID) (*domain.UserTransitionCase, error) {
+	ret := _m.Called(c, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CheckWaitingPeriods")
+	}
+
+	var r0 *domain.UserTransitionCase
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) (*domain.UserTransitionCase, error)); ok {
+		return rf(c, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) *domain.UserTransitionCase); ok {
+		r0 = rf(c, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.UserTransitionCase)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID) error); ok {
+		r1 = rf(c, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Evaluate provides a mock function with given fields: c, id, userID
 func (_m *UserTransitionCaseUseCase) Evaluate(c context.Context, id *uuid.UUID, userID *uuid.UUID) (*domain.UserTransitionCase, error) {
 	ret := _m.Called(c, id, userID)

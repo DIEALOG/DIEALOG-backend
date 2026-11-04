@@ -68,6 +68,7 @@ type UserTransitionPolicyRepository interface {
 	FindByUserID(c context.Context, userID *ID) (*UserTransitionPolicy, error)
 	Create(c context.Context, policy *UserTransitionPolicy, userID *ID) (*UserTransitionPolicy, error)
 	Update(c context.Context, policy *UserTransitionPolicy, userID *ID) (*UserTransitionPolicy, error)
+	FindAll(c context.Context) ([]*UserTransitionPolicy, error)
 }
 
 type UserTransitionPolicyUseCase interface {
@@ -129,6 +130,7 @@ type UserTransitionCaseUseCase interface {
 	ListActiveByUserID(c context.Context, userID *ID) ([]*UserTransitionCase, error)
 	Cancel(c context.Context, id *ID, userID *ID) (*UserTransitionCase, error)
 	Evaluate(c context.Context, id *ID, userID *ID) (*UserTransitionCase, error)
+	CheckWaitingPeriods(c context.Context, userID *ID) (*UserTransitionCase, error)
 }
 
 type UserTransitionConfirmationRepository interface {

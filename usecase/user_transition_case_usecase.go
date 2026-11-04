@@ -211,9 +211,6 @@ func (u *userTransitionCaseUseCase) Evaluate(c context.Context, id *domain.ID, u
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	// The requester may be the deceased owner or one of the owner's
-	// stakeholders. Evaluation itself remains owner-scoped, so resolve the
-	// owner ID from the case before touching confirmations or tasks.
 	item, err := u.repository.FindByIDForRequester(ctx, id, userID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -223,6 +220,41 @@ func (u *userTransitionCaseUseCase) Evaluate(c context.Context, id *domain.ID, u
 	}
 	ownerID := item.UserID
 	return u.evaluateCase(ctx, item, &ownerID)
+}
+
+func (u *userTransitionCaseUseCase) CheckWaitingPeriods(c context.Context, userID *domain.ID) (*domain.UserTransitionCase, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	now := time.Now()
+
+	items, err := u.repository.FindAllByUserID(ctx, userID)
+	if err != nil {
+		return nil, domain.NewInternalServerError(err)
+	}
+
+	var lastConfirmed *domain.UserTransitionCase
+	for _, item := range items {
+		if item.Status != domain.UserTransitionCaseStatusWaiting {
+			continue
+		}
+		if item.EligibleAt == nil || !now.Before(*item.EligibleAt) {
+			evaluated, err := u.evaluateCase(ctx, item, userID)
+			if err != nil {
+				if errors.Is(err, domain.ErrTransitionCaseNotEligible) {
+					// Case already confirmed or cancelled, skip
+					continue
+				}
+				return nil, err
+			}
+			lastConfirmed = evaluated
+		}
+	}
+
+	if lastConfirmed != nil {
+		return lastConfirmed, nil
+	}
+	return nil, nil
 }
 
 func normalizeTransitionCaseReason(request *domain.StartTransitionCaseRequest) *string {
