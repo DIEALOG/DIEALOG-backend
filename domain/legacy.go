@@ -205,8 +205,6 @@ type AccountHandlingTask struct {
 	AccountID        ID `json:"account_id"`
 	UserID           ID `json:"-"`
 
-	// Account detail snapshots taken when the task is created. The credential is
-	// not stored here; AccountPassword is resolved from the crypto service on read.
 	LegacyID          ID          `json:"legacy_id"`
 	Type              AccountType `json:"type"`
 	Name              string      `json:"name"`

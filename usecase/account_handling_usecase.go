@@ -50,8 +50,6 @@ func (u *accountHandlingUseCase) ListByCaseID(c context.Context, caseID *domain.
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	// Evaluate authorizes either the deceased owner or a linked stakeholder and
-	// still performs confirmation/task creation with the owner ID.
 	if _, err := u.caseUseCase.Evaluate(ctx, caseID, userID); err != nil {
 		return nil, err
 	}
