@@ -26,7 +26,8 @@ The transition flow is token-based. Owner routes stay under `/api/transition/pro
 - The `Makefile` exports `APP_ENV=test` for every target, so `APP_ENV=development` from `.env` does not apply under `make` (the development log line is skipped).
 - Legacy-account credentials go to the crypto service at `INTERNAL_CRYPTO_URL` with `X-Internal-Secret-Key`; the example `http://crypto:8080` only resolves inside Compose. User login passwords are bcrypt-hashed in `ent.User.password` in PostgreSQL.
 - Startup runs `client.Schema.Create` (Ent, debug logging always on); there are no migration files to edit.
-- The runtime Docker image copies only the binary and has no `public/` volume; don't assume uploaded profile images persist there.
+- The runtime Docker image runs as the non-root `appuser` (**uid 100 / gid 101**, not 1000) and pre-creates `/app/public/profiles` with that ownership; `/app` itself stays root-owned, so `public/` cannot be created at runtime by any other user. The Compose `api` service mounts the named volume `profile-uploads:/app/public`, so uploaded profile images persist across container rebuilds (but the named volume survives `docker compose up --build`; delete it if it was created root-owned by an older image).
+- Do not override the container user with a different UID (for example `user: "1000:1000"` in an external Compose file). The app writes `./public/profiles` relative to the working directory, so a mismatch makes `os.MkdirAll`/`os.OpenFile` fail with "permission denied" and `PATCH`/profile-image uploads return 500. Either drop the override or set it to `100:101` to match the image.
 
 ## Verification
 
