@@ -15,7 +15,12 @@ RUN apk --no-cache add ca-certificates tzdata \
 
 WORKDIR /app
 
-COPY --from=builder /app/main .
+COPY --from=builder --chown=appuser:appgroup /app/main .
+
+# Profile uploads are written to ./public/profiles at runtime, so the
+# directory must exist and be writable by the non-root user.
+RUN mkdir -p /app/public/profiles \
+    && chown -R appuser:appgroup /app/public
 
 USER appuser
 

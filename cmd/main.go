@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/robfig/cron/v3"
 	"github.com/DIEALOG/DIEALOG-backend/api/route"
 	"github.com/DIEALOG/DIEALOG-backend/config"
 	_ "github.com/DIEALOG/DIEALOG-backend/docs"
@@ -29,6 +28,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"github.com/gofiber/fiber/v3/middleware/static"
+	"github.com/robfig/cron/v3"
 )
 
 // @title          DIEALOG Backend API
@@ -192,12 +192,9 @@ func main() {
 		})
 	})
 
-	// Listen returns on graceful shutdown; close the DB client explicitly
-	// because log.Fatal (os.Exit) would skip any deferred close.
 	cronJob := cron.New()
 	cronJob.AddFunc("*/5 * * * *", func() {
 		ctx := context.Background()
-		// Check waiting periods for all transition cases
 		policies, err := transitionPolicyRepository.FindAll(ctx)
 		if err != nil {
 			log.Printf("failed to fetch policies for cron: %v", err)
@@ -205,7 +202,6 @@ func main() {
 		}
 
 		for _, policy := range policies {
-			// Check waiting periods for all users who have transition cases
 			cases, err := transitionCaseUseCase.ListByUserID(ctx, &policy.UserID)
 			if err != nil {
 				log.Printf("failed to list cases for user %v: %v", policy.UserID, err)

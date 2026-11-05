@@ -93,7 +93,6 @@ func (pu *profileUseCase) UpdateProfileImage(c context.Context, userID *domain.I
 		return nil, domain.NewBadRequestError(errors.New("not support"))
 	}
 
-	// 이미지 파일을 처음부터 다시 읽기 위해 파일 시작 위치로 이동
 	if _, err := src.Seek(0, io.SeekStart); err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}

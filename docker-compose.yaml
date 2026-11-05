@@ -19,6 +19,8 @@ services:
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-refresh_token_secret}
       INTERNAL_SECRET_KEY: ${INTERNAL_SECRET_KEY:-internal_secret_key}
       INTERNAL_CRYPTO_URL: ${INTERNAL_CRYPTO_URL:-http://crypto:8080}
+    volumes:
+      - profile-uploads:/app/public
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,3 +42,6 @@ services:
       retries: 10
     volumes:
       - ./tmp/db-data:/var/lib/postgresql/data
+
+volumes:
+  profile-uploads:
