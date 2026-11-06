@@ -406,7 +406,7 @@ func (u *accountHandlingUseCase) attachAccountPassword(
 	if u.credentialUseCase == nil || task == nil || task.Name == "" {
 		return nil
 	}
-	pwd, err := u.credentialUseCase.GetPassword(c, &task.UserID, task.Name)
+	pwd, err := u.credentialUseCase.GetPassword(c, &task.UserID, &task.AccountID)
 	if err != nil {
 		return domain.NewInternalServerError(err)
 	}
