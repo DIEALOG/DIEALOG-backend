@@ -104,7 +104,7 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*
 	}
 
 	var res struct {
-		AccountID domain.ID `json:"account_name"`
+		AccountID domain.ID `json:"account_id"`
 		Password  *string   `json:"password"`
 	}
 	if err := json.Unmarshal(body, &res); err != nil {

@@ -397,13 +397,13 @@ func (u *accountHandlingUseCase) taskResponse(
 }
 
 // attachAccountPassword fills the task's account credential. Credentials are
-// keyed by the owner's user ID and the account name snapshotted on the task, so
-// a stakeholder requester reads the value the owner stored.
+// keyed by the owner's user ID and the account ID, so a stakeholder requester
+// reads the value the owner stored.
 func (u *accountHandlingUseCase) attachAccountPassword(
 	c context.Context,
 	task *domain.AccountHandlingTask,
 ) error {
-	if u.credentialUseCase == nil || task == nil || task.Name == "" {
+	if u.credentialUseCase == nil || task == nil || task.AccountID == (domain.ID{}) {
 		return nil
 	}
 	pwd, err := u.credentialUseCase.GetPassword(c, &task.UserID, &task.AccountID)

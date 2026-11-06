@@ -108,6 +108,7 @@ func toDomainUserTransitionConfirmation(entity *ent.UserTransitionConfirmation) 
 func toDomainAccountHandlingTask(entity *ent.AccountHandlingTask) *domain.AccountHandlingTask {
 	item := &domain.AccountHandlingTask{
 		ID:                    entity.ID,
+		AccountID:             entity.AccountID,
 		ActionSnapshot:        domain.AccountActionField(entity.ActionSnapshot),
 		ActionMessageSnapshot: entity.ActionMessageSnapshot,
 		AccountIdentifier:     entity.AccountIdentifier,

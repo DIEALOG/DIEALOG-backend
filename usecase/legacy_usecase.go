@@ -124,7 +124,7 @@ func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Accoun
 	}
 
 	if password != nil {
-		err := lu.credentialUseCase.StorePassword(ctx, userID, &account.ID, *password)
+		err := lu.credentialUseCase.StorePassword(ctx, userID, &acc.ID, *password)
 		if err != nil {
 			return nil, domain.NewInternalServerError(err)
 		}

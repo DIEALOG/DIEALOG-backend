@@ -17,14 +17,14 @@ import (
 
 type mockCredentialUseCase struct{}
 
-func (m *mockCredentialUseCase) StorePassword(c context.Context, userID *domain.ID, serviceName *domain.ID, password string) error {
+func (m *mockCredentialUseCase) StorePassword(c context.Context, userID *domain.ID, accountID *domain.ID, password string) error {
 	return nil
 }
-func (m *mockCredentialUseCase) GetPassword(c context.Context, userID *domain.ID, serviceName *domain.ID) (*string, error) {
+func (m *mockCredentialUseCase) GetPassword(c context.Context, userID *domain.ID, accountID *domain.ID) (*string, error) {
 	pwd := "testpassword"
 	return &pwd, nil
 }
-func (m *mockCredentialUseCase) DeletePassword(c context.Context, userID *domain.ID, serviceName *domain.ID) error {
+func (m *mockCredentialUseCase) DeletePassword(c context.Context, userID *domain.ID, accountID *domain.ID) error {
 	return nil
 }
 

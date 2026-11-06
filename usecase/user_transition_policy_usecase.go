@@ -68,6 +68,9 @@ func (u *userTransitionPolicyUseCase) Update(c context.Context, request *domain.
 	}
 	if request.WaitingPeriodDays != nil {
 		policy.WaitingPeriodDays = *request.WaitingPeriodDays
+		if policy.WaitingPeriodDays > 30 {
+			policy.WaitingPeriodDays = 30
+		}
 	}
 	if request.AliveCheckIntervalDays != nil {
 		policy.AliveCheckIntervalDays = *request.AliveCheckIntervalDays
