@@ -104,18 +104,18 @@ func (c *Client) Retrieve(ctx context.Context, dto domain.GetPasswordRequest) (*
 	}
 
 	var res struct {
-		AccountName string  `json:"account_name"`
-		Password    *string `json:"password"`
+		AccountID domain.ID `json:"account_name"`
+		Password  *string   `json:"password"`
 	}
 	if err := json.Unmarshal(body, &res); err != nil {
 		return nil, err
 	}
 
-	if res.AccountName != dto.AccountName {
+	if res.AccountID != dto.AccountID {
 		return nil, fmt.Errorf(
-			"invalid account name: %s, expected %s",
-			res.AccountName,
-			dto.AccountName,
+			"invalid account ID: %s, expected %s",
+			res.AccountID,
+			dto.AccountID,
 		)
 	}
 

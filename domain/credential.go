@@ -25,7 +25,7 @@ type CryptoServiceClient interface {
 }
 
 type CredentialUseCase interface {
-	StorePassword(ctx context.Context, userID *ID, accountName, password string) error
-	GetPassword(ctx context.Context, userID *ID, accountName string) (*string, error)
-	DeletePassword(ctx context.Context, userID *ID, accountName string) error
+	StorePassword(ctx context.Context, userID *ID, accountID *ID, password string) error
+	GetPassword(ctx context.Context, userID *ID, accountID *ID) (*string, error)
+	DeletePassword(ctx context.Context, userID *ID, accountID *ID) error
 }

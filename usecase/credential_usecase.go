@@ -14,24 +14,24 @@ func NewCredentialUseCase(cryptoClient domain.CryptoServiceClient) domain.Creden
 	return &credentialUseCase{cryptoClient: cryptoClient}
 }
 
-func (u *credentialUseCase) StorePassword(ctx context.Context, userID *domain.ID, accountName string, password string) error {
+func (u *credentialUseCase) StorePassword(ctx context.Context, userID *domain.ID, accountID *domain.ID, password string) error {
 	return u.cryptoClient.Store(ctx, domain.StoreCredentialRequest{
-		UserID:      *userID,
-		AccountName: accountName,
-		Password:    password,
+		UserID:    *userID,
+		AccountID: *accountID,
+		Password:  password,
 	})
 }
 
-func (u *credentialUseCase) GetPassword(ctx context.Context, userID *domain.ID, accountName string) (*string, error) {
+func (u *credentialUseCase) GetPassword(ctx context.Context, userID *domain.ID, accountID *domain.ID) (*string, error) {
 	return u.cryptoClient.Retrieve(ctx, domain.GetPasswordRequest{
-		UserID:      *userID,
-		AccountName: accountName,
+		UserID:    *userID,
+		AccountID: *accountID,
 	})
 }
 
-func (u *credentialUseCase) DeletePassword(ctx context.Context, userID *domain.ID, accountName string) error {
+func (u *credentialUseCase) DeletePassword(ctx context.Context, userID *domain.ID, accountID *domain.ID) error {
 	return u.cryptoClient.Delete(ctx, domain.DeleteCredentialRequest{
-		UserID:      *userID,
-		AccountName: accountName,
+		UserID:    *userID,
+		AccountID: *accountID,
 	})
 }
