@@ -124,7 +124,7 @@ func (lu *legacyUseCase) CreateAccount(c context.Context, account *domain.Accoun
 	}
 
 	if password != nil {
-		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
+		err := lu.credentialUseCase.StorePassword(ctx, userID, &account.ID, *password)
 		if err != nil {
 			return nil, domain.NewInternalServerError(err)
 		}
@@ -137,7 +137,7 @@ func (lu *legacyUseCase) GetAccountPassword(c context.Context, userID *domain.ID
 	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
 	defer cancel()
 
-	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, account.Name)
+	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, &account.ID)
 	if err != nil {
 		return nil, domain.NewInternalServerError(err)
 	}
@@ -162,7 +162,7 @@ func (lu *legacyUseCase) GetAccountByID(c context.Context, legacyID *domain.ID, 
 		return nil, nil, domain.NewNotFoundError(errors.New("account not found"))
 	}
 
-	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, acc.Name)
+	pwd, err := lu.credentialUseCase.GetPassword(ctx, userID, &acc.ID)
 	if err != nil {
 		return nil, nil, domain.NewInternalServerError(err)
 	}
@@ -179,7 +179,7 @@ func (lu *legacyUseCase) DeleteAccount(c context.Context, accountID *domain.ID, 
 		return domain.NewInternalServerError(err)
 	}
 
-	err = lu.credentialUseCase.DeletePassword(ctx, userID, acc.Name)
+	err = lu.credentialUseCase.DeletePassword(ctx, userID, &acc.ID)
 	if err != nil {
 		return domain.NewInternalServerError(err)
 	}
@@ -216,7 +216,7 @@ func (lu *legacyUseCase) UpdateAccount(c context.Context, account *domain.Accoun
 	}
 
 	if password != nil {
-		err := lu.credentialUseCase.StorePassword(ctx, userID, account.Name, *password)
+		err := lu.credentialUseCase.StorePassword(ctx, userID, &account.ID, *password)
 		if err != nil {
 			return nil, domain.NewInternalServerError(err)
 		}

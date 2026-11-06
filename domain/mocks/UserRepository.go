@@ -46,6 +46,24 @@ func (_m *UserRepository) Create(c context.Context, user *domain.User) (*domain.
 	return r0, r1
 }
 
+// Delete provides a mock function with given fields: c, id
+func (_m *UserRepository) Delete(c context.Context, id *uuid.UUID) error {
+	ret := _m.Called(c, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID) error); ok {
+		r0 = rf(c, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindAll provides a mock function with given fields: c
 func (_m *UserRepository) FindAll(c context.Context) ([]*domain.User, error) {
 	ret := _m.Called(c)

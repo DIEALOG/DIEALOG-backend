@@ -15,17 +15,17 @@ type CredentialUseCase struct {
 	mock.Mock
 }
 
-// DeletePassword provides a mock function with given fields: ctx, userID, accountName
-func (_m *CredentialUseCase) DeletePassword(ctx context.Context, userID *uuid.UUID, accountName string) error {
-	ret := _m.Called(ctx, userID, accountName)
+// DeletePassword provides a mock function with given fields: ctx, userID, accountID
+func (_m *CredentialUseCase) DeletePassword(ctx context.Context, userID *uuid.UUID, accountID *uuid.UUID) error {
+	ret := _m.Called(ctx, userID, accountID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeletePassword")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) error); ok {
-		r0 = rf(ctx, userID, accountName)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r0 = rf(ctx, userID, accountID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -33,9 +33,9 @@ func (_m *CredentialUseCase) DeletePassword(ctx context.Context, userID *uuid.UU
 	return r0
 }
 
-// GetPassword provides a mock function with given fields: ctx, userID, accountName
-func (_m *CredentialUseCase) GetPassword(ctx context.Context, userID *uuid.UUID, accountName string) (*string, error) {
-	ret := _m.Called(ctx, userID, accountName)
+// GetPassword provides a mock function with given fields: ctx, userID, accountID
+func (_m *CredentialUseCase) GetPassword(ctx context.Context, userID *uuid.UUID, accountID *uuid.UUID) (*string, error) {
+	ret := _m.Called(ctx, userID, accountID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetPassword")
@@ -43,19 +43,19 @@ func (_m *CredentialUseCase) GetPassword(ctx context.Context, userID *uuid.UUID,
 
 	var r0 *string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) (*string, error)); ok {
-		return rf(ctx, userID, accountName)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) (*string, error)); ok {
+		return rf(ctx, userID, accountID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string) *string); ok {
-		r0 = rf(ctx, userID, accountName)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID) *string); ok {
+		r0 = rf(ctx, userID, accountID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*string)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, string) error); ok {
-		r1 = rf(ctx, userID, accountName)
+	if rf, ok := ret.Get(1).(func(context.Context, *uuid.UUID, *uuid.UUID) error); ok {
+		r1 = rf(ctx, userID, accountID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -63,17 +63,17 @@ func (_m *CredentialUseCase) GetPassword(ctx context.Context, userID *uuid.UUID,
 	return r0, r1
 }
 
-// StorePassword provides a mock function with given fields: ctx, userID, accountName, password
-func (_m *CredentialUseCase) StorePassword(ctx context.Context, userID *uuid.UUID, accountName string, password string) error {
-	ret := _m.Called(ctx, userID, accountName, password)
+// StorePassword provides a mock function with given fields: ctx, userID, accountID, password
+func (_m *CredentialUseCase) StorePassword(ctx context.Context, userID *uuid.UUID, accountID *uuid.UUID, password string) error {
+	ret := _m.Called(ctx, userID, accountID, password)
 
 	if len(ret) == 0 {
 		panic("no return value specified for StorePassword")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, string, string) error); ok {
-		r0 = rf(ctx, userID, accountName, password)
+	if rf, ok := ret.Get(0).(func(context.Context, *uuid.UUID, *uuid.UUID, string) error); ok {
+		r0 = rf(ctx, userID, accountID, password)
 	} else {
 		r0 = ret.Error(0)
 	}
